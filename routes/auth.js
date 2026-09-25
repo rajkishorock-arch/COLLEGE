@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { logAudit } = require('../utils/audit');
 
-// Root redirect
+// Root route: Show landing page to visitors, redirect logged-in users to dashboard
 router.get('/', (req, res) => {
   if (req.session && req.session.user) {
     if (req.session.user.role === 'admin' || req.session.user.role === 'super_admin') {
@@ -12,7 +12,10 @@ router.get('/', (req, res) => {
     }
     return res.redirect('/student/dashboard');
   }
-  res.redirect('/login');
+  res.render('landing', {
+    title: 'CampusPulse - Next-Gen College Management Platform',
+    layout: false
+  });
 });
 
 // GET /login
@@ -420,14 +423,14 @@ router.post('/forgot-password/reset', (req, res) => {
   return res.redirect('/login?success=' + encodeURIComponent('Password reset successfully! Please sign in with your new password.'));
 });
 
-// GET & POST /logout
+// GET & POST /logout - clear session and return to landing page
 router.all('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error('Session destruction error:', err);
     }
     res.clearCookie('connect.sid');
-    res.redirect('/login?success=' + encodeURIComponent('You have been logged out securely.'));
+    res.redirect('/');
   });
 });
 

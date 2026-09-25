@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 10. Mobile Sidebar Drawer Toggle
   initMobileDrawer();
+
+  // 11. Landing Page Scroll Reveal Animations
+  initScrollReveal();
 });
 
 /**
@@ -504,4 +507,26 @@ function initMobileDrawer() {
   if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
   if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
   if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+}
+
+/**
+ * 11. Intersection Observer for Landing Page Scroll Reveal
+ */
+function initScrollReveal() {
+  const revealElements = document.querySelectorAll('.scroll-reveal');
+  if (!revealElements.length) return;
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  revealElements.forEach(el => observer.observe(el));
 }
