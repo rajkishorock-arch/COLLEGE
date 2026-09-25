@@ -1,0 +1,85 @@
+<!-- FAQ Chatbot Floating Widget -->
+<div id="chatbot-container" class="fixed bottom-6 right-6 z-50">
+  <!-- Chat Window (Origin Bottom-Right, 250ms scale & fade) -->
+  <div id="chatbot-window" class="hidden mb-4 w-96 max-w-[calc(100vw-2rem)] h-[520px] max-h-[80vh] flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="bg-[#F7F7F9] p-4 text-[#111318] flex items-center justify-between border-b border-[#E5E7EB]">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-[rgba(108,92,231,0.2)] text-[var(--accent-primary)] flex items-center justify-center text-sm border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm leading-tight text-[#111318] font-['Space_Grotesk']">Campus Assistant</h4>
+          <span class="inline-flex items-center gap-1.5 text-xs text-[#5B5F6B]">
+            <span class="w-2 h-2 rounded-full bg-[var(--success)]"></span> Instant Automated Answers
+          </span>
+        </div>
+      </div>
+      <button id="close-chatbot-btn" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-[#5B5F6B] hover:text-[#111318]" title="Close chat">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Messages Area -->
+    <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto bg-[#FFFFFF] space-y-3">
+      <!-- Welcome Message -->
+      <div class="flex items-start gap-2.5 max-w-[85%] chat-message-in">
+        <div class="w-7 h-7 rounded-full bg-[rgba(108,92,231,0.2)] text-[var(--accent-primary)] flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          AI
+        </div>
+        <div class="bg-[#FFFFFF] border border-[#E5E7EB] text-[#111318] text-xs sm:text-sm rounded-[12px] rounded-tl-none px-4 py-2.5 shadow-sm leading-relaxed">
+          Hello <%= user ? user.name.split(' ')[0] : 'there' %>! 👋 I am your automated campus FAQ helper. How can I assist you today?
+        </div>
+      </div>
+
+      <!-- FAQ Quick Suggestion Chips -->
+      <div class="pt-2">
+        <p class="text-[11px] font-semibold tracking-wider text-[#8B8F99] uppercase mb-2">Suggested Inquiries</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" class="faq-chip text-xs bg-[#FFFFFF] hover:bg-[#F7F7F9] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] text-[#5B5F6B] border border-[#E5E7EB] rounded-full px-3 py-1.5 transition-all" data-question="How to check attendance?">
+            📋 Check Attendance
+          </button>
+          <button type="button" class="faq-chip text-xs bg-[#FFFFFF] hover:bg-[#F7F7F9] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] text-[#5B5F6B] border border-[#E5E7EB] rounded-full px-3 py-1.5 transition-all" data-question="How to see results?">
+            📊 View Results
+          </button>
+          <button type="button" class="faq-chip text-xs bg-[#FFFFFF] hover:bg-[#F7F7F9] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] text-[#5B5F6B] border border-[#E5E7EB] rounded-full px-3 py-1.5 transition-all" data-question="How to issue a library book?">
+            📚 Library Books
+          </button>
+          <button type="button" class="faq-chip text-xs bg-[#FFFFFF] hover:bg-[#F7F7F9] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] text-[#5B5F6B] border border-[#E5E7EB] rounded-full px-3 py-1.5 transition-all" data-question="How to take a quiz?">
+            ✍️ Take Quiz
+          </button>
+          <button type="button" class="faq-chip text-xs bg-[#FFFFFF] hover:bg-[#F7F7F9] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)] text-[#5B5F6B] border border-[#E5E7EB] rounded-full px-3 py-1.5 transition-all" data-question="What is the admin email?">
+            ✉️ Admin Email
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Form -->
+    <form id="chatbot-form" class="p-3 bg-[#FFFFFF] border-t border-[#E5E7EB] flex items-center gap-2">
+      <input 
+        type="text" 
+        id="chatbot-input" 
+        placeholder="Ask a question..." 
+        autocomplete="off"
+        class="flex-1 px-4 py-2 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] focus:outline-none focus:border-[var(--accent-primary)] text-[#111318] placeholder-[#8B8F99] transition-all"
+      />
+      <button 
+        type="submit" 
+        class="w-9 h-9 rounded-[8px] bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] active:scale-95 text-white flex items-center justify-center transition-all shadow-md shadow-[var(--accent-glow)]"
+        title="Send"
+      >
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Trigger Button (Floating Icon) -->
+  <button 
+    id="chatbot-toggle-btn" 
+    class="w-14 h-14 rounded-full bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white flex items-center justify-center shadow-xl hover:shadow-[0_12px_32px_var(--accent-glow)] transition-all duration-300 active:scale-95 group focus:outline-none"
+    title="Open FAQ Chatbot"
+  >
+    <i class="fa-solid fa-comments text-xl group-hover:scale-110 transition-transform"></i>
+  </button>
+</div>

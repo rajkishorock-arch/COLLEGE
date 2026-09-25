@@ -1,0 +1,155 @@
+<!-- Student Quiz Portal (Exact Dark Theme & Typography Spec) -->
+<div class="space-y-[48px]">
+
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 1;">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F0EDFD] border border-[#DDD6FE] text-[var(--accent-primary)] text-xs font-semibold mb-2">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>Interactive Assessments</span>
+      </div>
+      <h1 class="page-title text-[#111318]">
+        Knowledge Assessment & Quizzes
+      </h1>
+      <p class="body-text mt-1.5 max-w-2xl text-sm">
+        Self-evaluation quizzes created by faculty to reinforce coursework concepts with instant auto-grading.
+      </p>
+    </div>
+  </div>
+
+  <!-- Active Quizzes Section -->
+  <div class="card" style="--i: 2;">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-lightbulb"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Available Quizzes</h2>
+          <p class="text-muted-desc">Active multiple-choice evaluations ready for testing</p>
+        </div>
+      </div>
+      <span class="status-pill text-xs font-semibold badge-accent self-start sm:self-center">
+        <%= quizzes.length %> Published Tests
+      </span>
+    </div>
+
+    <% if (quizzes && quizzes.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-[20px]">
+        <% quizzes.forEach(q => { %>
+          <div class="p-6 rounded-[8px] border border-[#E5E7EB] bg-[#FFFFFF] card-interactive flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <span class="label-caps px-2.5 py-0.5 rounded-[6px] bg-[#FFFFFF] text-[var(--accent-primary)] border border-[#E5E7EB]">
+                  <%= q.subject %>
+                </span>
+                <span class="text-xs text-[#8B8F99] font-medium flex items-center gap-1.5">
+                  <i class="fa-solid fa-list-check text-[var(--accent-primary)]"></i>
+                  <span><%= q.question_count %> MCQs</span>
+                </span>
+              </div>
+
+              <h3 class="card-title text-[#111318] leading-snug mt-2 text-base"><%= q.title %></h3>
+
+              <% if (q.attempts_count > 0) { %>
+                <div class="mt-4 p-3 rounded-[8px] bg-[rgba(46,213,115,0.08)] border border-[rgba(46,213,115,0.25)] flex items-center justify-between text-xs text-[var(--success)]">
+                  <span class="font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>Personal Best:</span>
+                  </span>
+                  <span class="font-bold text-sm font-['Space_Grotesk']"><%= q.user_high_score %> / <%= q.last_total %></span>
+                </div>
+              <% } %>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-[#E5E7EB] flex items-center justify-between">
+              <span class="text-xs text-[#8B8F99] font-medium">
+                <%= q.attempts_count > 0 ? `${q.attempts_count} attempt(s) recorded` : 'Not attempted yet' %>
+              </span>
+              <a 
+                href="/student/quiz/<%= q.id %>" 
+                class="btn-primary py-2 px-4 text-xs font-semibold"
+              >
+                <span><%= q.attempts_count > 0 ? 'Retake Quiz' : 'Start Quiz' %></span>
+                <i class="fa-solid fa-arrow-right text-[11px]"></i>
+              </a>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="py-12 text-center text-[#8B8F99] bg-[#FFFFFF] rounded-[8px] border border-[#E5E7EB]">
+        <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+          <i class="fa-solid fa-file-circle-question"></i>
+        </div>
+        <p class="font-bold text-[#111318] text-sm">No active quizzes published</p>
+        <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Faculty instructors haven't scheduled online quizzes for this course yet.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Past Quiz Attempts History -->
+  <div class="card p-0 overflow-hidden" style="--i: 3;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex items-center justify-between">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h2 class="section-title">My Quiz Attempt History</h2>
+          <p class="text-muted-desc">Record of all evaluated test submissions and timestamps</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Quiz Title</th>
+            <th>Subject</th>
+            <th class="text-center">Score</th>
+            <th class="text-center">Percentage</th>
+            <th class="text-right">Completed At</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (typeof attempts !== 'undefined' && attempts && attempts.length > 0) { %>
+            <% attempts.forEach(att => { %>
+              <tr class="hover:bg-[#F7F7F9]/40 transition-colors">
+                <td class="font-semibold text-[#111318]">
+                  <%= att.quiz_title %>
+                </td>
+                <td class="text-[#5B5F6B] text-xs">
+                  <%= att.subject %>
+                </td>
+                <td class="text-center font-bold text-[#111318] font-['Space_Grotesk']">
+                  <%= att.score %> <span class="text-[#8B8F99] font-normal">/ <%= att.total_questions %></span>
+                </td>
+                <td class="text-center">
+                  <span class="status-pill text-xs font-semibold <%= att.percentage >= 75 ? 'badge-success' : 'badge-warning' %>">
+                    <%= att.percentage %>%
+                  </span>
+                </td>
+                <td class="text-right text-[#8B8F99] text-xs">
+                  <%= att.attempted_at %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="py-12 text-center text-[#8B8F99]">
+                <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+                  <i class="fa-solid fa-clipboard"></i>
+                </div>
+                <p class="font-bold text-[#111318] text-sm">No attempts recorded</p>
+                <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Select an available quiz above and complete your first attempt to view score history.</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

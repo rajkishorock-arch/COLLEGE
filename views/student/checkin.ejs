@@ -1,0 +1,190 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Secure Self-Verification</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Classroom Attendance Check-In</h1>
+        <p class="body-text mt-1.5 text-sm">Enter the dynamic 15-minute instructor session code displayed in class to record your verified attendance</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="status-pill text-xs font-semibold badge-success flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse"></span>
+          <span>Check-In Portal Active</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bento Grid: Main Check-In Form (Col 1-2) + Active Live Sessions (Col 3) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
+    
+    <!-- Hero Check-In Card (2 Columns) -->
+    <div class="card lg:col-span-2 flex flex-col justify-between" style="--i: 2;">
+      <div>
+        <div class="flex items-center gap-3 mb-6 pb-5 border-b border-[#E5E7EB]">
+          <div class="w-12 h-12 rounded-[12px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-xl shrink-0 border border-[var(--border-subtle)]">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h2 class="section-title">Enter Session Code</h2>
+            <p class="text-muted-desc">Look at the lecture board or projector screen for today's dynamic roll code</p>
+          </div>
+        </div>
+
+        <form action="/student/checkin" method="POST" class="space-y-6">
+          <div>
+            <label for="session_code" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-3">
+              15-Minute Dynamic Session Passcode *
+            </label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="session_code" 
+                name="session_code" 
+                required 
+                autocomplete="off"
+                placeholder="e.g. DSA-7284" 
+                class="w-full text-center text-2xl sm:text-3xl font-bold tracking-[0.25em] font-['Space_Grotesk'] uppercase py-4 px-6 bg-[#FFFFFF] border-2 border-[#E5E7EB] rounded-[12px] text-[#111318] focus:border-[var(--accent-primary)] focus:shadow-[0_0_24px_var(--accent-glow)] transition-all placeholder:text-[#8B8F99] placeholder:tracking-normal placeholder:font-normal placeholder:text-lg"
+              />
+            </div>
+            <p class="text-xs text-[#8B8F99] mt-2.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-shield-halved text-[var(--accent-primary)]"></i>
+              <span>Passcodes expire automatically 15 minutes after instructor creation. Single use per student session.</span>
+            </p>
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn-primary w-full py-4 text-sm font-semibold rounded-[8px] flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--accent-glow)]"
+          >
+            <i class="fa-solid fa-circle-check text-base"></i>
+            <span>Verify & Mark Present</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Quick Guidance -->
+      <div class="mt-8 pt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#5B5F6B]">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-[var(--accent-primary)]"></i>
+          <span>Missed the 15-minute window? Your teacher can manually record your roll call from admin controls.</span>
+        </div>
+        <a href="/student/attendance" class="text-[var(--accent-primary)] hover:underline font-medium">
+          View Attendance History &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Active In-Class Sessions (1 Column) -->
+    <div class="card flex flex-col justify-between" style="--i: 3;">
+      <div>
+        <div class="flex items-center gap-3 mb-5 pb-4 border-b border-[#E5E7EB]">
+          <div class="w-10 h-10 rounded-[8px] bg-[#E8F8EE] text-[var(--success)] flex items-center justify-center text-lg shrink-0 border border-[rgba(46,213,115,0.25)]">
+            <i class="fa-solid fa-tower-broadcast"></i>
+          </div>
+          <div>
+            <h3 class="card-title">Live Check-In Sessions</h3>
+            <p class="text-xs text-[#8B8F99]">Active lectures taking roll right now</p>
+          </div>
+        </div>
+
+        <% if (activeSessions && activeSessions.length > 0) { %>
+          <div class="space-y-3.5">
+            <% activeSessions.forEach(sess => { %>
+              <div class="p-4 rounded-[10px] bg-[#FFFFFF] border border-[#E5E7EB] hover:border-[var(--accent-primary)] transition-all">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <span class="text-xs font-bold text-[#111318]"><%= sess.subject %></span>
+                  <span class="status-pill text-[10px] badge-warning">
+                    <%= sess.minutes_remaining > 0 ? sess.minutes_remaining + 'm left' : 'Ending soon' %>
+                  </span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-[#5B5F6B]">
+                  <span>Session Date: <%= sess.date %></span>
+                  <span class="text-[var(--accent-primary)] font-semibold">Enter code in left card</span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="py-12 text-center text-[#8B8F99]">
+            <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+              <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <p class="font-bold text-[#111318] text-xs">No Active Broadcasts</p>
+            <p class="text-[11px] text-[#5B5F6B] max-w-[200px] mx-auto mt-1">When your professor initiates roll call, the live session will appear here.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="pt-4 border-t border-[#E5E7EB] text-center text-[11px] text-[#8B8F99]">
+        Automated GPS/Time-fenced Verification
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Attendance Log for This Student -->
+  <div class="card p-0 overflow-hidden" style="--i: 4;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Your Recent Attendance Log</h2>
+          <p class="text-muted-desc">Confirmed self-check-ins and faculty records</p>
+        </div>
+      </div>
+      <a href="/student/attendance" class="btn-secondary py-2 px-4 text-xs font-semibold">
+        Full Roster History
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Subject</th>
+            <th class="text-center">Status</th>
+            <th class="text-right">Verification Mode</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (recentCheckins && recentCheckins.length > 0) { %>
+            <% recentCheckins.forEach(rec => { %>
+              <tr class="hover:bg-[#F7F7F9]/40 transition-colors">
+                <td class="font-medium text-[#111318] text-xs"><%= rec.date %></td>
+                <td class="font-semibold text-[#111318]"><%= rec.subject %></td>
+                <td class="text-center">
+                  <span class="status-pill text-xs font-semibold <%= rec.status === 'Present' ? 'badge-success' : 'badge-danger' %>">
+                    <%= rec.status %>
+                  </span>
+                </td>
+                <td class="text-right text-[#5B5F6B] text-xs">
+                  <span class="inline-flex items-center gap-1.5 text-xs text-[var(--success)] font-medium">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Verified</span>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" class="py-8 text-center text-[#8B8F99] text-xs">
+                No attendance logs found yet. Check in with your first class code above!
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

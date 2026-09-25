@@ -1,0 +1,107 @@
+<!-- Quiz Taking Interface (Exact Dark Theme & Quiz Interaction Spec) -->
+<div class="max-w-3xl mx-auto space-y-[48px]">
+
+  <!-- Header Banner -->
+  <div class="card flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 1;">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+        <i class="fa-solid fa-graduation-cap"></i> <%= quiz.subject %>
+      </div>
+      <h1 class="page-title text-[#111318]"><%= quiz.title %></h1>
+      <p class="body-text mt-1.5 text-sm">Select the most appropriate option for each question and submit for instant evaluation.</p>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <span class="status-pill text-xs font-semibold badge-accent">
+        <%= questions.length %> Questions
+      </span>
+      <a href="/student/quiz" class="btn-secondary py-2 px-3.5 text-xs font-medium">
+        Cancel
+      </a>
+    </div>
+  </div>
+
+  <!-- Quiz Form -->
+  <form action="/student/quiz/<%= quiz.id %>/submit" method="POST" class="space-y-6">
+    
+    <% questions.forEach((q, idx) => { %>
+      <div class="card space-y-4" style="--i: <%= Math.min(idx + 2, 8) %>;">
+        
+        <!-- Question Title -->
+        <div class="flex items-start gap-3.5">
+          <span class="w-8 h-8 rounded-[8px] bg-[var(--accent-primary)] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-sm font-['Space_Grotesk']">
+            <%= idx + 1 %>
+          </span>
+          <h2 class="card-title text-[#111318] leading-snug">
+            <%= q.question %>
+          </h2>
+        </div>
+
+        <!-- MCQ Options with Bouncing Checkmark -->
+        <div class="grid grid-cols-1 gap-3 pt-2">
+          
+          <label class="quiz-option-card flex items-center justify-between p-4 cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <input type="radio" name="question_<%= q.id %>" value="a" class="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)] border-[#E5E7EB] bg-[#FFFFFF]" required>
+              <span class="text-xs font-bold text-[var(--accent-primary)] w-5 font-['Space_Grotesk']">A.</span>
+              <span class="text-sm text-[#111318] leading-relaxed"><%= q.option_a %></span>
+            </div>
+            <div class="option-check-icon">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </label>
+
+          <label class="quiz-option-card flex items-center justify-between p-4 cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <input type="radio" name="question_<%= q.id %>" value="b" class="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)] border-[#E5E7EB] bg-[#FFFFFF]">
+              <span class="text-xs font-bold text-[var(--accent-primary)] w-5 font-['Space_Grotesk']">B.</span>
+              <span class="text-sm text-[#111318] leading-relaxed"><%= q.option_b %></span>
+            </div>
+            <div class="option-check-icon">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </label>
+
+          <label class="quiz-option-card flex items-center justify-between p-4 cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <input type="radio" name="question_<%= q.id %>" value="c" class="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)] border-[#E5E7EB] bg-[#FFFFFF]">
+              <span class="text-xs font-bold text-[var(--accent-primary)] w-5 font-['Space_Grotesk']">C.</span>
+              <span class="text-sm text-[#111318] leading-relaxed"><%= q.option_c %></span>
+            </div>
+            <div class="option-check-icon">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </label>
+
+          <label class="quiz-option-card flex items-center justify-between p-4 cursor-pointer">
+            <div class="flex items-center gap-3.5">
+              <input type="radio" name="question_<%= q.id %>" value="d" class="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)] border-[#E5E7EB] bg-[#FFFFFF]">
+              <span class="text-xs font-bold text-[var(--accent-primary)] w-5 font-['Space_Grotesk']">D.</span>
+              <span class="text-sm text-[#111318] leading-relaxed"><%= q.option_d %></span>
+            </div>
+            <div class="option-check-icon">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </label>
+
+        </div>
+
+      </div>
+    <% }); %>
+
+    <!-- Submit Action -->
+    <div class="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <p class="body-text text-xs">
+        Review your responses before submitting. Your scorecard will be generated immediately.
+      </p>
+      <button 
+        type="submit" 
+        class="btn-primary py-3 px-6 text-sm font-semibold shrink-0"
+      >
+        <span>Submit & Grade Quiz</span>
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+    </div>
+
+  </form>
+
+</div>

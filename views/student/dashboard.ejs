@@ -1,0 +1,438 @@
+<!-- Student Dashboard (Exact Dark Theme & Bento Grid Layout) -->
+<div class="space-y-[48px]">
+
+  <!-- Welcome Banner -->
+  <div class="card relative overflow-hidden bg-gradient-to-r from-[#F0EDFD]/40 via-[#FFFFFF] to-[#F0EDFD]/40 border border-[#E5E7EB] p-[28px] rounded-[12px]" style="--i: 1;">
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F0EDFD] text-xs font-semibold tracking-wide text-[var(--accent-primary)] mb-3 border border-[#DDD6FE]">
+          <span class="w-2 h-2 rounded-full bg-[var(--success)]"></span>
+          Active Academic Session 2026
+        </div>
+        <h1 class="page-title text-[#111318]">
+          Welcome back, <%= user.name %>! 👋
+        </h1>
+        <p class="text-[#5B5F6B] text-sm mt-2 max-w-xl font-normal leading-relaxed">
+          Roll Number: <span class="font-semibold text-[#111318]"><%= user.roll_no %></span> • Program: <span class="font-semibold text-[#111318]"><%= user.course %></span> • Semester 6
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0 flex-wrap">
+        <a href="/student/checkin" class="btn-primary">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Self Check-In</span>
+        </a>
+        <a href="/student/attendance" class="btn-secondary">
+          <i class="fa-solid fa-clipboard-user"></i>
+          <span>Attendance</span>
+        </a>
+        <a href="/student/quiz" class="btn-secondary">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>Take Quiz</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notice Board Banner Highlights -->
+  <% if (typeof announcements !== 'undefined' && announcements.length > 0) { %>
+    <div class="card p-5 border border-[#E5E7EB] bg-[#FFFFFF]">
+      <div class="flex items-center justify-between mb-3.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-[6px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-xs">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-[#111318]">Campus Notice Board</h2>
+        </div>
+        <a href="/student/announcements" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1">
+          <span>View All Notices</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <% announcements.forEach(a => { %>
+          <div class="p-3.5 rounded-[8px] bg-[#FFFFFF] border <%= a.priority === 'urgent' ? 'border-[var(--danger)]/50 bg-[rgba(255,71,87,0.04)]' : 'border-[#E5E7EB]' %> flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="status-pill text-[9px] font-bold <%= a.priority === 'urgent' ? 'badge-danger' : 'badge-accent' %>">
+                  <%= a.priority.toUpperCase() %>
+                </span>
+                <span class="text-[10px] text-[#8B8F99]"><%= new Date(a.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) %></span>
+              </div>
+              <h3 class="text-xs font-bold text-[#111318] line-clamp-1"><%= a.title %></h3>
+              <p class="text-[11px] text-[#5B5F6B] mt-1 line-clamp-2 leading-relaxed"><%= a.body %></p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Bento Grid Summary Cards (20px gap, Asymmetric layout) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-[20px]">
+    
+    <!-- 1. Featured Attendance Bento Card (2 Columns Wide) -->
+    <div class="md:col-span-2 card flex flex-col justify-between" style="--i: 2;">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="stat-label text-[#5B5F6B]">Overall Attendance Metric</span>
+          <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-lg border border-[var(--border-subtle)]">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+        </div>
+
+        <div class="flex items-baseline gap-4 mt-2">
+          <span class="metric-number <%= stats.attendancePercentage >= 75 ? 'text-[var(--success)]' : 'text-[var(--danger)]' %>">
+            <%= stats.attendancePercentage %>%
+          </span>
+          <span class="status-pill <%= stats.attendancePercentage >= 75 ? 'badge-success' : 'badge-danger' %>">
+            <%= stats.attendancePercentage >= 75 ? '✓ Exam Eligible' : '⚠️ Shortage Risk' %>
+          </span>
+        </div>
+
+        <p class="body-text mt-3 text-sm">
+          You have attended <span class="text-[#111318] font-semibold"><%= stats.attendedClasses %></span> out of <span class="text-[#111318] font-semibold"><%= stats.totalClasses %></span> scheduled class sessions this academic semester.
+        </p>
+      </div>
+
+      <!-- Mini Progress Bar -->
+      <div class="mt-6 pt-4 border-t border-[#E5E7EB]">
+        <div class="w-full bg-[#FFFFFF] h-2 rounded-full overflow-hidden border border-[#E5E7EB]">
+          <div 
+            class="h-full rounded-full transition-all duration-700 <%= stats.attendancePercentage >= 75 ? 'bg-[var(--success)]' : 'bg-[var(--danger)]' %>" 
+            style="width: <%= Math.min(stats.attendancePercentage, 100) %>%;"
+          ></div>
+        </div>
+        <div class="flex justify-between items-center text-xs text-[#8B8F99] mt-2 font-medium">
+          <span>Current Standing</span>
+          <span>75% Minimum Required</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Academic Score Bento Card (1 Column Wide) -->
+    <div class="card flex flex-col justify-between" style="--i: 3;">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="stat-label text-[#5B5F6B]">Academic Average</span>
+          <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-lg border border-[var(--border-subtle)]">
+            <i class="fa-solid fa-award"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2.5">
+          <span class="metric-number text-[#111318]">
+            <%= stats.averageMarks %>%
+          </span>
+          <span class="text-xs font-semibold text-[#5B5F6B]">Cumulative</span>
+        </div>
+        <p class="body-text mt-3 text-xs">
+          Aggregated across <%= results.length %> evaluated semester examinations.
+        </p>
+      </div>
+      <div class="mt-6 pt-4 border-t border-[#E5E7EB]">
+        <a href="/student/results" class="text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center justify-between group">
+          <span>View Detailed Marksheets</span>
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3. Library Circulation Bento Card (1 Column Wide) -->
+    <div class="card flex flex-col justify-between" style="--i: 4;">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="stat-label text-[#5B5F6B]">Active Loans</span>
+          <div class="w-10 h-10 rounded-[8px] bg-[#FEF6E7] text-[var(--warning)] flex items-center justify-center text-lg border border-[var(--border-subtle)]">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2.5">
+          <span class="metric-number text-[#111318]">
+            <%= stats.issuedBooksCount %>
+          </span>
+          <span class="text-xs font-semibold text-[#5B5F6B]">Books Checked Out</span>
+        </div>
+        <p class="body-text mt-3 text-xs">
+          Currently borrowed course textbooks on your student identity.
+        </p>
+      </div>
+      <div class="mt-6 pt-4 border-t border-[#E5E7EB]">
+        <a href="/student/library" class="text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center justify-between group">
+          <span>Catalog & Returns</span>
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4. Online Assessments Bento Card (2 Columns Wide) -->
+    <div class="md:col-span-2 card flex flex-col justify-between" style="--i: 5;">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="stat-label text-[#5B5F6B]">Online Test Portal</span>
+          <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-lg border border-[var(--border-subtle)]">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-3">
+          <span class="metric-number text-[#111318]">
+            <%= stats.totalQuizzes %>
+          </span>
+          <span class="status-pill badge-accent">
+            <%= stats.availableQuizzesCount %> Pending Tests
+          </span>
+        </div>
+        <p class="body-text mt-3 text-sm">
+          Access timed academic quizzes and conceptual multiple-choice assessments with immediate automated grading.
+        </p>
+      </div>
+      <div class="mt-6 pt-4 border-t border-[#E5E7EB]">
+        <a href="/student/quiz" class="text-xs font-semibold text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] flex items-center justify-between group">
+          <span>Attempt Available Quizzes</span>
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Content Grid (Recent Attendance & Results) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
+    
+    <!-- Left 2 Cols: Recent Attendance & Results -->
+    <div class="lg:col-span-2 space-y-[48px]">
+      
+      <!-- Recent Attendance Activity -->
+      <div class="card" style="--i: 6;">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div class="flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div>
+              <h2 class="section-title">Recent Attendance Records</h2>
+              <p class="text-muted-desc">Latest class sessions recorded by your faculty members</p>
+            </div>
+          </div>
+          <a href="/student/attendance" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1.5 self-start sm:self-center">
+            <span>View Full Record</span>
+            <i class="fa-solid fa-arrow-right text-[11px]"></i>
+          </a>
+        </div>
+
+        <% if (recentAttendance && recentAttendance.length > 0) { %>
+          <div class="divide-y divide-[#E5E7EB]">
+            <% recentAttendance.forEach(att => { %>
+              <div class="py-4 flex items-center justify-between hover:bg-[#F7F7F9]/50 -mx-3 px-3 rounded-[8px] transition-colors">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-8 h-8 rounded-[8px] <%= att.status === 'Present' ? 'bg-[#E8F8EE] text-[var(--success)] border border-[#A7F3D0]' : 'bg-[#FEECEE] text-[var(--danger)] border border-[#FECDD3]' %> flex items-center justify-center text-xs font-bold">
+                    <i class="fa-solid <%= att.status === 'Present' ? 'fa-check' : 'fa-xmark' %>"></i>
+                  </div>
+                  <div>
+                    <h3 class="card-title text-[#111318] text-sm"><%= att.subject %></h3>
+                    <p class="text-xs text-[#5B5F6B] mt-0.5">Session: <%= att.date %></p>
+                  </div>
+                </div>
+                <span class="status-pill text-xs font-medium <%= att.status === 'Present' ? 'badge-success' : 'badge-danger' %>">
+                  <%= att.status %>
+                </span>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="py-12 text-center text-[#8B8F99]">
+            <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+              <i class="fa-solid fa-calendar-xmark"></i>
+            </div>
+            <p class="font-bold text-[#111318] text-sm">No attendance entries recorded yet</p>
+            <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Your professors haven't recorded roll calls for this term yet.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Latest Exam Results Card -->
+      <div class="card" style="--i: 7;">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div class="flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+              <i class="fa-solid fa-square-poll-vertical"></i>
+            </div>
+            <div>
+              <h2 class="section-title">Evaluated Results Overview</h2>
+              <p class="text-muted-desc">Recent semester marks, letter grades, and percentile standing</p>
+            </div>
+          </div>
+          <a href="/student/results" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1.5 self-start sm:self-center">
+            <span>View Scorecard</span>
+            <i class="fa-solid fa-arrow-right text-[11px]"></i>
+          </a>
+        </div>
+
+        <% if (results && results.length > 0) { %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[20px]">
+            <% results.forEach(res => { %>
+              <div class="p-5 rounded-[8px] bg-[#FFFFFF] border border-[#E5E7EB] flex items-center justify-between card-interactive">
+                <div>
+                  <span class="label-caps text-[#8B8F99] block"><%= res.exam_type %></span>
+                  <h3 class="card-title text-[#111318] truncate max-w-[180px] mt-0.5 text-sm"><%= res.subject %></h3>
+                  <p class="text-xs text-[#5B5F6B] mt-1 font-semibold">
+                    Score: <%= res.marks_obtained %> / <%= res.max_marks %> (<%= res.percentage %>%)
+                  </p>
+                </div>
+                <div class="w-11 h-11 rounded-[8px] bg-[#FFFFFF] border border-[#E5E7EB] text-[var(--accent-primary)] font-bold text-base flex items-center justify-center shadow-sm">
+                  <%= res.grade %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="py-12 text-center text-[#8B8F99]">
+            <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+            <p class="font-bold text-[#111318] text-sm">No examination results published yet</p>
+            <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Official marks will appear here once the examination committee verifies and submits your test papers.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Coursework & Assignment Submissions Card -->
+      <% if (typeof recentAssignments !== 'undefined' && recentAssignments.length > 0) { %>
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div class="flex items-start gap-3.5">
+              <div class="w-10 h-10 rounded-[8px] bg-[#E8F8EE] text-[var(--success)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+                <i class="fa-solid fa-file-arrow-up"></i>
+              </div>
+              <div>
+                <h2 class="section-title">Academic Assignments</h2>
+                <p class="text-muted-desc">Course tasks, homework, and faculty evaluations</p>
+              </div>
+            </div>
+            <a href="/student/assignments" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1.5 self-start sm:self-center">
+              <span>All Assignments</span>
+              <i class="fa-solid fa-arrow-right text-[11px]"></i>
+            </a>
+          </div>
+
+          <div class="space-y-3">
+            <% recentAssignments.forEach(asgn => { %>
+              <div class="p-4 rounded-[8px] bg-[#FFFFFF] border border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="status-pill text-[10px] font-bold badge-accent"><%= asgn.subject %></span>
+                    <% if (asgn.submitted_at) { %>
+                      <span class="status-pill text-[10px] font-bold badge-success">✓ Submitted</span>
+                    <% } else { %>
+                      <span class="status-pill text-[10px] font-bold badge-warning">Pending</span>
+                    <% } %>
+                  </div>
+                  <h3 class="text-xs sm:text-sm font-bold text-[#111318]"><%= asgn.title %></h3>
+                  <p class="text-[11px] text-[#8B8F99] mt-0.5">Due: <%= new Date(asgn.due_date).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) %></p>
+                </div>
+                <div>
+                  <% if (asgn.grade) { %>
+                    <span class="status-pill text-xs font-bold badge-success">Grade: <%= asgn.grade %></span>
+                  <% } else { %>
+                    <a href="/student/assignments" class="btn-secondary text-xs py-1.5 px-3">
+                      <span><%= asgn.submitted_at ? 'Review Submission' : 'Submit File' %></span>
+                    </a>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+
+    <!-- Right 1 Col: Borrowed Books & Help FAQ -->
+    <div class="space-y-[48px]">
+      
+      <!-- Currently Borrowed Books -->
+      <div class="card" style="--i: 8;">
+        <div class="flex items-start justify-between gap-3 mb-6">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-[8px] bg-[#FEF6E7] text-[var(--warning)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+              <i class="fa-solid fa-book"></i>
+            </div>
+            <div>
+              <h2 class="section-title">Active Loans</h2>
+              <p class="text-muted-desc">Books checked out on your card</p>
+            </div>
+          </div>
+          <span class="status-pill text-xs font-semibold badge-accent shrink-0">
+            <%= issuedBooks.length %> Active
+          </span>
+        </div>
+
+        <% if (issuedBooks && issuedBooks.length > 0) { %>
+          <div class="space-y-3.5">
+            <% issuedBooks.forEach(b => { %>
+              <div class="p-4 rounded-[8px] border <%= b.isOverdue ? 'border-[var(--danger)] bg-[rgba(255,71,87,0.06)]' : 'border-[#E5E7EB] bg-[#FFFFFF]' %>">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-xs sm:text-sm font-bold text-[#111318] leading-snug"><%= b.title %></h3>
+                  <% if (b.isOverdue) { %>
+                    <span class="status-pill text-[10px] font-bold badge-danger shrink-0">
+                      OVERDUE
+                    </span>
+                  <% } else { %>
+                    <span class="status-pill text-[10px] font-semibold badge-success shrink-0">
+                      Active
+                    </span>
+                  <% } %>
+                </div>
+                <p class="text-xs text-[#5B5F6B] mt-1">Author: <%= b.author %></p>
+                <div class="mt-3 pt-2.5 border-t border-[#E5E7EB] flex items-center justify-between text-xs">
+                  <span class="text-[#8B8F99]">Due Date:</span>
+                  <span class="font-bold <%= b.isOverdue ? 'text-[var(--danger)]' : 'text-[#111318]' %>">
+                    <%= b.due_date %>
+                  </span>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="py-10 text-center text-[#8B8F99]">
+            <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <p class="font-bold text-[#111318] text-sm">No borrowed books</p>
+            <p class="text-xs text-[#5B5F6B] max-w-xs mx-auto mt-1">You have returned all library books or haven't checked out any titles yet.</p>
+            <a href="/student/library" class="btn-secondary mt-4 text-xs font-semibold">
+              <span>Browse Catalog</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Quick Guidance FAQ Widget Card -->
+      <div class="card bg-gradient-to-br from-[#FFFFFF] to-[#F7F7F9]" style="--i: 9;">
+        <div class="flex items-center gap-3.5 mb-3.5">
+          <div class="w-10 h-10 rounded-[8px] bg-[var(--accent-primary)] text-white flex items-center justify-center text-base shadow-sm">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <div>
+            <h2 class="card-title text-[#111318]">Have Questions?</h2>
+            <p class="text-xs text-[#5B5F6B] font-medium">Instant student policy support</p>
+          </div>
+        </div>
+        <p class="body-text text-sm leading-relaxed mb-5">
+          Click the floating assistant in the bottom-right corner to instantly query attendance policies, quiz instructions, or contact details.
+        </p>
+        <button 
+          type="button" 
+          onclick="document.getElementById('chatbot-toggle-btn').click()"
+          class="btn-primary w-full text-xs font-bold"
+        >
+          <i class="fa-solid fa-robot"></i>
+          <span>Open Campus Assistant</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

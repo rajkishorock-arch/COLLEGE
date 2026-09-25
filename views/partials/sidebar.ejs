@@ -1,0 +1,205 @@
+<!-- Sidebar Component -->
+<aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-[#FAFAFB] text-[#111318] flex flex-col transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 border-r border-[#E5E7EB]">
+  
+  <!-- Brand Header -->
+  <div class="h-16 flex items-center justify-between px-6 bg-[#FAFAFB] border-b border-[#E5E7EB]">
+    <a href="<%= user && user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard' %>" class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-[8px] bg-[var(--accent-primary)] flex items-center justify-center text-white shadow-md shadow-[var(--accent-glow)] font-bold">
+        <i class="fa-solid fa-graduation-cap text-lg"></i>
+      </div>
+      <div>
+        <span class="font-bold text-base tracking-tight text-[#111318] block leading-tight font-['Space_Grotesk']">CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span></span>
+        <span class="text-[10px] uppercase tracking-wider text-[#5B5F6B] block font-medium">College Platform</span>
+      </div>
+    </a>
+    <button id="close-sidebar-btn" class="md:hidden text-[#5B5F6B] hover:text-[#111318] p-1 rounded-lg">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Links with Sliding Active Indicator -->
+  <div class="sidebar-nav-container relative flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    
+    <!-- Sliding Active Indicator -->
+    <div id="nav-active-indicator" style="opacity: 0;">
+      <div class="indicator-bar"></div>
+      <div class="indicator-bg"></div>
+    </div>
+
+    <% if (user && user.role === 'student') { %>
+      <div class="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
+        Core Academics
+      </div>
+
+      <a href="/student/dashboard" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'dashboard') ? 'active' : '' %>">
+        <i class="fa-solid fa-gauge-high w-5 text-center text-sm"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="/student/checkin" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'checkin') ? 'active' : '' %>">
+        <i class="fa-solid fa-qrcode w-5 text-center text-sm text-[var(--accent-primary)]"></i>
+        <span>Self Check-In</span>
+      </a>
+
+      <a href="/student/timetable" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'timetable') ? 'active' : '' %>">
+        <i class="fa-solid fa-calendar-days w-5 text-center text-sm"></i>
+        <span>Timetable</span>
+      </a>
+
+      <a href="/student/announcements" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'announcements') ? 'active' : '' %>">
+        <i class="fa-solid fa-bullhorn w-5 text-center text-sm"></i>
+        <span>Notice Board</span>
+      </a>
+
+      <a href="/student/assignments" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'assignments') ? 'active' : '' %>">
+        <i class="fa-solid fa-file-arrow-up w-5 text-center text-sm"></i>
+        <span>Assignments</span>
+      </a>
+
+      <div class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
+        Records & Services
+      </div>
+
+      <a href="/student/fees" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'fees') ? 'active' : '' %>">
+        <i class="fa-solid fa-receipt w-5 text-center text-sm"></i>
+        <span>Fee Status</span>
+      </a>
+
+      <a href="/student/attendance" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'attendance') ? 'active' : '' %>">
+        <i class="fa-solid fa-clipboard-user w-5 text-center text-sm"></i>
+        <span>Attendance Record</span>
+      </a>
+
+      <a href="/student/results" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'results') ? 'active' : '' %>">
+        <i class="fa-solid fa-chart-simple w-5 text-center text-sm"></i>
+        <span>Results & CGPA</span>
+      </a>
+
+      <a href="/student/library" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'library') ? 'active' : '' %>">
+        <i class="fa-solid fa-book-bookmark w-5 text-center text-sm"></i>
+        <span>Library</span>
+      </a>
+
+      <a href="/student/quiz" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'quiz') ? 'active' : '' %>">
+        <i class="fa-solid fa-pen-to-square w-5 text-center text-sm"></i>
+        <span>Quizzes & Tests</span>
+      </a>
+
+      <a href="/student/profile" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'profile') ? 'active' : '' %>">
+        <i class="fa-solid fa-user-gear w-5 text-center text-sm"></i>
+        <span>My Profile</span>
+      </a>
+
+    <% } else if (user && user.role === 'admin') { %>
+      
+      <div class="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
+        Institutional Management
+      </div>
+
+      <a href="/admin/dashboard" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'dashboard') ? 'active' : '' %>">
+        <i class="fa-solid fa-chart-pie w-5 text-center text-sm"></i>
+        <span>Overview</span>
+      </a>
+
+      <a href="/admin/students" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'students') ? 'active' : '' %>">
+        <i class="fa-solid fa-user-graduate w-5 text-center text-sm"></i>
+        <span>Students</span>
+      </a>
+
+      <a href="/admin/attendance" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'attendance') ? 'active' : '' %>">
+        <i class="fa-solid fa-calendar-check w-5 text-center text-sm"></i>
+        <span>Attendance & Sessions</span>
+      </a>
+
+      <a href="/admin/timetable" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'timetable') ? 'active' : '' %>">
+        <i class="fa-solid fa-calendar-days w-5 text-center text-sm"></i>
+        <span>Timetable</span>
+      </a>
+
+      <a href="/admin/announcements" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'announcements') ? 'active' : '' %>">
+        <i class="fa-solid fa-bullhorn w-5 text-center text-sm"></i>
+        <span>Notice Board</span>
+      </a>
+
+      <a href="/admin/assignments" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'assignments') ? 'active' : '' %>">
+        <i class="fa-solid fa-file-circle-check w-5 text-center text-sm"></i>
+        <span>Assignments</span>
+      </a>
+
+      <div class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
+        Finance & Operations
+      </div>
+
+      <a href="/admin/fees" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'fees') ? 'active' : '' %>">
+        <i class="fa-solid fa-receipt w-5 text-center text-sm"></i>
+        <span>Fee Management</span>
+      </a>
+
+      <a href="/admin/results" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'results') ? 'active' : '' %>">
+        <i class="fa-solid fa-square-poll-vertical w-5 text-center text-sm"></i>
+        <span>Results & CGPA</span>
+      </a>
+
+      <a href="/admin/library" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'library') ? 'active' : '' %>">
+        <i class="fa-solid fa-book-open-reader w-5 text-center text-sm"></i>
+        <span>Library Catalog</span>
+      </a>
+
+      <a href="/admin/quiz" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'quiz') ? 'active' : '' %>">
+        <i class="fa-solid fa-file-circle-question w-5 text-center text-sm"></i>
+        <span>Quizzes</span>
+      </a>
+
+      <a href="/admin/audit-log" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'audit-log') ? 'active' : '' %>">
+        <i class="fa-solid fa-clock-rotate-left w-5 text-center text-sm"></i>
+        <span>Audit History</span>
+      </a>
+
+      <a href="/admin/profile" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'profile') ? 'active' : '' %>">
+        <i class="fa-solid fa-user-gear w-5 text-center text-sm"></i>
+        <span>Admin Profile</span>
+      </a>
+
+    <% } %>
+
+  </div>
+
+  <!-- User Profile Section in Sidebar -->
+  <% if (user) { %>
+    <div class="p-3 border-t border-[#E5E7EB] bg-[#FAFAFB]">
+      <a href="/<%= user.role %>/profile" class="flex items-center gap-3 p-1.5 rounded-[8px] hover:bg-[#F7F7F9] transition-colors mb-2.5">
+        <% if (user.profile_photo) { %>
+          <img 
+            src="<%= user.profile_photo %>" 
+            alt="<%= user.name %>" 
+            class="w-9 h-9 rounded-[8px] object-cover border border-[#E5E7EB] shrink-0"
+          />
+        <% } else { %>
+          <div class="w-9 h-9 rounded-[8px] bg-[#F7F7F9] border border-[#E5E7EB] flex items-center justify-center text-[var(--accent-primary)] font-bold text-xs shrink-0">
+            <%= user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
+          </div>
+        <% } %>
+        <div class="overflow-hidden flex-1">
+          <p class="text-xs font-semibold text-[#111318] truncate"><%= user.name %></p>
+          <p class="text-[11px] text-[#5B5F6B] truncate">
+            <% if (user.role === 'student' && user.roll_no) { %>
+              <%= user.roll_no %>
+            <% } else { %>
+              <%= user.email %>
+            <% } %>
+          </p>
+        </div>
+        <i class="fa-solid fa-chevron-right text-[10px] text-[#8B8F99]"></i>
+      </a>
+
+      <a href="/logout" class="flex items-center justify-center gap-2 w-full py-1.5 px-3 text-[11px] font-semibold text-[#E5384B] hover:text-[#111318] hover:bg-[#FEECEE] rounded-[6px] transition-colors border border-[rgba(255,71,87,0.25)]">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>Sign Out</span>
+      </a>
+    </div>
+  <% } %>
+
+</aside>
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="hidden fixed inset-0 z-30 bg-black/70 backdrop-blur-sm md:hidden"></div>

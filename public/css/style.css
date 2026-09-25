@@ -1,0 +1,699 @@
+/* ==========================================================================
+   CampusPulse - EXACT Design System Spec (Clean Fully White / Light Theme)
+   Fonts: Space Grotesk (Headings/Stats) + Inter (Body/UI)
+   Theme: Pure White / Light SaaS Theme
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* --- 1. Clean Light Color Tokens & Variables --- */
+:root {
+  --bg-primary: #FFFFFF;         /* main background — pure white */
+  --bg-surface: #FFFFFF;         /* card background — white, differentiated by border/shadow instead of color */
+  --bg-surface-hover: #F7F7F9;   /* very light gray on hover */
+  --border-subtle: #E5E7EB;      /* light neutral gray border */
+  --text-primary: #111318;       /* near-black text for strong readability on white */
+  --text-secondary: #5B5F6B;     /* muted gray for secondary text */
+  --text-muted: #8B8F99;
+  --accent-primary: #6C5CE7;     /* keep the same purple accent — works great on white too */
+  --accent-primary-hover: #5B4BD6;
+  --accent-glow: rgba(108, 92, 231, 0.18); /* lighter glow value for light backgrounds */
+  --success: #1E9E57;
+  --danger: #E5384B;
+  --warning: #E08E00;
+
+  /* Exact Font Families */
+  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Standard Snappy Easing */
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Base Body Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==========================================================================
+   2. EXACT TYPOGRAPHY HIERARCHY
+   ========================================================================== */
+
+/* Page Titles: Space Grotesk, 700 weight, 36px, letter-spacing -0.02em */
+.page-title, h1.page-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* Card titles / section headers: Space Grotesk, 600 weight, 18-20px */
+.section-title, .card-title, h2.section-title, h3.card-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* Big stat numbers (attendance %, scores, counts on dashboard cards): Space Grotesk, 700 weight, 44-56px */
+.metric-number, .stat-hero-number {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(44px, 4.5vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+/* Body text: Inter, 400 weight, 15-16px, line-height 1.6 */
+.body-text, p {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Labels/badges/small text: Inter, 500 weight, 12-13px, letter-spacing 0.03em, uppercase */
+.label-caps, .badge, .status-pill, .stat-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Secondary supporting text */
+.text-muted-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   3. EXACT SPACING, RADIUS, CARDS & ELEVATIONS
+   ========================================================================== */
+
+/* Standard Card: 12px radius, 28px padding, --bg-surface, --border-subtle, soft visible shadow on white */
+.card, .bento-card, .content-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 250ms var(--ease-snappy);
+}
+
+/* Card Hover: translateY(-4px), soft diffused elevation shadow */
+.card:hover, .bento-card:hover, .card-interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: #D1D5DB;
+}
+
+/* Full Pill Badges */
+.badge, .status-pill {
+  border-radius: 999px;
+  padding: 4px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* Status variants: light tinted background + darker text of same hue */
+.badge-success {
+  background: #E8F8EE;
+  color: #1E9E57;
+  border: 1px solid rgba(30, 158, 87, 0.2);
+}
+.badge-danger {
+  background: #FEECEE;
+  color: #E5384B;
+  border: 1px solid rgba(229, 56, 75, 0.2);
+}
+.badge-warning {
+  background: #FEF6E7;
+  color: #E08E00;
+  border: 1px solid rgba(224, 142, 0, 0.2);
+}
+.badge-accent {
+  background: #F0EDFD;
+  color: #6C5CE7;
+  border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+/* ==========================================================================
+   4. EXACT BUTTONS & INPUTS
+   ========================================================================== */
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: #FFFFFF;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 250ms var(--ease-snappy);
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+/* Secondary / Outline Button */
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 250ms var(--ease-snappy);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: #D1D5DB;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+/* Input Fields: 8px radius, clean white, subtle glow on focus */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 11px 14px;
+  transition: all 200ms var(--ease-snappy);
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Input with Icon Component */
+.input-icon-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon-wrapper .input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  z-index: 2;
+  transition: color 200ms var(--ease-snappy);
+}
+
+.input-icon-wrapper input,
+.input-icon-wrapper input[type="text"],
+.input-icon-wrapper input[type="email"],
+.input-icon-wrapper input[type="password"],
+input.has-left-icon {
+  padding-left: 48px !important;
+}
+
+.input-icon-wrapper:focus-within .input-icon {
+  color: var(--accent-primary);
+}
+
+/* Form Invalid Submit Horizontal Shake */
+@keyframes formShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: formShake 400ms ease-in-out;
+}
+
+/* ==========================================================================
+   5. PAGE LOAD STAGGERED FADE-UP ANIMATION (Duration: 500ms)
+   ========================================================================== */
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-slide-up, .card, .bento-card, .page-section-stagger {
+  animation: fadeSlideUp 500ms var(--ease-snappy) both;
+  animation-delay: calc(var(--i, 1) * 60ms);
+}
+
+/* CSS fallbacks for staggered children */
+.stagger-1 { --i: 1; }
+.stagger-2 { --i: 2; }
+.stagger-3 { --i: 3; }
+.stagger-4 { --i: 4; }
+.stagger-5 { --i: 5; }
+.stagger-6 { --i: 6; }
+.stagger-7 { --i: 7; }
+.stagger-8 { --i: 8; }
+
+/* ==========================================================================
+   6. SIDEBAR NAV LINKS & SLIDING ACTIVE INDICATOR
+   ========================================================================== */
+
+#app-sidebar {
+  background-color: #FAFAFB;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.sidebar-nav-container {
+  position: relative;
+}
+
+/* Sliding active bar/pill inside sidebar */
+#nav-active-indicator {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 300ms var(--ease-snappy), height 300ms var(--ease-snappy), opacity 200ms ease;
+}
+
+#nav-active-indicator .indicator-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--accent-primary);
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+#nav-active-indicator .indicator-bg {
+  width: 100%;
+  height: 100%;
+  background: rgba(108, 92, 231, 0.08);
+  border-radius: 8px;
+}
+
+/* Nav Link Item */
+.sidebar-link {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 200ms ease, background-color 200ms ease;
+}
+
+.sidebar-link:hover {
+  color: var(--text-primary);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-link.active {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   7. TABLE ROWS & ATTENDANCE PULSE
+   ========================================================================== */
+
+.table-comfortable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-comfortable th {
+  background-color: #FAFAFB;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.table-comfortable td {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.table-comfortable tr:last-child td {
+  border-bottom: none;
+}
+
+/* Attendance Row: smooth 300ms transition and 200ms scale-pulse */
+.attendance-row {
+  transition: background-color 300ms ease, transform 200ms var(--ease-snappy);
+}
+
+.attendance-row.row-present {
+  background-color: #E8F8EE !important;
+}
+
+.attendance-row.row-absent {
+  background-color: #FEECEE !important;
+}
+
+@keyframes rowScalePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+.row-scale-pulse {
+  animation: rowScalePulse 200ms var(--ease-snappy);
+}
+
+/* ==========================================================================
+   8. MODALS & DIALOGS
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 19, 24, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  padding: 28px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 250ms var(--ease-snappy), opacity 250ms var(--ease-snappy);
+}
+
+.modal-backdrop.active .modal-panel {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-backdrop.closing {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.modal-backdrop.closing .modal-panel {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+/* ==========================================================================
+   9. QUIZ OPTION CARD & CHECKMARK BOUNCE
+   ========================================================================== */
+
+.quiz-option-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 250ms var(--ease-snappy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.quiz-option-card:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: #CBD5E1;
+}
+
+.quiz-option-card.selected {
+  border-color: var(--accent-primary) !important;
+  background-color: #F0EDFD !important;
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.quiz-option-card .option-check-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 200ms var(--ease-bounce), opacity 200ms ease;
+}
+
+.quiz-option-card.selected .option-check-icon {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   10. TOAST NOTIFICATIONS (Overshoot Bounce + Auto-Dismiss)
+   ========================================================================== */
+
+@keyframes toastSlideBounce {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  width: 90%;
+  max-width: 440px;
+  pointer-events: none;
+}
+
+.toast-notification {
+  pointer-events: auto;
+  border-radius: 12px;
+  padding: 16px 20px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
+  animation: toastSlideBounce 350ms var(--ease-bounce) both;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.toast-notification.dismissing {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* ==========================================================================
+   11. CHATBOT WIDGET (Origin Bottom-Right)
+   ========================================================================== */
+
+#chatbot-window {
+  transform-origin: bottom right;
+  transition: transform 250ms var(--ease-snappy), opacity 250ms ease;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.14);
+}
+
+#chatbot-window.hidden {
+  display: none !important;
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+#chatbot-window:not(.hidden) {
+  display: flex !important;
+  transform: scale(1);
+  opacity: 1;
+}
+
+.chat-message-in {
+  animation: messageSlideIn 200ms var(--ease-snappy) both;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: typingBounce 1.3s infinite ease-in-out both;
+}
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   12. BENTO GRID LAYOUT SPEC
+   ========================================================================== */
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bento-card-featured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bento-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .bento-card-featured-2 {
+    grid-column: span 2;
+  }
+}

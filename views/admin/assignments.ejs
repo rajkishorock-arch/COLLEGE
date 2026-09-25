@@ -1,0 +1,270 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-file-pen"></i>
+          <span>Coursework & Assessments</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Assignment Management</h1>
+        <p class="body-text mt-1.5 text-sm">Create course coursework briefs, download student submissions, evaluate deliverables, and record grades with feedback</p>
+      </div>
+
+      <button type="button" onclick="openModal('create-assignment-modal')" class="btn-primary py-2.5 px-5 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i>
+        <span>Create New Assignment</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bento Grid: Assignments Roster (Col 1) + Selected Assignment Submissions (Col 2-3) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
+
+    <!-- Assignment List (1 Col) -->
+    <div class="space-y-4" style="--i: 2;">
+      <h2 class="section-title text-base flex items-center gap-2">
+        <i class="fa-solid fa-folder-open text-[var(--accent-primary)]"></i>
+        <span>Active Assignments (<%= assignments.length %>)</span>
+      </h2>
+
+      <% if (assignments && assignments.length > 0) { %>
+        <% assignments.forEach(asg => { %>
+          <div class="card p-5 <%= (currentAssignment && currentAssignment.id === asg.id) ? 'border-[var(--accent-primary)] shadow-md shadow-[var(--accent-glow)]' : '' %>">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="status-pill text-[10px] badge-accent"><%= asg.subject %></span>
+              <form action="/admin/assignments/delete/<%= asg.id %>" method="POST" onsubmit="return confirm('Delete this assignment and all submissions?');">
+                <button type="submit" class="text-[#8B8F99] hover:text-[var(--danger)] text-xs">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </form>
+            </div>
+
+            <h3 class="card-title text-[#111318] text-sm font-bold mb-1">
+              <a href="/admin/assignments?id Colonial=<%= asg.id %>" class="hover:text-[var(--accent-primary)] transition-colors">
+                <%= asg.title %>
+              </a>
+            </h3>
+
+            <p class="text-[11px] text-[#5B5F6B] line-clamp-2 mb-3">
+              <%= asg.description || 'No detailed instructions provided.' %>
+            </p>
+
+            <div class="flex items-center justify-between pt-3 border-t border-[#E5E7EB] text-[11px]">
+              <span class="text-[#8B8F99]">Due: <%= asg.due_date.substring(0, 10) %></span>
+              <a href="/admin/assignments?id=<%= asg.id %>" class="text-[var(--accent-primary)] font-semibold hover:underline">
+                <%= asg.submission_count %> Submissions &rarr;
+              </a>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="card py-8 text-center text-[#8B8F99]">
+          <p class="font-bold text-[#111318] text-xs">No Assignments Created</p>
+          <p class="text-[11px] text-[#5B5F6B] mt-1">Click Create New Assignment above.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Submissions Viewer (2 Cols) -->
+    <div class="lg:col-span-2 card p-0 overflow-hidden" style="--i: 3;">
+      <% if (currentAssignment) { %>
+        <div class="p-[28px] border-b border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="status-pill text-[10px] badge-accent"><%= currentAssignment.subject %></span>
+              <span class="text-xs text-[#5B5F6B]">Due: <%= currentAssignment.due_date %></span>
+            </div>
+            <h2 class="section-title text-lg"><%= currentAssignment.title %></h2>
+            <p class="text-xs text-[#5B5F6B] mt-1"><%= currentAssignment.description %></p>
+          </div>
+
+          <div class="text-right shrink-0">
+            <span class="status-pill text-xs font-semibold badge-success">
+              <%= submissions.length %> Uploads Received
+            </span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="table-comfortable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Submitted</th>
+                <th>File Asset</th>
+                <th class="text-center">Grade</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#E5E7EB]">
+              <% if (submissions && submissions.length > 0) { %>
+                <% submissions.forEach(sub => { %>
+                  <tr class="hover:bg-[#F7F7F9]/50 transition-colors">
+                    <td>
+                      <div class="font-semibold text-[#111318] text-xs"><%= sub.student_name %></div>
+                      <div class="text-[11px] text-[#8B8F99]"><%= sub.roll_no %> • <%= sub.course %></div>
+                    </td>
+                    <td class="text-xs whitespace-nowrap">
+                      <div><%= sub.submitted_at ? sub.submitted_at.substring(0, 16) : '—' %></div>
+                      <% if (sub.is_late) { %>
+                        <span class="status-pill text-[9px] badge-danger mt-0.5">LATE SUBMISSION</span>
+                      <% } else { %>
+                        <span class="status-pill text-[9px] badge-success mt-0.5">ON TIME</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (sub.file_path) { %>
+                        <a href="<%= sub.file_path %>" target="_blank" download class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-[#FFFFFF] border border-[#E5E7EB] text-xs font-medium text-[var(--accent-primary)] hover:border-[var(--accent-primary)]">
+                          <i class="fa-solid fa-paperclip text-[10px]"></i>
+                          <span>Download Deliverable</span>
+                        </a>
+                      <% } else { %>
+                        <span class="text-xs text-[#8B8F99]">No file attached</span>
+                      <% } %>
+                    </td>
+                    <td class="text-center">
+                      <% if (sub.grade) { %>
+                        <span class="status-pill text-xs font-bold font-['Space_Grotesk'] badge-success">
+                          <%= sub.grade %>
+                        </span>
+                      <% } else { %>
+                        <span class="status-pill text-[10px] badge-warning">
+                          Pending Review
+                        </span>
+                      <% } %>
+                    </td>
+                    <td class="text-right">
+                      <button 
+                        type="button" 
+                        onclick="openGradeModal('<%= sub.id %>', '<%= sub.student_name %>', '<%= sub.grade || '' %>', '<%= (sub.feedback || '').replace(/'/g, '\\\'') %>')"
+                        class="btn-secondary py-1.5 px-3 text-xs font-semibold"
+                      >
+                        <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                        <span><%= sub.grade ? 'Update Grade' : 'Grade Now' %></span>
+                      </button>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="py-12 text-center text-[#8B8F99]">
+                    <i class="fa-solid fa-inbox text-2xl mb-2"></i>
+                    <p class="font-bold text-[#111318] text-xs">No Submissions Yet</p>
+                    <p class="text-[11px] text-[#5B5F6B] max-w-xs mx-auto mt-1">Students enrolled in <%= currentAssignment.subject %> haven't uploaded work for this task yet.</p>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="p-16 text-center text-[#8B8F99]">
+          <p class="font-bold text-[#111318] text-base">Select an assignment on the left</p>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Modal: Create Assignment -->
+<div id="create-assignment-modal" class="modal-backdrop">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between pb-4 border-b border-[#E5E7EB]">
+      <h3 class="card-title text-[#111318] flex items-center gap-2">
+        <i class="fa-solid fa-file-pen text-[var(--accent-primary)]"></i>
+        <span>Create Coursework Assignment</span>
+      </h3>
+      <button type="button" onclick="closeModal('create-assignment-modal')" class="text-[#5B5F6B] hover:text-[#111318] text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form action="/admin/assignments/create" method="POST" class="space-y-4 pt-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Assignment Title *</label>
+        <input type="text" name="title" required placeholder="e.g. Balanced Search Trees Implementation" class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Subject *</label>
+          <select name="subject" required class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]">
+            <% subjects.forEach(s => { %>
+              <option value="<%= s %>"><%= s %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Due Date & Time *</label>
+          <input type="datetime-local" name="due_date" required class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Assignment Brief & Instructions</label>
+        <textarea name="description" rows="4" placeholder="Detail submission requirements, format specifications, and grading rubric..." class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#E5E7EB]">
+        <button type="button" onclick="closeModal('create-assignment-modal')" class="btn-secondary py-2 px-4 text-xs font-medium">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary py-2 px-5 text-xs font-semibold">
+          Post Assignment Live
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Grade Submission -->
+<div id="grade-modal" class="modal-backdrop">
+  <div class="modal-panel">
+    <div class="flex items-center justify-between pb-4 border-b border-[#E5E7EB]">
+      <h3 class="card-title text-[#111318] flex items-center gap-2">
+        <i class="fa-solid fa-star text-[var(--warning)]"></i>
+        <span>Grade Submission: <span id="grade-student-name"></span></span>
+      </h3>
+      <button type="button" onclick="closeModal('grade-modal')" class="text-[#5B5F6B] hover:text-[#111318] text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="grade-form" action="" method="POST" class="space-y-4 pt-4">
+      <input type="hidden" name="assignment_id" value="<%= currentAssignment ? currentAssignment.id : '' %>">
+      
+      <div>
+        <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Grade / Score *</label>
+        <input type="text" id="grade-input" name="grade" required placeholder="e.g. A+, 95/100, Excellent" class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">Evaluation Feedback & Comments</label>
+        <textarea id="feedback-input" name="feedback" rows="3" placeholder="Provide constructive remarks for the student..." class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318]"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#E5E7EB]">
+        <button type="button" onclick="closeModal('grade-modal')" class="btn-secondary py-2 px-4 text-xs font-medium">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary py-2 px-5 text-xs font-semibold">
+          Save Grade & Notify Student
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openGradeModal(submissionId, studentName, grade, feedback) {
+    document.getElementById('grade-form').action = '/admin/assignments/grade/' + submissionId;
+    document.getElementById('grade-student-name').innerText = studentName;
+    document.getElementById('grade-input').value = grade || '';
+    document.getElementById('feedback-input').value = feedback || '';
+    openModal('grade-modal');
+  }
+</script>

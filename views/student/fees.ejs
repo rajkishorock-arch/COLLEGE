@@ -1,0 +1,122 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>Financial Portal</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Tuition & Fee Records</h1>
+        <p class="body-text mt-1.5 text-sm">Review semester fee statements, pending departmental balance, and process online demo tuition settlements</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <% if (totalDue > 0) { %>
+          <span class="status-pill text-xs font-semibold badge-warning">
+            Pending Dues: ₹<%= totalDue.toLocaleString('en-IN') %>
+          </span>
+        <% } else { %>
+          <span class="status-pill text-xs font-semibold badge-success">
+            All Dues Cleared ✓
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 mt-6 border-t border-[#E5E7EB]">
+      <div class="p-4 rounded-[10px] bg-[#FFFFFF] border border-[#E5E7EB]">
+        <div class="text-[11px] font-semibold uppercase text-[#5B5F6B]">Outstanding Balance Due</div>
+        <div class="text-2xl font-bold <%= totalDue > 0 ? 'text-[var(--danger)]' : 'text-[#111318]' %> font-['Space_Grotesk'] mt-1">
+          ₹<%= totalDue.toLocaleString('en-IN') %>
+        </div>
+      </div>
+      <div class="p-4 rounded-[10px] bg-[#FFFFFF] border border-[#E5E7EB]">
+        <div class="text-[11px] font-semibold uppercase text-[var(--success)]">Total Tuition Settled</div>
+        <div class="text-2xl font-bold text-[var(--success)] font-['Space_Grotesk'] mt-1">
+          ₹<%= totalPaid.toLocaleString('en-IN') %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="card p-0 overflow-hidden" style="--i: 2;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Semester Invoices Ledger</h2>
+          <p class="text-muted-desc">Official billing records and payment confirmation receipts</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Academic Term</th>
+            <th>Amount Due</th>
+            <th>Amount Paid</th>
+            <th>Deadline Due Date</th>
+            <th class="text-center">Status</th>
+            <th class="text-right">Action / Receipt</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (fees && fees.length > 0) { %>
+            <% fees.forEach(f => { %>
+              <tr class="hover:bg-[#F7F7F9]/50 transition-colors">
+                <td class="font-bold text-[#111318] text-xs font-['Space_Grotesk']">
+                  <%= f.term %>
+                </td>
+                <td class="font-bold text-[#111318] text-xs font-['Space_Grotesk']">
+                  ₹<%= f.amount_due.toLocaleString('en-IN') %>
+                </td>
+                <td class="font-bold text-[var(--success)] text-xs font-['Space_Grotesk']">
+                  ₹<%= f.amount_paid.toLocaleString('en-IN') %>
+                </td>
+                <td class="text-xs text-[#5B5F6B]">
+                  <%= f.due_date || '—' %>
+                </td>
+                <td class="text-center">
+                  <span class="status-pill text-xs font-semibold <%= f.status === 'Paid' ? 'badge-success' : 'badge-danger' %>">
+                    <%= f.status %>
+                  </span>
+                </td>
+                <td class="text-right">
+                  <% if (f.status !== 'Paid') { %>
+                    <form action="/student/fees/pay/<%= f.id %>" method="POST" class="inline">
+                      <button type="submit" class="btn-primary py-1.5 px-4 text-xs font-semibold shadow-md shadow-[var(--accent-glow)]">
+                        <i class="fa-solid fa-bolt text-[10px] mr-1"></i>
+                        <span>Pay Online (Demo)</span>
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-xs text-[var(--success)] font-medium inline-flex items-center gap-1">
+                      <i class="fa-solid fa-circle-check text-[11px]"></i>
+                      <span>Receipt Cleared</span>
+                    </span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="py-12 text-center text-[#8B8F99]">
+                <p class="font-bold text-[#111318] text-sm">No Invoices on File</p>
+                <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">There are no outstanding tuition fees issued for your student account.</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

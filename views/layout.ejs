@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'College Management Platform' %></title>
+  
+  <!-- Exact Google Fonts Pairing: Space Grotesk + Inter ONLY -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgPrimary: '#FFFFFF',
+            bgSurface: '#FFFFFF',
+            bgSurfaceHover: '#F7F7F9',
+            borderSubtle: '#E5E7EB',
+            textPrimary: '#111318',
+            textSecondary: '#5B5F6B',
+            textMuted: '#8B8F99',
+            accentPrimary: '#6C5CE7',
+            accentPrimaryHover: '#5B4BD6',
+            success: '#1E9E57',
+            danger: '#E5384B',
+            warning: '#E08E00',
+          },
+          fontFamily: {
+            heading: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js CDN for results & analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Stylesheets (Exact Design Tokens & Animations) -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#FFFFFF] text-[#111318] min-h-screen flex flex-col antialiased selection:bg-[#6C5CE7] selection:text-white">
+
+  <% if (typeof user !== 'undefined' && user) { %>
+    <!-- Authenticated Layout with Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
+      <!-- Top Navigation -->
+      <%- include('partials/topbar') %>
+
+      <!-- Main Content Area: Centered 1280px max-width, 24px side padding -->
+      <main class="flex-1 px-6 py-8 max-w-[1280px] w-full mx-auto">
+        <%- include('partials/alerts') %>
+        <%- body %>
+      </main>
+
+      <!-- Footer -->
+      <footer class="py-5 px-6 border-t border-[#E5E7EB] bg-[#FFFFFF] text-center text-xs text-[#8B8F99]">
+        <p>&copy; <%= new Date().getFullYear() %> College Management Platform • Engineered with Node.js, Express & SQLite</p>
+      </footer>
+    </div>
+
+    <!-- Chatbot widget for students -->
+    <% if (user.role === 'student') { %>
+      <%- include('partials/chatbot') %>
+    <% } %>
+
+  <% } else { %>
+    <!-- Unauthenticated Layout (Fallback if layout is used) -->
+    <main class="flex-1 flex flex-col justify-center items-center px-6 py-8 max-w-[1280px] w-full mx-auto">
+      <%- include('partials/alerts') %>
+      <%- body %>
+    </main>
+  <% } %>
+
+  <!-- Application Logic -->
+  <script src="/js/main.js"></script>
+</body>
+</html>

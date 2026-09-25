@@ -1,0 +1,126 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-file-arrow-up"></i>
+          <span>Coursework Submissions</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Assignments & Projects</h1>
+        <p class="body-text mt-1.5 text-sm">Review published course assignments, upload submission files before due dates, and track faculty grades and evaluations</p>
+      </div>
+
+      <span class="status-pill text-xs font-semibold badge-accent">
+        <%= assignments.length %> Coursework Tasks
+      </span>
+    </div>
+  </div>
+
+  <!-- Assignment Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-[20px]">
+    <% if (assignments && assignments.length > 0) { %>
+      <% assignments.forEach((asg, idx) => { %>
+        <div class="card flex flex-col justify-between" style="--i: <%= idx + 2 %>;">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <span class="status-pill text-xs font-semibold badge-accent"><%= asg.subject %></span>
+              <div class="text-right">
+                <% if (asg.isSubmitted) { %>
+                  <% if (asg.isLate) { %>
+                    <span class="status-pill text-[10px] badge-danger">SUBMITTED LATE</span>
+                  <% } else { %>
+                    <span class="status-pill text-[10px] badge-success">SUBMITTED ON TIME</span>
+                  <% } %>
+                <% } else if (asg.is_past_due) { %>
+                  <span class="status-pill text-[10px] badge-danger">OVERDUE</span>
+                <% } else { %>
+                  <span class="status-pill text-[10px] badge-warning">PENDING SUBMISSION</span>
+                <% } %>
+              </div>
+            </div>
+
+            <h3 class="card-title text-[#111318] text-lg font-bold mb-2">
+              <%= asg.title %>
+            </h3>
+
+            <p class="body-text text-xs text-[#5B5F6B] leading-relaxed mb-4">
+              <%= asg.description || 'Complete the assignment deliverables according to classroom instructions.' %>
+            </p>
+
+            <div class="p-3.5 rounded-[8px] bg-[#FFFFFF] border border-[#E5E7EB] text-xs space-y-1 mb-4">
+              <div class="flex items-center justify-between text-[#5B5F6B]">
+                <span>Deadline Due Date:</span>
+                <span class="font-mono text-[#111318] font-medium"><%= asg.due_date %></span>
+              </div>
+              <% if (asg.isSubmitted) { %>
+                <div class="flex items-center justify-between text-[#5B5F6B] pt-1 border-t border-[#E5E7EB]">
+                  <span>Your Upload Time:</span>
+                  <span class="font-mono text-[#111318]"><%= asg.submitted_at ? asg.submitted_at.substring(0, 16) : '—' %></span>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Grade & Feedback Display if graded -->
+            <% if (asg.grade) { %>
+              <div class="p-4 rounded-[10px] bg-[rgba(46,213,115,0.08)] border border-[rgba(46,213,115,0.25)] mb-4">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-semibold text-[var(--success)]">Faculty Grade Awarded</span>
+                  <span class="text-base font-bold font-['Space_Grotesk'] text-[#111318] px-2.5 py-0.5 rounded-[6px] bg-[rgba(46,213,115,0.2)]">
+                    <%= asg.grade %>
+                  </span>
+                </div>
+                <% if (asg.feedback) { %>
+                  <p class="text-xs text-[#111318] mt-1 italic">"<%= asg.feedback %>"</p>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Submission Action / Form -->
+          <div class="pt-4 border-t border-[#E5E7EB]">
+            <form action="/student/assignments/submit/<%= asg.id %>" method="POST" enctype="multipart/form-data" class="space-y-3">
+              <div>
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                  <%= asg.isSubmitted ? 'Replace Uploaded Deliverable' : 'Upload Deliverable File (PDF, DOC, ZIP max 10MB)' %>
+                </label>
+                <input 
+                  type="file" 
+                  name="file" 
+                  required 
+                  class="w-full text-xs text-[#5B5F6B] file:mr-3 file:py-2 file:px-3 file:rounded-[6px] file:border-0 file:text-xs file:font-semibold file:bg-[#E5E7EB] file:text-white hover:file:bg-[var(--accent-primary)] file:transition-all"
+                >
+              </div>
+
+              <div class="flex items-center justify-between gap-3">
+                <% if (asg.file_path) { %>
+                  <a href="<%= asg.file_path %>" target="_blank" download class="text-xs text-[var(--accent-primary)] hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-paperclip text-[10px]"></i>
+                    <span>Download Current File</span>
+                  </a>
+                <% } else { %>
+                  <span></span>
+                <% } %>
+
+                <button type="submit" class="btn-primary py-2 px-4 text-xs font-semibold">
+                  <i class="fa-solid fa-cloud-arrow-up mr-1"></i>
+                  <span><%= asg.isSubmitted ? 'Re-upload File' : 'Submit Assignment' %></span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="col-span-full card py-16 text-center text-[#8B8F99]">
+        <div class="w-14 h-14 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-2xl mx-auto mb-3 border border-[#E5E7EB]">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <p class="font-bold text-[#111318] text-base">No Assignments Posted</p>
+        <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Your professors have not published any pending assignments yet.</p>
+      </div>
+    <% } %>
+  </div>
+
+</div>

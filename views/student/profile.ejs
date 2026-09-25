@@ -1,0 +1,101 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-id-card"></i>
+          <span>Student Identity</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Student Profile & Settings</h1>
+        <p class="body-text mt-1.5 text-sm">Manage your enrolled student account, profile avatar photo, security password, and academic details</p>
+      </div>
+
+      <a href="/student/export/report.csv" class="btn-secondary py-2 px-4 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-file-csv"></i>
+        <span>Download Academic Report CSV</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Profile Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-[20px]">
+    
+    <!-- Avatar / ID Card (1 Col) -->
+    <div class="card text-center flex flex-col items-center justify-center p-8" style="--i: 2;">
+      <% if (student.profile_photo) { %>
+        <img src="<%= student.profile_photo %>" alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-glow)] mb-4">
+      <% } else { %>
+        <div class="w-24 h-24 rounded-full bg-[var(--accent-primary)] text-white text-3xl font-bold flex items-center justify-center font-['Space_Grotesk'] border-4 border-[#E5E7EB] shadow-lg shadow-[var(--accent-glow)] mb-4">
+          <%= student.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() %>
+        </div>
+      <% } %>
+
+      <h2 class="text-xl font-bold text-[#111318] font-['Space_Grotesk']"><%= student.name %></h2>
+      <p class="text-xs text-[#5B5F6B] mt-1"><%= student.roll_no %></p>
+      <span class="status-pill text-xs font-semibold badge-accent mt-3">
+        <%= student.course %>
+      </span>
+
+      <div class="w-full pt-6 mt-6 border-t border-[#E5E7EB] text-xs text-[#8B8F99] space-y-1">
+        <div><%= student.email %></div>
+        <div>Enrolled <%= student.created_at ? student.created_at.substring(0, 10) : '2026-01-01' %></div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Form (2 Cols) -->
+    <div class="md:col-span-2 card p-8" style="--i: 3;">
+      <h3 class="section-title text-lg mb-6 pb-4 border-b border-[#E5E7EB]">Edit Profile & Security</h3>
+
+      <form action="/student/profile" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-2">Legal Full Name *</label>
+          <input type="text" name="name" required value="<%= student.name %>" class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-2">Enrolled Academic Program / Department *</label>
+          <select name="course" required class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]">
+            <option value="B.Tech Computer Science" <%= student.course === 'B.Tech Computer Science' ? 'selected' : '' %>>B.Tech Computer Science</option>
+            <option value="B.Tech Information Technology" <%= student.course === 'B.Tech Information Technology' ? 'selected' : '' %>>B.Tech Information Technology</option>
+            <option value="B.Tech AI & Data Science" <%= student.course === 'B.Tech AI & Data Science' ? 'selected' : '' %>>B.Tech AI & Data Science</option>
+            <option value="B.Tech Electronics & Communication" <%= student.course === 'B.Tech Electronics & Communication' ? 'selected' : '' %>>B.Tech Electronics & Communication</option>
+            <option value="B.Tech Mechanical Engineering" <%= student.course === 'B.Tech Mechanical Engineering' ? 'selected' : '' %>>B.Tech Mechanical Engineering</option>
+            <option value="BCA / MCA" <%= student.course === 'BCA / MCA' ? 'selected' : '' %>>BCA / MCA</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-2">Upload Profile Avatar Photo</label>
+          <input type="file" name="profile_photo" accept="image/*" class="w-full text-xs text-[#5B5F6B] file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-xs file:font-semibold file:bg-[var(--accent-primary)] file:text-white hover:file:bg-[var(--accent-primary-hover)]">
+          <p class="text-[11px] text-[#8B8F99] mt-1.5">Supports JPG, PNG, WEBP (Max 5MB). Displays across top navigation and student portal.</p>
+        </div>
+
+        <div class="pt-6 border-t border-[#E5E7EB]">
+          <h4 class="text-sm font-bold text-[#111318] mb-2">Change Password</h4>
+          <p class="text-xs text-[#5B5F6B] mb-4">Leave password fields blank if you do not wish to update your login password.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-2">Current Password</label>
+              <input type="password" name="current_password" placeholder="••••••••" class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-2">New Password (min 6)</label>
+              <input type="password" name="new_password" minlength="6" placeholder="••••••••" class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E7EB]">
+          <button type="submit" class="btn-primary py-2.5 px-6 text-xs font-semibold">
+            Save Profile Settings
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+</div>

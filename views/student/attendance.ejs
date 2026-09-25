@@ -1,0 +1,227 @@
+<!-- Student Attendance View (Exact Dark Theme & Typography Spec) -->
+<div class="space-y-[48px]">
+
+  <!-- Header & Overall Overview Card -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+      
+      <!-- Metrics text -->
+      <div class="flex-1 space-y-4 text-center md:text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold <%= overallPercentage >= 75 ? 'badge-success' : 'badge-danger' %>">
+          <i class="fa-solid <%= overallPercentage >= 75 ? 'fa-circle-check' : 'fa-triangle-exclamation' %>"></i>
+          <span><%= overallPercentage >= 75 ? 'Academic Criteria Met (≥ 75%)' : 'Attendance Shortage Warning (< 75%)' %></span>
+        </div>
+
+        <h1 class="page-title text-[#111318]">
+          Attendance Summary
+        </h1>
+        
+        <p class="body-text max-w-xl text-sm leading-relaxed">
+          University regulations require an overall and per-subject minimum attendance rate of <strong class="text-[#111318]">75%</strong> to remain eligible for end-semester examinations.
+        </p>
+
+        <!-- Stats Chips -->
+        <div class="grid grid-cols-3 gap-[20px] pt-3 max-w-lg mx-auto md:mx-0">
+          <div class="p-4 bg-[#FFFFFF] rounded-[8px] border border-[#E5E7EB] text-center">
+            <span class="stat-label text-[#8B8F99] block mb-1">Total</span>
+            <span class="text-2xl sm:text-3xl font-bold text-[#111318] block font-['Space_Grotesk']"><%= grandTotal %></span>
+            <span class="text-xs text-[#5B5F6B] font-medium block mt-0.5">Lectures Held</span>
+          </div>
+
+          <div class="p-4 bg-[#FFFFFF] rounded-[8px] border border-[#A7F3D0] text-center">
+            <span class="stat-label text-[var(--success)] block mb-1">Present</span>
+            <span class="text-2xl sm:text-3xl font-bold text-[var(--success)] block font-['Space_Grotesk']"><%= grandAttended %></span>
+            <span class="text-xs text-[#5B5F6B] font-medium block mt-0.5">Attended</span>
+          </div>
+
+          <div class="p-4 bg-[#FFFFFF] rounded-[8px] border border-[#FECDD3] text-center">
+            <span class="stat-label text-[var(--danger)] block mb-1">Absent</span>
+            <span class="text-2xl sm:text-3xl font-bold text-[var(--danger)] block font-['Space_Grotesk']"><%= grandMissed %></span>
+            <span class="text-xs text-[#5B5F6B] font-medium block mt-0.5">Missed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animated SVG Progress Ring -->
+      <div class="flex flex-col items-center justify-center p-4 shrink-0">
+        <div class="relative w-48 h-48 flex items-center justify-center">
+          <svg class="progress-ring w-48 h-48">
+            <circle
+              class="text-[#E5E7EB]"
+              stroke-width="12"
+              stroke="currentColor"
+              fill="transparent"
+              r="74"
+              cx="96"
+              cy="96"
+            />
+            <circle
+              class="progress-ring-circle <%= overallPercentage >= 75 ? 'text-[var(--success)]' : 'text-[var(--danger)]' %>"
+              stroke-width="12"
+              stroke="currentColor"
+              fill="transparent"
+              r="74"
+              cx="96"
+              cy="96"
+              data-percent="<%= overallPercentage %>"
+            />
+          </svg>
+          <div class="absolute flex flex-col items-center justify-center text-center">
+            <span id="attendance-percent-counter" data-target-percent="<%= overallPercentage %>" class="metric-number <%= overallPercentage >= 75 ? 'text-[var(--success)]' : 'text-[var(--danger)]' %>">
+              <%= overallPercentage %>%
+            </span>
+            <span class="stat-label mt-1 text-[#5B5F6B]">
+              <%= overallPercentage >= 75 ? 'Eligible' : 'Shortage' %>
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Subject-wise Attendance Breakdown Table -->
+  <div class="card p-0 overflow-hidden" style="--i: 2;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Subject-wise Breakdown</h2>
+          <p class="text-muted-desc">Class session attendance across your individual enrolled courses</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="status-pill text-xs font-semibold badge-success">
+          ≥ 75% Safe
+        </span>
+        <span class="status-pill text-xs font-semibold badge-danger">
+          &lt; 75% Critical
+        </span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Subject / Course Module</th>
+            <th class="text-center">Classes Held</th>
+            <th class="text-center">Attended</th>
+            <th class="text-center">Missed</th>
+            <th class="text-center">Rate</th>
+            <th class="text-right">Eligibility Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (subjectBreakdown && subjectBreakdown.length > 0) { %>
+            <% subjectBreakdown.forEach(subj => { %>
+              <tr class="hover:bg-[#F7F7F9]/40 transition-colors">
+                <td class="font-semibold text-[#111318]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2.5 h-2.5 rounded-full <%= subj.isShortage ? 'bg-[var(--danger)]' : 'bg-[var(--success)]' %>"></div>
+                    <span><%= subj.subject %></span>
+                  </div>
+                </td>
+                <td class="text-center text-[#5B5F6B] font-semibold"><%= subj.total %></td>
+                <td class="text-center text-[var(--success)] font-bold"><%= subj.attended %></td>
+                <td class="text-center text-[var(--danger)] font-bold"><%= subj.missed %></td>
+                <td class="text-center">
+                  <div class="flex items-center justify-center gap-3">
+                    <div class="w-24 bg-[#FFFFFF] h-2 rounded-full overflow-hidden hidden sm:block border border-[#E5E7EB]">
+                      <div 
+                        class="h-full rounded-full <%= subj.isShortage ? 'bg-[var(--danger)]' : 'bg-[var(--success)]' %>" 
+                        style="width: <%= Math.min(subj.percentage, 100) %>%;"
+                      ></div>
+                    </div>
+                    <span class="font-bold text-sm <%= subj.isShortage ? 'text-[var(--danger)]' : 'text-[var(--success)]' %> font-['Space_Grotesk']">
+                      <%= subj.percentage %>%
+                    </span>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <% if (subj.isShortage) { %>
+                    <span class="status-pill text-xs font-semibold badge-danger">
+                      <i class="fa-solid fa-triangle-exclamation text-[11px]"></i> Shortage
+                    </span>
+                  <% } else { %>
+                    <span class="status-pill text-xs font-semibold badge-success">
+                      <i class="fa-solid fa-check text-[11px]"></i> Eligible
+                    </span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="py-12 text-center text-[#8B8F99]">
+                <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+                  <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <p class="font-bold text-[#111318] text-sm">No course attendance recorded yet</p>
+                <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Class sessions will populate once faculty members complete roll calls for your courses.</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detailed Daily Log with Subject Filter -->
+  <div class="card" style="--i: 3;">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Session Log History</h2>
+          <p class="text-muted-desc">Date-wise chronological audit trail of recorded attendance</p>
+        </div>
+      </div>
+
+      <!-- Filter Dropdown -->
+      <form method="GET" action="/student/attendance" class="flex items-center gap-2">
+        <label for="filterSubject" class="text-xs font-semibold uppercase tracking-wider text-[#8B8F99]">Filter:</label>
+        <select 
+          id="filterSubject" 
+          name="subject" 
+          onchange="this.form.submit()" 
+          class="text-xs font-medium bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] px-3.5 py-2 text-[#111318] focus:border-[var(--accent-primary)]"
+        >
+          <option value="">All Registered Subjects</option>
+          <% subjectsList.forEach(s => { %>
+            <option value="<%= s %>" <%= selectedSubject === s ? 'selected' : '' %>><%= s %></option>
+          <% }); %>
+        </select>
+      </form>
+    </div>
+
+    <% if (detailedRecords && detailedRecords.length > 0) { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[20px]">
+        <% detailedRecords.forEach(rec => { %>
+          <div class="p-4 rounded-[8px] border <%= rec.status === 'Present' ? 'border-[#A7F3D0] bg-[rgba(46,213,115,0.06)]' : 'border-[#FECDD3] bg-[rgba(255,71,87,0.06)]' %> flex items-center justify-between card-interactive">
+            <div>
+              <p class="text-xs font-bold text-[#111318] truncate max-w-[140px]"><%= rec.subject %></p>
+              <p class="text-xs text-[#5B5F6B] mt-1 font-medium"><%= rec.date %></p>
+            </div>
+            <span class="status-pill text-xs font-semibold <%= rec.status === 'Present' ? 'badge-success' : 'badge-danger' %>">
+              <%= rec.status %>
+            </span>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="py-12 text-center text-[#8B8F99]">
+        <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+        </div>
+        <p class="font-bold text-[#111318] text-sm">No session records found</p>
+        <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">No attendance logs match the selected filter. Try selecting 'All Registered Subjects'.</p>
+      </div>
+    <% } %>
+  </div>
+
+</div>

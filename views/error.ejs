@@ -1,0 +1,53 @@
+<div class="min-h-[70vh] flex items-center justify-center py-12 px-4">
+  <div class="card max-w-md w-full text-center" style="--i: 1;">
+    
+    <div class="w-16 h-16 mx-auto rounded-[12px] <%= statusCode === 403 ? 'bg-[#FEECEE] text-[var(--danger)] border border-[#FECDD3]' : 'bg-[#F0EDFD] text-[var(--accent-primary)] border border-[var(--border-subtle)]' %> flex items-center justify-center text-2xl mb-5 shadow-sm">
+      <% if (statusCode === 403) { %>
+        <i class="fa-solid fa-shield-halved"></i>
+      <% } else if (statusCode === 404) { %>
+        <i class="fa-solid fa-compass"></i>
+      <% } else { %>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      <% } %>
+    </div>
+
+    <span class="status-pill text-xs font-semibold mb-3 <%= statusCode === 403 ? 'badge-danger' : 'badge-accent' %>">
+      Status <%= statusCode || 500 %>
+    </span>
+
+    <h2 class="page-title text-[#111318] text-2xl mb-2">
+      <%= title || 'Access Restricted' %>
+    </h2>
+
+    <p class="body-text text-sm leading-relaxed mb-6">
+      <%= message || 'You do not have sufficient permissions to view this resource.' %>
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <button 
+        type="button" 
+        onclick="history.back()" 
+        class="btn-secondary py-2.5 px-4 text-xs font-semibold"
+      >
+        <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
+      </button>
+
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a 
+          href="<%= user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard' %>" 
+          class="btn-primary py-2.5 px-4 text-xs font-semibold"
+        >
+          <i class="fa-solid fa-house mr-2"></i> Dashboard
+        </a>
+      <% } else { %>
+        <a 
+          href="/login" 
+          class="btn-primary py-2.5 px-4 text-xs font-semibold"
+        >
+          <i class="fa-solid fa-right-to-bracket mr-2"></i> Sign In
+        </a>
+      <% } %>
+    </div>
+
+  </div>
+</div>

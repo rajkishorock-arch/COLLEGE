@@ -1,0 +1,284 @@
+<!-- Student Results View (Exact Dark Theme & Typography Spec) -->
+<div class="space-y-[48px]">
+
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 1;">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F0EDFD] border border-[#DDD6FE] text-[var(--accent-primary)] text-xs font-semibold mb-2">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>Academic Performance Index</span>
+      </div>
+      <h1 class="page-title text-[#111318]">
+        Academic Scorecard & Results
+      </h1>
+      <p class="body-text mt-1.5 max-w-2xl text-sm">
+        Official semester marks, cumulative grade standing, and subject-level performance analytics evaluated by the university board.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/student/export/report.csv" class="btn-secondary py-2 px-4 text-xs font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-file-csv"></i>
+        <span>Export Scorecard CSV</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Overview Summary Metric Cards (Clean Grid, Hero Numbers) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px]">
+    
+    <!-- Cumulative CGPA Card -->
+    <div class="card flex items-center justify-between" style="--i: 2;">
+      <div>
+        <span class="stat-label text-[#8B8F99]">Cumulative CGPA</span>
+        <div class="metric-number text-[var(--accent-primary)] mt-2">
+          <%= cgpa %><span class="text-xl text-[#8B8F99] font-semibold">/10.0</span>
+        </div>
+        <p class="text-muted-desc mt-1.5">Formula: (Aggregate % / 10)</p>
+      </div>
+      <div class="w-12 h-12 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-xl shrink-0 border border-[var(--border-subtle)]">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+    </div>
+
+    <!-- Letter Grade Card -->
+    <div class="card flex items-center justify-between" style="--i: 3;">
+      <div>
+        <span class="stat-label text-[#8B8F99]">Academic Standing</span>
+        <div class="metric-number text-[var(--success)] mt-2"><%= summary.overallGrade %></div>
+        <p class="text-muted-desc mt-1.5">Honors classification</p>
+      </div>
+      <div class="w-12 h-12 rounded-[8px] bg-[#E8F8EE] text-[var(--success)] flex items-center justify-center text-xl shrink-0 border border-[var(--border-subtle)]">
+        <i class="fa-solid fa-medal"></i>
+      </div>
+    </div>
+
+    <!-- Aggregate Percentage Score -->
+    <div class="card flex items-center justify-between" style="--i: 4;">
+      <div>
+        <span class="stat-label text-[#8B8F99]">Average Percentage</span>
+        <div class="metric-number text-[#111318] mt-2">
+          <%= summary.averagePercentage %>%
+        </div>
+        <p class="text-muted-desc mt-1.5">Across all enrolled terms</p>
+      </div>
+      <div class="w-12 h-12 rounded-[8px] bg-[#FEF6E7] text-[var(--warning)] flex items-center justify-center text-xl shrink-0 border border-[var(--border-subtle)]">
+        <i class="fa-solid fa-percent"></i>
+      </div>
+    </div>
+
+    <!-- Subjects Evaluated Card -->
+    <div class="card flex items-center justify-between" style="--i: 5;">
+      <div>
+        <span class="stat-label text-[#8B8F99]">Evaluated Papers</span>
+        <div class="metric-number text-[#111318] mt-2"><%= summary.totalSubjects %></div>
+        <p class="text-muted-desc mt-1.5">Published course modules</p>
+      </div>
+      <div class="w-12 h-12 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-xl shrink-0 border border-[var(--border-subtle)]">
+        <i class="fa-solid fa-file-lines"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Chart.js Performance Bar Chart -->
+  <div class="card" style="--i: 6;">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-chart-column"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Subject Performance Comparison</h2>
+          <p class="text-muted-desc">Visual comparison of marks obtained per course module</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="status-pill text-xs font-semibold badge-accent">
+          <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span> Marks Obtained
+        </span>
+      </div>
+    </div>
+
+    <div class="h-72 w-full">
+      <canvas id="resultsBarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Semester-Wise GPA Standing (Feature #7) -->
+  <% if (typeof semesterGroups !== 'undefined' && semesterGroups && Object.keys(semesterGroups).length > 0) { %>
+    <div class="space-y-4" style="--i: 7;">
+      <div class="flex items-center justify-between">
+        <h2 class="section-title text-base flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-[var(--accent-primary)]"></i>
+          <span>Semester-Wise Academic Standing & GPA</span>
+        </h2>
+        <span class="text-xs text-[#5B5F6B]">Formula: Semester GPA = (Marks / Max) × 10.0</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <% Object.keys(semesterGroups).forEach(sem => { %>
+          <% const grp = semesterGroups[sem]; %>
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="status-pill text-xs font-semibold badge-accent"><%= grp.semester %></span>
+              <span class="status-pill text-xs font-bold font-['Space_Grotesk'] badge-success"><%= grp.grade %></span>
+            </div>
+            <div class="metric-number text-2xl text-[#111318] mt-1">
+              <%= grp.gpa %><span class="text-xs text-[#8B8F99] font-normal">/10.0</span>
+            </div>
+            <div class="text-xs text-[#5B5F6B] mt-2 flex items-center justify-between pt-2 border-t border-[#E5E7EB]">
+              <span>Score: <%= grp.percentage %>%</span>
+              <span><%= grp.records.length %> Courses</span>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Detailed Results Table -->
+  <div class="card p-0 overflow-hidden" style="--i: 8;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex items-center justify-between">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 mt-0.5 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-table-list"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Subject-wise Evaluation Ledger</h2>
+          <p class="text-muted-desc">Full breakdown of marks, percentage, and assigned letter grades</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Subject / Course Module</th>
+            <th>Exam Type</th>
+            <th class="text-center">Marks Obtained</th>
+            <th class="text-center">Max Marks</th>
+            <th class="text-center">Score %</th>
+            <th class="text-center">Grade</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (results && results.length > 0) { %>
+            <% results.forEach(res => { %>
+              <tr class="hover:bg-[#F7F7F9]/40 transition-colors">
+                <td class="font-semibold text-[#111318]">
+                  <%= res.subject %>
+                </td>
+                <td>
+                  <span class="px-2.5 py-1 rounded-[6px] bg-[#FFFFFF] border border-[#E5E7EB] text-[#5B5F6B] text-xs font-medium">
+                    <%= res.exam_type %>
+                  </span>
+                </td>
+                <td class="text-center font-bold text-[#111318] font-['Space_Grotesk']">
+                  <%= res.marks_obtained %>
+                </td>
+                <td class="text-center text-[#8B8F99] font-medium">
+                  <%= res.max_marks %>
+                </td>
+                <td class="text-center font-bold font-['Space_Grotesk'] <%= res.percentage >= 75 ? 'text-[var(--success)]' : 'text-[var(--warning)]' %>">
+                  <%= res.percentage %>%
+                </td>
+                <td class="text-center">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-[8px] font-bold text-xs shadow-sm font-['Space_Grotesk'] <%= res.percentage >= 80 ? 'badge-success' : (res.percentage >= 60 ? 'badge-accent' : 'badge-warning') %>">
+                    <%= res.grade %>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="py-12 text-center text-[#8B8F99]">
+                <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+                  <i class="fa-solid fa-file-excel"></i>
+                </div>
+                <p class="font-bold text-[#111318] text-sm">No exam marks entered yet</p>
+                <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Your professors or administrators haven't published graded exam results for this term yet.</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Render Chart.js with Inter font and dark theme colors -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('resultsBarChart');
+    if (!ctx) return;
+
+    const labels = <%- JSON.stringify(chartData.labels) %>;
+    const dataMarks = <%- JSON.stringify(chartData.marks) %>;
+    const maxMarks = <%- JSON.stringify(chartData.maxMarks) %>;
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Marks Obtained',
+          data: dataMarks,
+          backgroundColor: 'rgba(108, 92, 231, 0.85)',
+          hoverBackgroundColor: 'rgba(125, 110, 240, 1)',
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            grid: {
+              color: '#E5E7EB'
+            },
+            ticks: {
+              color: '#5B5F6B',
+              font: {
+                family: 'Inter',
+                size: 11
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#5B5F6B',
+              font: {
+                family: 'Inter',
+                size: 11
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#FFFFFF',
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            titleColor: '#111318',
+            bodyColor: '#5B5F6B',
+            titleFont: { family: 'Space Grotesk', size: 13, weight: 'bold' },
+            bodyFont: { family: 'Inter', size: 12 }
+          }
+        }
+      }
+    });
+  });
+</script>

@@ -1,0 +1,133 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Immutable Master Ledger</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Institutional Audit Log</h1>
+        <p class="body-text mt-1.5 text-sm">Chronological, tamper-evident history of administrative write operations, attendance updates, grade entries, and credential changes</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/admin/export/audit.csv" class="btn-secondary py-2 px-4 text-xs font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-file-csv"></i>
+          <span>Export Audit CSV</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <form method="GET" action="/admin/audit-log" class="grid grid-cols-1 sm:grid-cols-4 gap-[16px] pt-6 mt-6 border-t border-[#E5E7EB]">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-2">Action Category</label>
+        <select name="action" class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-xs font-medium text-[#111318] focus:border-[var(--accent-primary)]" onchange="this.form.submit()">
+          <option value="">All Action Types</option>
+          <% actionTypes.forEach(act => { %>
+            <option value="<%= act %>" <%= selectedAction === act ? 'selected' : '' %>><%= act %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-2">Administrator</label>
+        <select name="admin_id" class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-xs font-medium text-[#111318] focus:border-[var(--accent-primary)]" onchange="this.form.submit()">
+          <option value="">All Admin Accounts</option>
+          <% admins.forEach(adm => { %>
+            <option value="<%= adm.id %>" <%= selectedAdmin === adm.id ? 'selected' : '' %>><%= adm.name %> (<%= adm.email %>)</option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-2">Search Records</label>
+        <input 
+          type="text" 
+          name="search" 
+          value="<%= searchQuery %>" 
+          placeholder="e.g. DSA, Student, Roll..." 
+          class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-xs font-medium text-[#111318] focus:border-[var(--accent-primary)]"
+        />
+      </div>
+
+      <div class="flex items-end gap-2">
+        <button type="submit" class="btn-primary py-2.5 px-4 text-xs font-semibold flex-1">
+          <i class="fa-solid fa-filter"></i> Apply Filter
+        </button>
+        <% if (selectedAction || selectedAdmin || searchQuery) { %>
+          <a href="/admin/audit-log" class="btn-secondary py-2.5 px-3 text-xs font-semibold">
+            Clear
+          </a>
+        <% } %>
+      </div>
+    </form>
+  </div>
+
+  <!-- Audit Table -->
+  <div class="card p-0 overflow-hidden" style="--i: 2;">
+    <div class="p-[28px] border-b border-[#E5E7EB] flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-[8px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-base shrink-0 border border-[var(--border-subtle)]">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div>
+          <h2 class="section-title">Audit Trail Records (<%= logs.length %> entries)</h2>
+          <p class="text-muted-desc">Strictly ordered newest first • Records are immutable and never updated</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table-comfortable">
+        <thead>
+          <tr>
+            <th>Timestamp (UTC/Local)</th>
+            <th>Action</th>
+            <th>Actor / Administrator</th>
+            <th>Details & Context</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E5E7EB]">
+          <% if (logs && logs.length > 0) { %>
+            <% logs.forEach(item => { %>
+              <tr class="hover:bg-[#F7F7F9]/50 transition-colors">
+                <td class="font-mono text-xs text-[#5B5F6B] whitespace-nowrap">
+                  <%= item.created_at %>
+                </td>
+                <td>
+                  <span class="status-pill text-xs font-semibold <%= 
+                    item.action.includes('Delete') ? 'badge-danger' : 
+                    item.action.includes('Start') || item.action.includes('Add') || item.action.includes('Create') ? 'badge-success' : 
+                    item.action.includes('Attendance') ? 'badge-accent' : 'badge-warning' %>">
+                    <%= item.action %>
+                  </span>
+                </td>
+                <td>
+                  <div class="font-medium text-[#111318] text-xs"><%= item.admin_name %></div>
+                  <div class="text-[11px] text-[#8B8F99]"><%= item.admin_email %></div>
+                </td>
+                <td class="text-xs text-[#111318] max-w-md">
+                  <%= item.details || '—' %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" class="py-12 text-center text-[#8B8F99]">
+                <div class="w-12 h-12 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-xl mx-auto mb-3 border border-[#E5E7EB]">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <p class="font-bold text-[#111318] text-sm">No Audit Logs Match Criteria</p>
+                <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">Try resetting the filter search term or selected action category.</p>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

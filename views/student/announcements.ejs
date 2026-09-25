@@ -1,0 +1,60 @@
+<div class="space-y-[48px]">
+
+  <!-- Header -->
+  <div class="card" style="--i: 1;">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold badge-accent mb-2">
+          <i class="fa-solid fa-bullhorn"></i>
+          <span>Official Campus Notices</span>
+        </div>
+        <h1 class="page-title text-[#111318]">Announcements & Campus Board</h1>
+        <p class="body-text mt-1.5 text-sm">Official announcements, examination schedules, campus events, and academic bulletins</p>
+      </div>
+
+      <span class="status-pill text-xs font-semibold badge-accent">
+        <%= announcements.length %> Published Notices
+      </span>
+    </div>
+  </div>
+
+  <!-- Notices Feed -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+    <% if (announcements && announcements.length > 0) { %>
+      <% announcements.forEach((ann, idx) => { %>
+        <div class="card flex flex-col justify-between <%= ann.priority === 'urgent' ? 'border-[var(--danger)] shadow-lg shadow-[#FEECEE]' : '' %>" style="--i: <%= idx + 2 %>;">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <span class="status-pill text-[10px] <%= ann.priority === 'urgent' ? 'badge-danger animate-pulse' : 'badge-accent' %>">
+                <%= ann.priority === 'urgent' ? 'URGENT NOTICE' : 'ACADEMIC BULLETIN' %>
+              </span>
+              <span class="text-[11px] text-[#8B8F99] font-mono"><%= ann.created_at.substring(0, 10) %></span>
+            </div>
+
+            <h3 class="card-title text-[#111318] text-base font-bold mb-2">
+              <%= ann.title %>
+            </h3>
+
+            <p class="body-text text-xs text-[#5B5F6B] leading-relaxed">
+              <%= ann.body %>
+            </p>
+          </div>
+
+          <div class="pt-4 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
+            <span>Posted by <%= ann.posted_by_name %></span>
+            <span class="text-[var(--accent-primary)] font-medium">Official Notice</span>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="col-span-full card py-16 text-center text-[#8B8F99]">
+        <div class="w-14 h-14 rounded-[12px] bg-[#FFFFFF] text-[#8B8F99] flex items-center justify-center text-2xl mx-auto mb-3 border border-[#E5E7EB]">
+          <i class="fa-solid fa-bullhorn"></i>
+        </div>
+        <p class="font-bold text-[#111318] text-base">No Active Notices</p>
+        <p class="text-xs text-[#5B5F6B] max-w-sm mx-auto mt-1">There are currently no announcements posted for your cohort.</p>
+      </div>
+    <% } %>
+  </div>
+
+</div>

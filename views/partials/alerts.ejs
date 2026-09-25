@@ -1,0 +1,27 @@
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="toast-notification flash-alert flash-alert-error mb-6 bg-[#FFFFFF] border border-[var(--danger)] text-[#111318] flex items-center justify-between shadow-xl" role="alert">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-[#FEECEE] text-[var(--danger)] flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-circle-exclamation text-sm"></i>
+      </div>
+      <span class="text-xs sm:text-sm font-medium leading-snug"><%= error %></span>
+    </div>
+    <button type="button" onclick="this.closest('.toast-notification').remove()" class="text-[#5B5F6B] hover:text-[#111318] p-1 rounded transition-colors" title="Dismiss">
+      <i class="fa-solid fa-xmark text-sm"></i>
+    </button>
+  </div>
+<% } %>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <div class="toast-notification flash-alert flash-alert-success mb-6 bg-[#FFFFFF] border border-[var(--success)] text-[#111318] flex items-center justify-between shadow-xl" role="alert">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-[#E8F8EE] text-[var(--success)] flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-circle-check text-sm"></i>
+      </div>
+      <span class="text-xs sm:text-sm font-medium leading-snug"><%= success %></span>
+    </div>
+    <button type="button" onclick="this.closest('.toast-notification').remove()" class="text-[#5B5F6B] hover:text-[#111318] p-1 rounded transition-colors" title="Dismiss">
+      <i class="fa-solid fa-xmark text-sm"></i>
+    </button>
+  </div>
+<% } %>
