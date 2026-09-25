@@ -7,6 +7,7 @@
     "node": ">=20.0.0 <23.0.0"
   },
   "scripts": {
+    "postinstall": "npm rebuild better-sqlite3 || true",
     "start": "node server.js",
     "seed": "node database/seed.js",
     "dev": "node --watch server.js"
