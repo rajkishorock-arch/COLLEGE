@@ -150,11 +150,31 @@
         <span>Quizzes</span>
       </a>
 
-      <div class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
-        System & Security
-      </div>
+      <a href="/admin/tenant-settings" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'tenant-settings') ? 'active' : '' %>">
+        <i class="fa-solid fa-sliders w-5 text-center text-sm"></i>
+        <span>Institution Settings</span>
+      </a>
 
       <% if (user.role === 'super_admin') { %>
+        <div class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+          Platform Administration
+        </div>
+
+        <a href="/super-admin" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'super-admin-overview') ? 'active' : '' %>">
+          <i class="fa-solid fa-network-wired w-5 text-center text-sm text-[var(--accent-primary)]"></i>
+          <span>Platform Overview</span>
+        </a>
+
+        <a href="/super-admin/tenants" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'super-admin-tenants') ? 'active' : '' %>">
+          <i class="fa-solid fa-building-columns w-5 text-center text-sm"></i>
+          <span>Institutions (Tenants)</span>
+        </a>
+
+        <a href="/super-admin/audit" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'super-admin-audit') ? 'active' : '' %>">
+          <i class="fa-solid fa-shield-halved w-5 text-center text-sm"></i>
+          <span>Platform Audit</span>
+        </a>
+
         <a href="/admin/manage-admins" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'manage-admins') ? 'active' : '' %>">
           <i class="fa-solid fa-user-shield w-5 text-center text-sm text-[var(--accent-primary)]"></i>
           <span class="flex items-center gap-1.5">
@@ -177,6 +197,20 @@
     <% } %>
 
   </div>
+
+  <!-- Tenant Badge in Sidebar -->
+  <% if (typeof tenant !== 'undefined' && tenant) { %>
+    <div class="px-3 py-2 mx-3 mb-2 rounded-[8px] bg-[#FFFFFF] border border-[#E5E7EB] text-xs shadow-sm">
+      <div class="font-bold text-[#111318] truncate flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <%= tenant.primary_color || '#6C5CE7' %>"></span>
+        <span class="truncate"><%= tenant.name %></span>
+      </div>
+      <div class="text-[10px] text-[#8B8F99] mt-0.5 flex justify-between items-center">
+        <span class="font-mono font-semibold text-[var(--accent-primary)]"><%= tenant.code %></span>
+        <span class="text-emerald-600 font-semibold capitalize"><%= tenant.status %></span>
+      </div>
+    </div>
+  <% } %>
 
   <!-- User Profile Section in Sidebar -->
   <% if (user) { %>

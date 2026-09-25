@@ -20,7 +20,9 @@ try {
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const adminRoutes = require('./routes/admin');
+const superAdminRoutes = require('./routes/superAdmin');
 const { setUserLocals } = require('./middleware/auth');
+const { resolveTenant } = require('./middleware/tenant');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -87,13 +89,15 @@ app.set('view engine', 'ejs');
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Global view locals
+// Global view locals & tenant resolution
 app.use(setUserLocals);
+app.use(resolveTenant);
 
 // Mount Routes
 app.use('/', authRoutes);
 app.use('/student', studentRoutes);
 app.use('/admin', adminRoutes);
+app.use('/super-admin', superAdminRoutes);
 
 // 404 Handler
 app.use((req, res) => {

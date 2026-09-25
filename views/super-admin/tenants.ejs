@@ -1,0 +1,125 @@
+<div class="space-y-6">
+  
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <a href="/super-admin" class="text-xs font-semibold text-[#8B8F99] hover:text-[#111318] transition-colors">
+          Platform Admin
+        </a>
+        <span class="text-[#8B8F99] text-xs">/</span>
+        <span class="text-xs font-semibold text-[#111318]">Institutions</span>
+      </div>
+      <h1 class="text-2xl font-bold text-[#111318] tracking-tight font-['Space_Grotesk'] mt-1">
+        Institutions & Collegiate Tenants
+      </h1>
+      <p class="text-xs sm:text-sm text-[#5B5F6B] mt-0.5">
+        Manage active SaaS institutions, monitor enrollment numbers, and configure operational status.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/super-admin/tenants/new" class="btn btn-primary inline-flex items-center gap-2">
+        <i class="fa-solid fa-plus text-xs"></i>
+        <span>Onboard New Institution</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="p-4 rounded-[8px] bg-[#FEECEE] border border-[var(--danger)] text-[#E5384B] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-exclamation shrink-0 text-base"></i>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="p-4 rounded-[8px] bg-[#E8F8EE] border border-[var(--success)] text-[#1E9E57] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-check shrink-0 text-base"></i>
+      <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Filter Tabs -->
+  <div class="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+    <div class="flex items-center gap-2">
+      <a href="/super-admin/tenants?filter=all" class="px-3.5 py-1.5 rounded-[8px] text-xs font-semibold transition-all <%= currentFilter === 'all' ? 'bg-[#111318] text-white shadow-sm' : 'text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9]' %>">
+        All (<%= totalCount %>)
+      </a>
+      <a href="/super-admin/tenants?filter=active" class="px-3.5 py-1.5 rounded-[8px] text-xs font-semibold transition-all <%= currentFilter === 'active' ? 'bg-emerald-600 text-white shadow-sm' : 'text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9]' %>">
+        Active (<%= activeCount %>)
+      </a>
+      <a href="/super-admin/tenants?filter=suspended" class="px-3.5 py-1.5 rounded-[8px] text-xs font-semibold transition-all <%= currentFilter === 'suspended' ? 'bg-rose-600 text-white shadow-sm' : 'text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9]' %>">
+        Suspended (<%= suspendedCount %>)
+      </a>
+    </div>
+  </div>
+
+  <!-- Institutions Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <% tenants.forEach(t => { %>
+      <div class="card p-5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+        
+        <!-- Status indicator stripe -->
+        <div class="absolute top-0 left-0 right-0 h-1" style="background-color: <%= t.primary_color || '#6C5CE7' %>"></div>
+
+        <div>
+          <!-- Top Row: Code & Status -->
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F0EEFF] text-[#6C5CE7]">
+              <%= t.code %>
+            </span>
+            <% if (t.status === 'active') { %>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </span>
+            <% } else { %>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                Suspended
+              </span>
+            <% } %>
+          </div>
+
+          <!-- Institution Name & Info -->
+          <h2 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] leading-snug">
+            <%= t.name %>
+          </h2>
+          <p class="text-xs text-[#5B5F6B] mt-1 line-clamp-2">
+            <%= t.address || t.email || 'No physical address configured' %>
+          </p>
+
+          <!-- Metrics summary -->
+          <div class="grid grid-cols-3 gap-2 my-4 pt-3 border-t border-[#E5E7EB] text-center">
+            <div class="bg-[#F7F7F9] p-2 rounded-[6px]">
+              <span class="block text-xs font-bold text-[#111318]"><%= t.studentCount || 0 %></span>
+              <span class="text-[10px] text-[#8B8F99] uppercase font-semibold">Students</span>
+            </div>
+            <div class="bg-[#F7F7F9] p-2 rounded-[6px]">
+              <span class="block text-xs font-bold text-[#111318]"><%= t.adminCount || 0 %></span>
+              <span class="text-[10px] text-[#8B8F99] uppercase font-semibold">Admins</span>
+            </div>
+            <div class="bg-[#F7F7F9] p-2 rounded-[6px]">
+              <span class="block text-xs font-bold text-[#111318]"><%= t.bookCount || 0 %></span>
+              <span class="text-[10px] text-[#8B8F99] uppercase font-semibold">Books</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="pt-3 border-t border-[#E5E7EB] flex items-center justify-between">
+          <span class="text-[11px] text-[#8B8F99]">
+            ID: <span class="font-mono text-[#5B5F6B]"><%= t.id %></span>
+          </span>
+          <a href="/super-admin/tenants/<%= t.id %>" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs font-semibold bg-[#111318] text-white hover:bg-[#2C2E38] transition-colors">
+            <span>Manage</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
+        </div>
+
+      </div>
+    <% }); %>
+  </div>
+
+</div>

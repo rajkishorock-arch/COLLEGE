@@ -107,25 +107,44 @@
         <div class="flex items-center justify-center gap-2 mb-3">
           <i class="fa-solid fa-bolt text-[var(--warning)] text-xs"></i>
           <p class="text-[11px] font-semibold tracking-wider text-[#8B8F99] uppercase">
-            1-Click Demo Credentials
+            1-Click Multi-Tenant Demo Credentials
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-2.5">
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <!-- Tenant 1: Default -->
           <button 
             type="button" 
             onclick="fillCredentials('admin@college.edu', 'admin123')"
-            class="py-2.5 px-3 text-xs font-medium rounded-[8px] border border-[#DDD6FE] bg-[#EDE9FE]/50 hover:bg-[#EDE9FE] text-[#6C5CE7] transition-all text-center flex items-center justify-center gap-2 hover:scale-[1.02]"
+            class="py-2 px-2.5 rounded-[8px] border border-[#DDD6FE] bg-[#EDE9FE]/50 hover:bg-[#EDE9FE] text-[#6C5CE7] transition-all text-left flex items-center gap-2"
           >
-            <i class="fa-solid fa-crown"></i>
-            <span>Super Admin</span>
+            <i class="fa-solid fa-crown text-[10px]"></i>
+            <span class="truncate">Super Admin (CPIT)</span>
           </button>
           <button 
             type="button" 
             onclick="fillCredentials('alex@college.edu', 'student123')"
-            class="py-2.5 px-3 text-xs font-medium rounded-[8px] border border-[#E5E7EB] bg-[#F7F7F9] hover:bg-[#E5E7EB] text-[var(--accent-primary)] transition-all text-center flex items-center justify-center gap-2 hover:scale-[1.02]"
+            class="py-2 px-2.5 rounded-[8px] border border-[#E5E7EB] bg-[#F7F7F9] hover:bg-[#E5E7EB] text-[#111318] transition-all text-left flex items-center gap-2"
           >
-            <i class="fa-solid fa-graduation-cap"></i>
-            <span>Student Demo</span>
+            <i class="fa-solid fa-user-graduate text-[10px] text-[var(--accent-primary)]"></i>
+            <span class="truncate">Alex (CPIT Student)</span>
+          </button>
+          
+          <!-- Tenant 2: Apex Institute -->
+          <button 
+            type="button" 
+            onclick="fillCredentials('admin@apex.edu', 'admin123')"
+            class="py-2 px-2.5 rounded-[8px] border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-all text-left flex items-center gap-2"
+          >
+            <i class="fa-solid fa-building-columns text-[10px] text-emerald-600"></i>
+            <span class="truncate">Apex College Admin</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="fillCredentials('student@apex.edu', 'student123')"
+            class="py-2 px-2.5 rounded-[8px] border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 transition-all text-left flex items-center gap-2"
+          >
+            <i class="fa-solid fa-graduation-cap text-[10px] text-emerald-600"></i>
+            <span class="truncate">Sarah (Apex Student)</span>
           </button>
         </div>
       </div>

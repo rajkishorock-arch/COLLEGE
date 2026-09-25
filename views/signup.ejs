@@ -45,6 +45,28 @@
       <form action="/signup" method="POST" class="space-y-5">
         
         <div>
+          <label for="tenant_id" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-2">
+            Institution / College *
+          </label>
+          <select 
+            id="tenant_id" 
+            name="tenant_id" 
+            required
+            class="w-full px-4 py-3 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:border-[var(--accent-primary)] focus:outline-none"
+          >
+            <% if (typeof tenants !== 'undefined' && tenants && tenants.length > 0) { %>
+              <% tenants.forEach(t => { %>
+                <option value="<%= t.id %>" <%= (typeof selectedTenantId !== 'undefined' && selectedTenantId === t.id) || (typeof formData !== 'undefined' && formData.tenant_id === t.id) ? 'selected' : '' %>>
+                  <%= t.name %> (<%= t.code %>)
+                </option>
+              <% }); %>
+            <% } else { %>
+              <option value="tenant_default" selected>CampusPulse Institute of Technology (DEFAULT)</option>
+            <% } %>
+          </select>
+        </div>
+
+        <div>
           <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-2">
             Full Legal Name *
           </label>

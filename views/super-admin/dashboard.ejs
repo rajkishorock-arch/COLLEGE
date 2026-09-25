@@ -1,0 +1,234 @@
+<div class="space-y-6">
+  
+  <!-- Platform Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-[#1E1B4B] to-[#312E81] text-white p-6 sm:p-8 rounded-[16px] shadow-xl">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-purple-200 border border-white/20 mb-3">
+        <i class="fa-solid fa-crown text-[11px] text-amber-300"></i>
+        <span>Platform Super Administrator Control Plane</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight font-['Space_Grotesk']">
+        CampusPulse Multi-Tenant Platform
+      </h1>
+      <p class="text-purple-200 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+        Centralized management of collegiate institutions, tenant isolation enforcement, platform metrics, and administrative governance.
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <a href="/super-admin/tenants/new" class="inline-flex items-center gap-2 px-5 py-3 rounded-[10px] bg-white text-[#1E1B4B] font-bold text-sm shadow-md hover:bg-purple-50 transition-all">
+        <i class="fa-solid fa-plus text-xs"></i>
+        <span>Onboard Institution</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="p-4 rounded-[8px] bg-[#FEECEE] border border-[var(--danger)] text-[#E5384B] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-exclamation shrink-0 text-base"></i>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="p-4 rounded-[8px] bg-[#E8F8EE] border border-[var(--success)] text-[#1E9E57] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-check shrink-0 text-base"></i>
+      <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Platform Metric Grid -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- Institutions Total -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between text-[#5B5F6B] mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider">Total Institutions</span>
+        <div class="w-8 h-8 rounded-[8px] bg-purple-50 text-[var(--accent-primary)] flex items-center justify-center text-sm">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+      </div>
+      <div class="text-2xl font-bold text-[#111318] font-['Space_Grotesk']">
+        <%= stats.totalTenants %>
+      </div>
+      <div class="text-xs text-[#5B5F6B] mt-1 flex items-center gap-2">
+        <span class="text-emerald-600 font-semibold"><%= stats.activeTenants %> Active</span>
+        <span>•</span>
+        <span class="text-amber-600 font-semibold"><%= stats.suspendedTenants %> Suspended</span>
+      </div>
+    </div>
+
+    <!-- Total Platform Users -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between text-[#5B5F6B] mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider">Total SaaS Users</span>
+        <div class="w-8 h-8 rounded-[8px] bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+      <div class="text-2xl font-bold text-[#111318] font-['Space_Grotesk']">
+        <%= stats.totalUsers %>
+      </div>
+      <div class="text-xs text-[#5B5F6B] mt-1">
+        Across all isolated collegiate databases
+      </div>
+    </div>
+
+    <!-- Total Students -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between text-[#5B5F6B] mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider">Enrolled Students</span>
+        <div class="w-8 h-8 rounded-[8px] bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-user-graduate"></i>
+        </div>
+      </div>
+      <div class="text-2xl font-bold text-[#111318] font-['Space_Grotesk']">
+        <%= stats.totalStudents %>
+      </div>
+      <div class="text-xs text-[#5B5F6B] mt-1">
+        Verified student accounts
+      </div>
+    </div>
+
+    <!-- Total Administrators -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between text-[#5B5F6B] mb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider">Tenant Admins</span>
+        <div class="w-8 h-8 rounded-[8px] bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+      </div>
+      <div class="text-2xl font-bold text-[#111318] font-['Space_Grotesk']">
+        <%= stats.totalAdmins %>
+      </div>
+      <div class="text-xs text-[#5B5F6B] mt-1">
+        College & system administrators
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Institutions Grid & Overview -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Institutions List (2 cols) -->
+    <div class="lg:col-span-2 card p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-bold text-[#111318] font-['Space_Grotesk']">Institutions & Colleges</h2>
+          <p class="text-xs text-[#5B5F6B] mt-0.5">Currently provisioned SaaS collegiate tenants</p>
+        </div>
+        <a href="/super-admin/tenants" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1">
+          <span>View All (<%= totalTenantsCount %>)</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-[#E5E7EB] text-[#5B5F6B] text-[11px] uppercase tracking-wider font-semibold">
+              <th class="py-3 px-3">Institution</th>
+              <th class="py-3 px-3">Code / ID</th>
+              <th class="py-3 px-3">Students</th>
+              <th class="py-3 px-3">Admins</th>
+              <th class="py-3 px-3">Status</th>
+              <th class="py-3 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E5E7EB]">
+            <% tenants.forEach(t => { %>
+              <tr class="hover:bg-[#F7F7F9] transition-colors">
+                <td class="py-3.5 px-3">
+                  <div class="font-bold text-[#111318] flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full shrink-0" style="background-color: <%= t.primary_color || '#6C5CE7' %>"></span>
+                    <a href="/super-admin/tenants/<%= t.id %>" class="hover:text-[var(--accent-primary)] transition-colors">
+                      <%= t.name %>
+                    </a>
+                  </div>
+                  <div class="text-[11px] text-[#8B8F99] mt-0.5">
+                    <%= t.address || t.email || 'No address specified' %>
+                  </div>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F0EEFF] text-[#6C5CE7]">
+                    <%= t.code %>
+                  </span>
+                </td>
+                <td class="py-3.5 px-3 font-semibold text-[#111318]">
+                  <%= t.studentCount || 0 %>
+                </td>
+                <td class="py-3.5 px-3 font-semibold text-[#111318]">
+                  <%= t.adminCount || 0 %>
+                </td>
+                <td class="py-3.5 px-3">
+                  <% if (t.status === 'active') { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      Active
+                    </span>
+                  <% } else { %>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                      Suspended
+                    </span>
+                  <% } %>
+                </td>
+                <td class="py-3.5 px-3 text-right">
+                  <a href="/super-admin/tenants/<%= t.id %>" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-[6px] text-xs font-semibold bg-[#F7F7F9] hover:bg-[#E5E7EB] text-[#111318] transition-colors">
+                    <span>Manage</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Platform Audit & Security Card (1 col) -->
+    <div class="card p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-[#111318] font-['Space_Grotesk']">Platform Audit</h2>
+          <p class="text-xs text-[#5B5F6B] mt-0.5">Real-time cross-tenant governance log</p>
+        </div>
+        <a href="/super-admin/audit" class="text-xs font-semibold text-[var(--accent-primary)] hover:underline">
+          View All
+        </a>
+      </div>
+
+      <div class="space-y-3 flex-1 overflow-y-auto max-h-[360px] pr-1">
+        <% if (recentAudit && recentAudit.length > 0) { %>
+          <% recentAudit.forEach(log => { %>
+            <div class="p-3 rounded-[8px] bg-[#F7F7F9] border border-[#E5E7EB] text-xs">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="font-bold text-[#111318] truncate">
+                  <%= log.action %>
+                </span>
+                <span class="text-[10px] text-[#8B8F99] font-mono shrink-0">
+                  <%= new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+              </div>
+              <p class="text-[11px] text-[#5B5F6B] line-clamp-2 leading-relaxed">
+                <%= log.details %>
+              </p>
+              <div class="mt-2 flex items-center justify-between text-[10px] text-[#8B8F99]">
+                <span>By: <%= log.admin_name || 'System' %></span>
+                <span class="font-mono bg-white px-1.5 py-0.5 rounded border border-[#E5E7EB]"><%= log.tenant_code || log.tenant_id %></span>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="py-8 text-center text-xs text-[#8B8F99]">
+            <i class="fa-solid fa-shield text-2xl mb-2 text-[#D1D5DB] block"></i>
+            No platform audit events logged yet.
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+  </div>
+
+</div>

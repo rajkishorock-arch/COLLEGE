@@ -323,7 +323,138 @@ function runMigrations() {
     });
   }
 
-  console.log('✅ Migrations complete: all 11 modules initialized successfully.');
+  // 18. Multi-Tenant Architecture Migration
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tenants (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      short_name TEXT,
+      code TEXT UNIQUE NOT NULL,
+      subdomain TEXT UNIQUE,
+      logo TEXT,
+      primary_color TEXT DEFAULT '#6C5CE7',
+      secondary_color TEXT DEFAULT '#111318',
+      email TEXT,
+      phone TEXT,
+      address TEXT,
+      status TEXT CHECK(status IN ('active', 'suspended', 'inactive')) DEFAULT 'active',
+      academic_year TEXT DEFAULT '2025-2026',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Ensure default tenant exists
+  const defaultTenant = db.prepare("SELECT id FROM tenants WHERE id = 'tenant_default'").get();
+  if (!defaultTenant) {
+    db.prepare(`
+      INSERT INTO tenants (id, name, short_name, code, subdomain, email, phone, address, status, academic_year, primary_color, secondary_color)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'tenant_default',
+      'CampusPulse Institute of Technology',
+      'CPIT',
+      'DEFAULT',
+      'default',
+      'contact@college.edu',
+      '+1 (555) 234-5678',
+      '100 University Boulevard, Tech Campus',
+      'active',
+      '2025-2026',
+      '#6C5CE7',
+      '#111318'
+    );
+  }
+
+  // Ensure tenant_id exists across all application tables
+  const appTables = [
+    'users', 'attendance', 'attendance_sessions', 'results',
+    'books', 'book_issues', 'quizzes', 'quiz_questions', 'quiz_attempts',
+    'announcements', 'timetable', 'assignments', 'assignment_submissions',
+    'fees', 'notifications', 'audit_log'
+  ];
+
+  appTables.forEach(tableName => {
+    const tableInfo = db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`).get(tableName);
+    if (tableInfo) {
+      const cols = db.prepare(`PRAGMA table_info(${tableName})`).all().map(c => c.name);
+      if (!cols.includes('tenant_id')) {
+        db.exec(`ALTER TABLE ${tableName} ADD COLUMN tenant_id TEXT DEFAULT 'tenant_default';`);
+        db.exec(`UPDATE ${tableName} SET tenant_id = 'tenant_default' WHERE tenant_id IS NULL;`);
+      }
+    }
+  });
+
+  // Seed secondary tenant 'tenant_apex' for multi-tenant isolation testing & demonstration
+  const apexTenant = db.prepare("SELECT id FROM tenants WHERE id = 'tenant_apex'").get();
+  if (!apexTenant) {
+    db.prepare(`
+      INSERT INTO tenants (id, name, short_name, code, subdomain, email, phone, address, status, academic_year, primary_color, secondary_color)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'tenant_apex',
+      'Apex Institute of Technology',
+      'AIT',
+      'APEX',
+      'apex',
+      'contact@apex.edu',
+      '+1 (555) 876-5432',
+      '404 Innovation Way, Silicon Valley',
+      'active',
+      '2025-2026',
+      '#00B894',
+      '#0F172A'
+    );
+
+    // Seed Apex Admin & Student
+    const apexPassHash = bcrypt.hashSync('admin123', salt);
+    const apexStudentPassHash = bcrypt.hashSync('student123', salt);
+
+    const existingApexAdmin = db.prepare("SELECT id FROM users WHERE email = 'admin@apex.edu'").get();
+    if (!existingApexAdmin) {
+      db.prepare(`
+        INSERT INTO users (tenant_id, name, email, password, role, is_active, security_question, security_answer)
+        VALUES ('tenant_apex', 'Apex College Admin', 'admin@apex.edu', ?, 'admin', 1, 'What is your favorite subject?', ?)
+      `).run(apexPassHash, defaultAnswerHash);
+    }
+
+    const existingApexStudent = db.prepare("SELECT id FROM users WHERE email = 'student@apex.edu'").get();
+    let apexStudentId = existingApexStudent ? existingApexStudent.id : null;
+    if (!existingApexStudent) {
+      const res = db.prepare(`
+        INSERT INTO users (tenant_id, name, email, password, role, roll_no, course, is_active, security_question, security_answer)
+        VALUES ('tenant_apex', 'Sarah Connor', 'student@apex.edu', ?, 'student', 'AIT-2026-001', 'B.Tech Robotics & AI', 1, 'What is your favorite subject?', ?)
+      `).run(apexStudentPassHash, defaultAnswerHash);
+      apexStudentId = res.lastInsertRowid;
+    }
+
+    // Seed sample Apex Books
+    const apexBook = db.prepare(`
+      INSERT INTO books (tenant_id, title, author, category, total_copies, available_copies)
+      VALUES ('tenant_apex', ?, ?, ?, ?, ?)
+    `);
+    apexBook.run('Robotics: Modelling, Planning and Control', 'Bruno Siciliano', 'Robotics', 5, 5);
+    apexBook.run('Deep Learning for Computer Vision', 'Ian Goodfellow', 'Artificial Intelligence', 4, 3);
+
+    // Seed sample Apex Announcement
+    db.prepare(`
+      INSERT INTO announcements (tenant_id, title, body, posted_by, priority)
+      VALUES ('tenant_apex', 'Welcome to Apex Institute Fall Semester', 'Apex Institute of Technology welcomes all engineering students to the 2026 academic term.', 1, 'urgent')
+    `).run();
+
+    // Seed sample Apex Quiz
+    const apexQuiz = db.prepare(`
+      INSERT INTO quizzes (tenant_id, title, subject)
+      VALUES ('tenant_apex', 'Introduction to Autonomous Robotics', 'Robotics')
+    `).run();
+
+    db.prepare(`
+      INSERT INTO quiz_questions (tenant_id, quiz_id, question, option_a, option_b, option_c, option_d, correct_option)
+      VALUES ('tenant_apex', ?, 'What sensor is commonly used in autonomous robot mapping?', 'LiDAR', 'Barometer', 'Hydrometer', 'Thermopile', 'a')
+    `).run(apexQuiz.lastInsertRowid);
+  }
+
+  console.log('✅ Migrations complete: all 11 modules and multi-tenant SaaS architecture initialized successfully.');
 }
 
 module.exports = runMigrations;

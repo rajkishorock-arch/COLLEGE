@@ -9,6 +9,25 @@ function seedDatabase() {
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
   db.exec(schemaSql);
 
+  // Ensure default tenant exists
+  db.prepare(`
+    INSERT OR IGNORE INTO tenants (id, name, short_name, code, subdomain, email, phone, address, status, academic_year, primary_color, secondary_color)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    'tenant_default',
+    'CampusPulse Institute of Technology',
+    'CPIT',
+    'DEFAULT',
+    'default',
+    'contact@college.edu',
+    '+1 (555) 234-5678',
+    '100 University Boulevard, Tech Campus',
+    'active',
+    '2025-2026',
+    '#6C5CE7',
+    '#111318'
+  );
+
   // Check if admin already exists
   const existingAdmin = db.prepare("SELECT * FROM users WHERE email = ?").get('admin@college.edu');
   if (existingAdmin) {
@@ -24,8 +43,8 @@ function seedDatabase() {
 
   // 1. Insert Admin & Students
   const insertUser = db.prepare(`
-    INSERT INTO users (name, email, password, role, roll_no, course)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (tenant_id, name, email, password, role, roll_no, course)
+    VALUES ('tenant_default', ?, ?, ?, ?, ?, ?)
   `);
 
   const adminResult = insertUser.run('Campus Administrator', 'admin@college.edu', adminPassHash, 'super_admin', null, null);

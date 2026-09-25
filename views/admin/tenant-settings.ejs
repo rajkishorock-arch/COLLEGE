@@ -1,0 +1,223 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <!-- Breadcrumbs & Header -->
+  <div>
+    <div class="flex items-center gap-2">
+      <a href="/admin/dashboard" class="text-xs font-semibold text-[#8B8F99] hover:text-[#111318] transition-colors">
+        Admin Portal
+      </a>
+      <span class="text-[#8B8F99] text-xs">/</span>
+      <span class="text-xs font-semibold text-[#111318]">Institution Settings</span>
+    </div>
+    <h1 class="text-2xl font-bold text-[#111318] tracking-tight font-['Space_Grotesk'] mt-1">
+      Institution Profile & Branding
+    </h1>
+    <p class="text-xs sm:text-sm text-[#5B5F6B] mt-0.5">
+      Configure your institution's public profile, contact details, academic session, and custom portal branding.
+    </p>
+  </div>
+
+  <!-- Alerts -->
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="p-4 rounded-[8px] bg-[#FEECEE] border border-[var(--danger)] text-[#E5384B] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-exclamation shrink-0 text-base"></i>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="p-4 rounded-[8px] bg-[#E8F8EE] border border-[var(--success)] text-[#1E9E57] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-check shrink-0 text-base"></i>
+      <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Institution Overview Badge Card -->
+  <div class="card p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-4" style="border-left-color: <%= tenant ? (tenant.primary_color || '#6C5CE7') : '#6C5CE7' %>">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-lg font-bold text-[#111318] font-['Space_Grotesk']">
+          <%= tenant ? tenant.name : 'College Management' %>
+        </span>
+        <% if (tenant) { %>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-[#F0EEFF] text-[#6C5CE7]">
+            <%= tenant.code %>
+          </span>
+        <% } %>
+      </div>
+      <p class="text-xs text-[#5B5F6B]">
+        Tenant ID: <span class="font-mono text-[#111318]"><%= tenant ? tenant.id : 'tenant_default' %></span> • Status: <span class="text-emerald-600 font-semibold uppercase text-[10px]">Active</span>
+      </p>
+    </div>
+
+    <div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F7F7F9] border border-[#E5E7EB] text-[#111318]">
+        <i class="fa-solid fa-shield-halved text-[var(--accent-primary)]"></i>
+        <span>Tenant Isolated Data Plane</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Settings Form -->
+  <div class="card p-6 sm:p-8">
+    <form action="/admin/tenant-settings" method="POST" class="space-y-6">
+      
+      <!-- Institutional Info -->
+      <div>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-school"></i>
+          <span>Institutional Information</span>
+        </h2>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                Official College / Institution Name *
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required 
+                value="<%= tenant ? tenant.name : '' %>"
+                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+              />
+            </div>
+
+            <div>
+              <label for="short_name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                Short Name / Acronym
+              </label>
+              <input 
+                type="text" 
+                id="short_name" 
+                name="short_name" 
+                value="<%= tenant && tenant.short_name ? tenant.short_name : '' %>"
+                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                Official Administrative Email
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                value="<%= tenant && tenant.email ? tenant.email : '' %>"
+                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+              />
+            </div>
+
+            <div>
+              <label for="phone" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                Campus Telephone
+              </label>
+              <input 
+                type="text" 
+                id="phone" 
+                name="phone" 
+                value="<%= tenant && tenant.phone ? tenant.phone : '' %>"
+                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="address" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+              Campus Physical Address
+            </label>
+            <input 
+              type="text" 
+              id="address" 
+              name="address" 
+              value="<%= tenant && tenant.address ? tenant.address : '' %>"
+              class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Academic & Theming -->
+      <div class="pt-4 border-t border-[#E5E7EB]">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Academic Year & Portal Theming</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label for="academic_year" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+              Academic Session
+            </label>
+            <input 
+              type="text" 
+              id="academic_year" 
+              name="academic_year" 
+              value="<%= tenant && tenant.academic_year ? tenant.academic_year : '2025-2026' %>"
+              class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+            />
+          </div>
+
+          <div>
+            <label for="primary_color" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+              Primary Brand Accent
+            </label>
+            <div class="flex items-center gap-2">
+              <input 
+                type="color" 
+                value="<%= tenant && tenant.primary_color ? tenant.primary_color : '#6C5CE7' %>" 
+                onchange="document.getElementById('primary_color').value = this.value"
+                class="w-9 h-9 rounded border border-[#E5E7EB] cursor-pointer"
+              />
+              <input 
+                type="text" 
+                id="primary_color" 
+                name="primary_color" 
+                value="<%= tenant && tenant.primary_color ? tenant.primary_color : '#6C5CE7' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm font-mono text-[#111318]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="secondary_color" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+              Secondary Contrast Tone
+            </label>
+            <div class="flex items-center gap-2">
+              <input 
+                type="color" 
+                value="<%= tenant && tenant.secondary_color ? tenant.secondary_color : '#111318' %>" 
+                onchange="document.getElementById('secondary_color').value = this.value"
+                class="w-9 h-9 rounded border border-[#E5E7EB] cursor-pointer"
+              />
+              <input 
+                type="text" 
+                id="secondary_color" 
+                name="secondary_color" 
+                value="<%= tenant && tenant.secondary_color ? tenant.secondary_color : '#111318' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm font-mono text-[#111318]"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-6 border-t border-[#E5E7EB] flex items-center justify-end gap-3">
+        <a href="/admin/dashboard" class="px-5 py-2.5 rounded-[8px] text-xs font-semibold text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9] transition-colors">
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-primary px-6 py-2.5">
+          <i class="fa-solid fa-floppy-disk text-xs mr-1.5"></i>
+          Save Institution Settings
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

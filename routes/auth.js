@@ -89,6 +89,18 @@ router.post('/login', (req, res) => {
       });
     }
 
+    // 2b. Tenant Status Check: If user's tenant is suspended, reject login unless super_admin
+    const userTenantId = user.tenant_id || 'tenant_default';
+    const userTenant = db.prepare('SELECT * FROM tenants WHERE id = ?').get(userTenantId);
+    if (userTenant && userTenant.status === 'suspended' && user.role !== 'super_admin') {
+      return res.render('login', {
+        title: 'Sign In - College Management Platform',
+        error: 'Access Denied: Your institution account has been temporarily suspended by platform administration.',
+        success: null,
+        layout: false
+      });
+    }
+
     // 3. Password Verification
     const isMatch = bcrypt.compareSync(password, user.password);
     if (!isMatch) {
@@ -112,7 +124,7 @@ router.post('/login', (req, res) => {
         `).run(newAttempts, lockUntilIso, nowIso, user.id);
 
         if (user.role === 'admin' || user.role === 'super_admin') {
-          logAudit(user.id, 'Account Locked', `Account ${user.email} locked after 5 failed login attempts.`, user.id);
+          logAudit(user.id, 'Account Locked', `Account ${user.email} locked after 5 failed login attempts.`, user.id, userTenantId);
         }
 
         return res.render('login', {
@@ -141,14 +153,15 @@ router.post('/login', (req, res) => {
     // Login successful: reset failed attempt counters
     db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL, last_failed_at = NULL WHERE id = ?').run(user.id);
 
-    // Save session
+    // Save session with tenantId
     req.session.user = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       roll_no: user.roll_no,
-      course: user.course
+      course: user.course,
+      tenantId: userTenantId
     };
 
     req.session.save((saveErr) => {
@@ -179,10 +192,16 @@ router.get('/signup', (req, res) => {
         : '/student/dashboard'
     );
   }
+
+  const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();
+
   res.render('signup', {
     title: 'Student Registration - College Management Platform',
     error: req.query.error || null,
     success: null,
+    tenants,
+    selectedTenantId: req.query.tenant || 'tenant_default',
+    formData: {},
     layout: false
   });
 });
@@ -192,6 +211,9 @@ router.post('/signup', (req, res) => {
   // Strip any untrusted role input from public form
   delete req.body.role;
   const { name, email, password, confirm_password, roll_no, course } = req.body;
+  const tenantId = req.body.tenant_id || 'tenant_default';
+
+  const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();
 
   // Validation
   if (!name || !email || !password || !roll_no || !course) {
@@ -199,6 +221,8 @@ router.post('/signup', (req, res) => {
       title: 'Student Registration - College Management Platform',
       error: 'All fields are required.',
       success: null,
+      tenants,
+      selectedTenantId: tenantId,
       formData: req.body,
       layout: false
     });
@@ -209,6 +233,8 @@ router.post('/signup', (req, res) => {
       title: 'Student Registration - College Management Platform',
       error: 'Password must be at least 6 characters long.',
       success: null,
+      tenants,
+      selectedTenantId: tenantId,
       formData: req.body,
       layout: false
     });
@@ -219,31 +245,51 @@ router.post('/signup', (req, res) => {
       title: 'Student Registration - College Management Platform',
       error: 'Passwords do not match.',
       success: null,
+      tenants,
+      selectedTenantId: tenantId,
       formData: req.body,
       layout: false
     });
   }
 
   try {
-    // Check if email already in use
+    // Verify target tenant exists and is active
+    const tenant = db.prepare("SELECT id FROM tenants WHERE id = ? AND status = 'active'").get(tenantId);
+    if (!tenant) {
+      return res.render('signup', {
+        title: 'Student Registration - College Management Platform',
+        error: 'Selected institution is not active or invalid.',
+        success: null,
+        tenants,
+        selectedTenantId: 'tenant_default',
+        formData: req.body,
+        layout: false
+      });
+    }
+
+    // Check if email already in use globally
     const existingEmail = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim());
     if (existingEmail) {
       return res.render('signup', {
         title: 'Student Registration - College Management Platform',
         error: 'An account with this email address already exists.',
         success: null,
+        tenants,
+        selectedTenantId: tenantId,
         formData: req.body,
         layout: false
       });
     }
 
-    // Check if roll number already in use
-    const existingRoll = db.prepare('SELECT id FROM users WHERE LOWER(roll_no) = LOWER(?)').get(roll_no.trim());
+    // Check if roll number already in use within this institution
+    const existingRoll = db.prepare('SELECT id FROM users WHERE LOWER(roll_no) = LOWER(?) AND tenant_id = ?').get(roll_no.trim(), tenantId);
     if (existingRoll) {
       return res.render('signup', {
         title: 'Student Registration - College Management Platform',
-        error: 'A student with this Roll Number is already registered.',
+        error: 'A student with this Roll Number is already registered in this institution.',
         success: null,
+        tenants,
+        selectedTenantId: tenantId,
         formData: req.body,
         layout: false
       });
@@ -258,13 +304,14 @@ router.post('/signup', (req, res) => {
     const rawAnswer = (req.body.security_answer || 'computer science').trim().toLowerCase();
     const hashedAnswer = bcrypt.hashSync(rawAnswer, salt);
 
-    // Insert new student user
+    // Insert new student user under target tenant
     const insert = db.prepare(`
-      INSERT INTO users (name, email, password, role, roll_no, course, security_question, security_answer)
-      VALUES (?, ?, ?, 'student', ?, ?, ?, ?)
+      INSERT INTO users (tenant_id, name, email, password, role, roll_no, course, security_question, security_answer)
+      VALUES (?, ?, ?, ?, 'student', ?, ?, ?, ?)
     `);
 
     insert.run(
+      tenantId,
       name.trim(),
       email.trim().toLowerCase(),
       hashedPassword,
@@ -282,6 +329,8 @@ router.post('/signup', (req, res) => {
       title: 'Student Registration - College Management Platform',
       error: 'An error occurred while creating your account. Please try again.',
       success: null,
+      tenants,
+      selectedTenantId: tenantId,
       formData: req.body,
       layout: false
     });

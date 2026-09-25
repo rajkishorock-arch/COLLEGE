@@ -1,0 +1,312 @@
+<div class="space-y-6">
+  
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2">
+    <a href="/super-admin" class="text-xs font-semibold text-[#8B8F99] hover:text-[#111318] transition-colors">
+      Platform Admin
+    </a>
+    <span class="text-[#8B8F99] text-xs">/</span>
+    <a href="/super-admin/tenants" class="text-xs font-semibold text-[#8B8F99] hover:text-[#111318] transition-colors">
+      Institutions
+    </a>
+    <span class="text-[#8B8F99] text-xs">/</span>
+    <span class="text-xs font-semibold text-[#111318]"><%= tenant.name %></span>
+  </div>
+
+  <!-- Header Card -->
+  <div class="card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-l-4" style="border-left-color: <%= tenant.primary_color || '#6C5CE7' %>">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <h1 class="text-xl sm:text-2xl font-bold text-[#111318] font-['Space_Grotesk'] tracking-tight">
+          <%= tenant.name %>
+        </h1>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-[#F0EEFF] text-[#6C5CE7]">
+          <%= tenant.code %>
+        </span>
+        <% if (tenant.status === 'active') { %>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Active
+          </span>
+        <% } else { %>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            Suspended
+          </span>
+        <% } %>
+      </div>
+      <p class="text-xs text-[#5B5F6B]">
+        Tenant ID: <span class="font-mono text-[#111318]"><%= tenant.id %></span> • Academic Year: <%= tenant.academic_year || '2025-2026' %>
+      </p>
+    </div>
+
+    <!-- Suspension / Activation Form -->
+    <% if (tenant.id !== 'tenant_default') { %>
+      <div>
+        <form action="/super-admin/tenants/<%= tenant.id %>/status" method="POST" onsubmit="return confirm('Are you sure you want to change this institution\'s operational status?');">
+          <% if (tenant.status === 'active') { %>
+            <input type="hidden" name="status" value="suspended">
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors">
+              <i class="fa-solid fa-ban"></i>
+              <span>Suspend Institution</span>
+            </button>
+          <% } else { %>
+            <input type="hidden" name="status" value="active">
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Reactivate Institution</span>
+            </button>
+          <% } %>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Alerts -->
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="p-4 rounded-[8px] bg-[#FEECEE] border border-[var(--danger)] text-[#E5384B] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-exclamation shrink-0 text-base"></i>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="p-4 rounded-[8px] bg-[#E8F8EE] border border-[var(--success)] text-[#1E9E57] text-sm font-medium flex items-center gap-3">
+      <i class="fa-solid fa-circle-check shrink-0 text-base"></i>
+      <span><%= success %></span>
+    </div>
+  <% } %>
+
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Left Column: Metadata & Edit (2 cols) -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Metadata Edit Form -->
+      <div class="card p-6">
+        <h2 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-4">
+          Institution Profile & Configuration
+        </h2>
+
+        <form action="/super-admin/tenants/<%= tenant.id %>/update" method="POST" class="space-y-4">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Institution Name
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required 
+                value="<%= tenant.name %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+              />
+            </div>
+
+            <div>
+              <label for="short_name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Short Name / Acronym
+              </label>
+              <input 
+                type="text" 
+                id="short_name" 
+                name="short_name" 
+                value="<%= tenant.short_name || '' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Official Support Email
+              </label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                value="<%= tenant.email || '' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+              />
+            </div>
+
+            <div>
+              <label for="phone" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Official Phone
+              </label>
+              <input 
+                type="text" 
+                id="phone" 
+                name="phone" 
+                value="<%= tenant.phone || '' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="address" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+              Campus Address
+            </label>
+            <input 
+              type="text" 
+              id="address" 
+              name="address" 
+              value="<%= tenant.address || '' %>"
+              class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="academic_year" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Academic Year
+              </label>
+              <input 
+                type="text" 
+                id="academic_year" 
+                name="academic_year" 
+                value="<%= tenant.academic_year || '2025-2026' %>"
+                class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318]"
+              />
+            </div>
+
+            <div>
+              <label for="primary_color" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Primary Brand Color
+              </label>
+              <div class="flex items-center gap-2">
+                <input 
+                  type="color" 
+                  value="<%= tenant.primary_color || '#6C5CE7' %>" 
+                  onchange="document.getElementById('primary_color').value = this.value"
+                  class="w-8 h-8 rounded border border-[#E5E7EB] cursor-pointer"
+                />
+                <input 
+                  type="text" 
+                  id="primary_color" 
+                  name="primary_color" 
+                  value="<%= tenant.primary_color || '#6C5CE7' %>"
+                  class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm font-mono text-[#111318]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label for="secondary_color" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1">
+                Secondary Color
+              </label>
+              <div class="flex items-center gap-2">
+                <input 
+                  type="color" 
+                  value="<%= tenant.secondary_color || '#111318' %>" 
+                  onchange="document.getElementById('secondary_color').value = this.value"
+                  class="w-8 h-8 rounded border border-[#E5E7EB] cursor-pointer"
+                />
+                <input 
+                  type="text" 
+                  id="secondary_color" 
+                  name="secondary_color" 
+                  value="<%= tenant.secondary_color || '#111318' %>"
+                  class="w-full px-3 py-2 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm font-mono text-[#111318]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 flex justify-end">
+            <button type="submit" class="btn btn-primary px-5 py-2">
+              Save Changes
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- College Administrators List -->
+      <div class="card p-6">
+        <h2 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-3">
+          College Administrators (<%= admins.length %>)
+        </h2>
+        <p class="text-xs text-[#5B5F6B] mb-4">
+          Authorized personnel permitted to administer this institution's data plane.
+        </p>
+
+        <div class="divide-y divide-[#E5E7EB]">
+          <% admins.forEach(admin => { %>
+            <div class="py-3 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-sm text-[#111318]"><%= admin.name %></span>
+                <span class="text-xs text-[#5B5F6B] block"><%= admin.email %></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F0EEFF] text-[#6C5CE7]">
+                  <%= admin.role %>
+                </span>
+                <% if (admin.is_active === 1) { %>
+                  <span class="text-xs text-emerald-600 font-semibold">Active</span>
+                <% } else { %>
+                  <span class="text-xs text-rose-600 font-semibold">Deactivated</span>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Institution Stats & Audit (1 col) -->
+    <div class="space-y-6">
+      
+      <!-- Stats Card -->
+      <div class="card p-5">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#5B5F6B] mb-3">
+          Institution Metrics
+        </h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[#E5E7EB] text-xs">
+            <span class="text-[#5B5F6B]">Enrolled Students</span>
+            <span class="font-bold text-[#111318]"><%= studentsCount %></span>
+          </div>
+          <div class="flex items-center justify-between pb-2 border-b border-[#E5E7EB] text-xs">
+            <span class="text-[#5B5F6B]">Assigned Administrators</span>
+            <span class="font-bold text-[#111318]"><%= admins.length %></span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[#5B5F6B]">Created Timestamp</span>
+            <span class="font-mono text-[#8B8F99]"><%= tenant.created_at ? new Date(tenant.created_at).toLocaleDateString() : 'N/A' %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Audit -->
+      <div class="card p-5">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#5B5F6B] mb-3">
+          Recent Institution Activity
+        </h3>
+        <div class="space-y-2.5 max-h-[350px] overflow-y-auto">
+          <% if (auditLogs && auditLogs.length > 0) { %>
+            <% auditLogs.forEach(log => { %>
+              <div class="p-2.5 rounded-[6px] bg-[#F7F7F9] border border-[#E5E7EB] text-xs">
+                <div class="font-semibold text-[#111318]"><%= log.action %></div>
+                <div class="text-[11px] text-[#5B5F6B] mt-0.5"><%= log.details %></div>
+                <div class="text-[10px] text-[#8B8F99] mt-1"><%= new Date(log.created_at).toLocaleString() %></div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="text-center py-6 text-xs text-[#8B8F99]">
+              No audit records for this institution yet.
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
