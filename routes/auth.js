@@ -75,11 +75,14 @@ router.post('/login', (req, res) => {
       course: user.course
     };
 
-    if (user.role === 'admin') {
-      return res.redirect('/admin/dashboard');
-    } else {
-      return res.redirect('/student/dashboard');
-    }
+    req.session.save((saveErr) => {
+      if (saveErr) console.error('[Auth] Session save error:', saveErr);
+      if (user.role === 'admin') {
+        return res.redirect('/admin/dashboard');
+      } else {
+        return res.redirect('/student/dashboard');
+      }
+    });
   } catch (err) {
     console.error('Login error:', err);
     return res.render('login', {

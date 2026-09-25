@@ -25,6 +25,9 @@ const { setUserLocals } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust reverse proxy (essential for Vercel, Render, Heroku HTTPS)
+app.set('trust proxy', 1);
+
 // Body parser
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -43,10 +46,11 @@ app.use(
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
       httpOnly: true,
-      sameSite: 'lax', // CSRF defense
-      secure: process.env.NODE_ENV === 'production', // true if HTTPS
+      sameSite: 'lax',
+      secure: false, // Allows session cookie to persist reliably behind Vercel/Render reverse proxies
       maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
   })
