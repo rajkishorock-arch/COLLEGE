@@ -53,7 +53,7 @@
                 </span>
               <% } %>
             </div>
-            <form action="/<%= user.role %>/notifications/read-all" method="POST" class="inline">
+            <form action="/<%= user.role === 'student' ? 'student' : 'admin' %>/notifications/read-all" method="POST" class="inline">
               <button type="submit" class="text-[11px] font-semibold text-[var(--accent-primary)] hover:underline">
                 Mark all read
               </button>
@@ -107,13 +107,13 @@
       </div>
 
       <!-- Role Badge -->
-      <span class="status-pill text-xs font-semibold <%= user.role === 'admin' ? 'badge-warning' : 'badge-accent' %>">
-        <i class="fa-solid <%= user.role === 'admin' ? 'fa-shield-halved' : 'fa-user' %> text-[10px]"></i>
-        <%= user.role === 'admin' ? 'Administrator' : 'Student' %>
+      <span class="status-pill text-xs font-semibold <%= user.role === 'super_admin' ? 'bg-[#EDE9FE] text-[#6C5CE7] border border-[#DDD6FE]' : (user.role === 'admin' ? 'badge-warning' : 'badge-accent') %>">
+        <i class="fa-solid <%= user.role === 'super_admin' ? 'fa-crown' : (user.role === 'admin' ? 'fa-shield-halved' : 'fa-graduation-cap') %> text-[10px]"></i>
+        <%= user.role === 'super_admin' ? 'Super Admin' : (user.role === 'admin' ? 'Admin Staff' : 'Student') %>
       </span>
 
       <!-- User Profile Link & Avatar -->
-      <a href="/<%= user.role %>/profile" class="hidden sm:flex items-center gap-2 pl-3 border-l border-[#E5E7EB] group hover:opacity-90 transition-all">
+      <a href="<%= user.role === 'student' ? '/student/profile' : '/admin/profile' %>" class="hidden sm:flex items-center gap-2 pl-3 border-l border-[#E5E7EB] group hover:opacity-90 transition-all">
         <% if (user.profile_photo) { %>
           <img 
             src="<%= user.profile_photo %>" 

@@ -3,7 +3,7 @@
   
   <!-- Brand Header -->
   <div class="h-16 flex items-center justify-between px-6 bg-[#FAFAFB] border-b border-[#E5E7EB]">
-    <a href="<%= user && user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard' %>" class="flex items-center gap-3">
+    <a href="<%= user && (user.role === 'admin' || user.role === 'super_admin') ? '/admin/dashboard' : '/student/dashboard' %>" class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-[8px] bg-[var(--accent-primary)] flex items-center justify-center text-white shadow-md shadow-[var(--accent-glow)] font-bold">
         <i class="fa-solid fa-graduation-cap text-lg"></i>
       </div>
@@ -90,7 +90,7 @@
         <span>My Profile</span>
       </a>
 
-    <% } else if (user && user.role === 'admin') { %>
+    <% } else if (user && (user.role === 'admin' || user.role === 'super_admin')) { %>
       
       <div class="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
         Institutional Management
@@ -150,6 +150,20 @@
         <span>Quizzes</span>
       </a>
 
+      <div class="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-[#8B8F99]">
+        System & Security
+      </div>
+
+      <% if (user.role === 'super_admin') { %>
+        <a href="/admin/manage-admins" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'manage-admins') ? 'active' : '' %>">
+          <i class="fa-solid fa-user-shield w-5 text-center text-sm text-[var(--accent-primary)]"></i>
+          <span class="flex items-center gap-1.5">
+            Manage Admins
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"></span>
+          </span>
+        </a>
+      <% } %>
+
       <a href="/admin/audit-log" class="sidebar-link <%= (typeof pageName !== 'undefined' && pageName === 'audit-log') ? 'active' : '' %>">
         <i class="fa-solid fa-clock-rotate-left w-5 text-center text-sm"></i>
         <span>Audit History</span>
@@ -167,7 +181,7 @@
   <!-- User Profile Section in Sidebar -->
   <% if (user) { %>
     <div class="p-3 border-t border-[#E5E7EB] bg-[#FAFAFB]">
-      <a href="/<%= user.role %>/profile" class="flex items-center gap-3 p-1.5 rounded-[8px] hover:bg-[#F7F7F9] transition-colors mb-2.5">
+      <a href="<%= user.role === 'student' ? '/student/profile' : '/admin/profile' %>" class="flex items-center gap-3 p-1.5 rounded-[8px] hover:bg-[#F7F7F9] transition-colors mb-2.5">
         <% if (user.profile_photo) { %>
           <img 
             src="<%= user.profile_photo %>" 

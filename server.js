@@ -39,22 +39,41 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session management with SameSite=Lax and env secret
+// Session management with configurable inactivity timeout (.env SESSION_TIMEOUT_MINUTES)
 const sessionSecret = process.env.SESSION_SECRET || 'fallback-college-secret-key-39824';
+const sessionTimeoutMinutes = parseInt(process.env.SESSION_TIMEOUT_MINUTES, 10) || 60;
+const sessionTimeoutMs = sessionTimeoutMinutes * 60 * 1000;
+
 app.use(
   session({
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Automatically resets cookie expiry timer on every active user interaction
     proxy: true,
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
       secure: false, // Allows session cookie to persist reliably behind Vercel/Render reverse proxies
-      maxAge: 1000 * 60 * 60 * 24 // 24 hours
+      maxAge: sessionTimeoutMs
     }
   })
 );
+
+// Inactivity session expiration middleware (double-checks server-side timestamp)
+app.use((req, res, next) => {
+  if (req.session && req.session.user) {
+    const now = Date.now();
+    if (req.session.lastActivity && (now - req.session.lastActivity > sessionTimeoutMs)) {
+      req.session.destroy(() => {
+        res.redirect('/login?error=' + encodeURIComponent('Your session has expired due to inactivity. Please sign in again.'));
+      });
+      return;
+    }
+    req.session.lastActivity = now;
+  }
+  next();
+});
 
 // Serve static assets
 app.use(express.static(path.join(__dirname, 'public')));

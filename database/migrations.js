@@ -110,7 +110,38 @@ function runMigrations() {
     );
   `);
 
-  // 8. Safely add columns to users (profile_photo, security_question, security_answer)
+  // 8. Safely upgrade users table schema for 'super_admin' role & security columns
+  const userTableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").get();
+  if (userTableInfo && !userTableInfo.sql.includes('super_admin')) {
+    console.log('🔄 Upgrading users table schema to support super_admin and security columns...');
+    db.exec(`
+      PRAGMA foreign_keys = OFF;
+      CREATE TABLE users_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT CHECK(role IN ('student', 'admin', 'super_admin')) NOT NULL DEFAULT 'student',
+        roll_no TEXT UNIQUE,
+        course TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        profile_photo TEXT,
+        security_question TEXT,
+        security_answer TEXT,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        failed_attempts INTEGER NOT NULL DEFAULT 0,
+        locked_until DATETIME,
+        last_failed_at DATETIME
+      );
+      INSERT INTO users_new (id, name, email, password, role, roll_no, course, created_at, profile_photo, security_question, security_answer)
+        SELECT id, name, email, password, role, roll_no, course, created_at, profile_photo, security_question, security_answer FROM users;
+      DROP TABLE users;
+      ALTER TABLE users_new RENAME TO users;
+      PRAGMA foreign_keys = ON;
+    `);
+  }
+
+  // Ensure security columns exist in users table
   const userColumns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
   if (!userColumns.includes('profile_photo')) {
     db.exec("ALTER TABLE users ADD COLUMN profile_photo TEXT;");
@@ -120,6 +151,27 @@ function runMigrations() {
   }
   if (!userColumns.includes('security_answer')) {
     db.exec("ALTER TABLE users ADD COLUMN security_answer TEXT;");
+  }
+  if (!userColumns.includes('is_active')) {
+    db.exec("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1;");
+  }
+  if (!userColumns.includes('failed_attempts')) {
+    db.exec("ALTER TABLE users ADD COLUMN failed_attempts INTEGER NOT NULL DEFAULT 0;");
+  }
+  if (!userColumns.includes('locked_until')) {
+    db.exec("ALTER TABLE users ADD COLUMN locked_until DATETIME;");
+  }
+  if (!userColumns.includes('last_failed_at')) {
+    db.exec("ALTER TABLE users ADD COLUMN last_failed_at DATETIME;");
+  }
+
+  // Update seeded primary admin to super_admin
+  db.prepare("UPDATE users SET role = 'super_admin' WHERE email = 'admin@college.edu'").run();
+
+  // Ensure audit_log has target_user_id
+  const auditColumns = db.prepare("PRAGMA table_info(audit_log)").all().map(c => c.name);
+  if (!auditColumns.includes('target_user_id')) {
+    db.exec("ALTER TABLE audit_log ADD COLUMN target_user_id INTEGER;");
   }
 
   // 9. Safely add semester column to results
@@ -141,7 +193,7 @@ function runMigrations() {
   // 11. Seed initial sample announcements if empty
   const announceCount = db.prepare("SELECT COUNT(*) as count FROM announcements").get().count;
   if (announceCount === 0) {
-    const admin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+    const admin = db.prepare("SELECT id FROM users WHERE role IN ('admin', 'super_admin') LIMIT 1").get();
     const adminId = admin ? admin.id : 1;
     const insertAnnounce = db.prepare(`
       INSERT INTO announcements (title, body, posted_by, priority, created_at)
@@ -178,7 +230,7 @@ function runMigrations() {
   // 13. Seed sample assignments if empty
   const assignmentCount = db.prepare("SELECT COUNT(*) as count FROM assignments").get().count;
   if (assignmentCount === 0) {
-    const admin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+    const admin = db.prepare("SELECT id FROM users WHERE role IN ('admin', 'super_admin') LIMIT 1").get();
     const adminId = admin ? admin.id : 1;
     const insertAssign = db.prepare(`
       INSERT INTO assignments (title, subject, description, due_date, created_by, created_at)

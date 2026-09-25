@@ -29,17 +29,35 @@ function requireStudent(req, res, next) {
 }
 
 /**
- * Ensures user is authenticated and has 'admin' role
+ * Ensures user is authenticated and has 'admin' or 'super_admin' role
  */
 function requireAdmin(req, res, next) {
   if (!req.session || !req.session.user) {
     return res.redirect('/login?error=' + encodeURIComponent('Please sign in with administrator credentials.'));
   }
-  if (req.session.user.role !== 'admin') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'super_admin') {
     return res.status(403).render('error', {
       statusCode: 403,
       title: '403 Forbidden',
       message: 'Access Denied: Administrative privileges are required for this section.',
+      user: req.session.user
+    });
+  }
+  next();
+}
+
+/**
+ * Ensures user is authenticated and has 'super_admin' role
+ */
+function requireSuperAdmin(req, res, next) {
+  if (!req.session || !req.session.user) {
+    return res.redirect('/login?error=' + encodeURIComponent('Please sign in with administrator credentials.'));
+  }
+  if (req.session.user.role !== 'super_admin') {
+    return res.status(403).render('error', {
+      statusCode: 403,
+      title: '403 Forbidden',
+      message: 'Access Denied: Super Administrator privileges are required to access this section.',
       user: req.session.user
     });
   }
@@ -54,9 +72,20 @@ const db = require('../config/db');
 function setUserLocals(req, res, next) {
   if (req.session && req.session.user) {
     try {
-      const freshUser = db.prepare("SELECT id, name, email, role, roll_no, course, profile_photo FROM users WHERE id = ?").get(req.session.user.id);
+      const freshUser = db.prepare("SELECT id, name, email, role, roll_no, course, profile_photo, is_active FROM users WHERE id = ?").get(req.session.user.id);
+      
+      // If user account was deactivated, terminate session immediately
+      if (freshUser && freshUser.is_active === 0) {
+        req.session.destroy(() => {
+          res.redirect('/login?error=' + encodeURIComponent('Your account has been deactivated. Please contact an administrator.'));
+        });
+        return;
+      }
+
       res.locals.user = freshUser || req.session.user;
       req.session.user = res.locals.user;
+      res.locals.isSuperAdmin = Boolean(res.locals.user && res.locals.user.role === 'super_admin');
+      res.locals.isAdmin = Boolean(res.locals.user && (res.locals.user.role === 'admin' || res.locals.user.role === 'super_admin'));
 
       // Unread notifications count
       const unreadCount = db.prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0").get(req.session.user.id);
@@ -68,11 +97,15 @@ function setUserLocals(req, res, next) {
     } catch (err) {
       console.error('[Middleware:setUserLocals]', err.message);
       res.locals.user = req.session.user;
+      res.locals.isSuperAdmin = Boolean(req.session.user && req.session.user.role === 'super_admin');
+      res.locals.isAdmin = Boolean(req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'super_admin'));
       res.locals.unreadNotifCount = 0;
       res.locals.recentNotifications = [];
     }
   } else {
     res.locals.user = null;
+    res.locals.isSuperAdmin = false;
+    res.locals.isAdmin = false;
     res.locals.unreadNotifCount = 0;
     res.locals.recentNotifications = [];
   }
@@ -85,5 +118,6 @@ module.exports = {
   requireAuth,
   requireStudent,
   requireAdmin,
+  requireSuperAdmin,
   setUserLocals
 };

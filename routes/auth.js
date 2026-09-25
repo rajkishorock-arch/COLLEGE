@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const { logAudit } = require('../utils/audit');
 
 // Root redirect
 router.get('/', (req, res) => {
   if (req.session && req.session.user) {
-    if (req.session.user.role === 'admin') {
+    if (req.session.user.role === 'admin' || req.session.user.role === 'super_admin') {
       return res.redirect('/admin/dashboard');
     }
     return res.redirect('/student/dashboard');
@@ -17,7 +18,7 @@ router.get('/', (req, res) => {
 // GET /login
 router.get('/login', (req, res) => {
   if (req.session && req.session.user) {
-    if (req.session.user.role === 'admin') {
+    if (req.session.user.role === 'admin' || req.session.user.role === 'super_admin') {
       return res.redirect('/admin/dashboard');
     }
     return res.redirect('/student/dashboard');
@@ -55,15 +56,87 @@ router.post('/login', (req, res) => {
       });
     }
 
-    const isMatch = bcrypt.compareSync(password, user.password);
-    if (!isMatch) {
+    // 1. Account Lockout Check (Brute-force protection: 5 failed attempts in 15 mins = 15 min lock)
+    if (user.locked_until) {
+      const lockExpiry = new Date(user.locked_until);
+      const now = new Date();
+      if (lockExpiry > now) {
+        const remainingMinutes = Math.ceil((lockExpiry - now) / 60000);
+        return res.render('login', {
+          title: 'Sign In - College Management Platform',
+          error: `Account temporarily locked due to multiple failed login attempts. Please try again after ${remainingMinutes} minute(s).`,
+          success: null,
+          layout: false
+        });
+      } else {
+        // Lock expired, reset counters
+        db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?').run(user.id);
+        user.failed_attempts = 0;
+        user.locked_until = null;
+      }
+    }
+
+    // 2. Active Status Check
+    if (user.is_active === 0) {
       return res.render('login', {
         title: 'Sign In - College Management Platform',
-        error: 'Invalid email or password.',
+        error: 'Account has been deactivated. Please contact an administrator.',
         success: null,
         layout: false
       });
     }
+
+    // 3. Password Verification
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch) {
+      // Check attempt window (15 minutes)
+      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+      const lastFailed = user.last_failed_at ? new Date(user.last_failed_at) : null;
+      let newAttempts = 1;
+
+      if (lastFailed && lastFailed > fifteenMinsAgo) {
+        newAttempts = (user.failed_attempts || 0) + 1;
+      }
+
+      const nowIso = new Date().toISOString();
+
+      if (newAttempts >= 5) {
+        const lockUntilIso = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+        db.prepare(`
+          UPDATE users 
+          SET failed_attempts = ?, locked_until = ?, last_failed_at = ?
+          WHERE id = ?
+        `).run(newAttempts, lockUntilIso, nowIso, user.id);
+
+        if (user.role === 'admin' || user.role === 'super_admin') {
+          logAudit(user.id, 'Account Locked', `Account ${user.email} locked after 5 failed login attempts.`, user.id);
+        }
+
+        return res.render('login', {
+          title: 'Sign In - College Management Platform',
+          error: 'Account temporarily locked due to multiple failed login attempts. Please try again after 15 minutes.',
+          success: null,
+          layout: false
+        });
+      } else {
+        db.prepare(`
+          UPDATE users 
+          SET failed_attempts = ?, last_failed_at = ?
+          WHERE id = ?
+        `).run(newAttempts, nowIso, user.id);
+
+        const remaining = 5 - newAttempts;
+        return res.render('login', {
+          title: 'Sign In - College Management Platform',
+          error: `Invalid email or password. (${remaining} attempt${remaining === 1 ? '' : 's'} remaining before temporary lockout)`,
+          success: null,
+          layout: false
+        });
+      }
+    }
+
+    // Login successful: reset failed attempt counters
+    db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL, last_failed_at = NULL WHERE id = ?').run(user.id);
 
     // Save session
     req.session.user = {
@@ -77,7 +150,7 @@ router.post('/login', (req, res) => {
 
     req.session.save((saveErr) => {
       if (saveErr) console.error('[Auth] Session save error:', saveErr);
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'super_admin') {
         return res.redirect('/admin/dashboard');
       } else {
         return res.redirect('/student/dashboard');
@@ -97,7 +170,11 @@ router.post('/login', (req, res) => {
 // GET /signup
 router.get('/signup', (req, res) => {
   if (req.session && req.session.user) {
-    return res.redirect(req.session.user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard');
+    return res.redirect(
+      (req.session.user.role === 'admin' || req.session.user.role === 'super_admin')
+        ? '/admin/dashboard'
+        : '/student/dashboard'
+    );
   }
   res.render('signup', {
     title: 'Student Registration - College Management Platform',
@@ -109,6 +186,8 @@ router.get('/signup', (req, res) => {
 
 // POST /signup
 router.post('/signup', (req, res) => {
+  // Strip any untrusted role input from public form
+  delete req.body.role;
   const { name, email, password, confirm_password, roll_no, course } = req.body;
 
   // Validation

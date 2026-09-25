@@ -34,7 +34,7 @@
 
       <% if (typeof user !== 'undefined' && user) { %>
         <a 
-          href="<%= user.role === 'admin' ? '/admin/dashboard' : '/student/dashboard' %>" 
+          href="<%= (user.role === 'admin' || user.role === 'super_admin') ? '/admin/dashboard' : '/student/dashboard' %>" 
           class="btn-primary py-2.5 px-4 text-xs font-semibold"
         >
           <i class="fa-solid fa-house mr-2"></i> Dashboard

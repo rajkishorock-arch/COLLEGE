@@ -101,9 +101,18 @@
                       type="button" 
                       onclick="openEditStudentModal('<%= st.id %>', '<%= st.name %>', '<%= st.email %>', '<%= st.roll_no %>', '<%= st.course %>')"
                       class="p-2 rounded-[8px] text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9] transition-colors"
-                      title="Edit Student"
+                      title="Edit Student Record"
                     >
                       <i class="fa-solid fa-pen-to-square text-xs"></i>
+                    </button>
+
+                    <button 
+                      type="button" 
+                      onclick="openResetPasswordModal('<%= st.id %>', '<%= st.name %>', '<%= st.email %>')"
+                      class="p-2 rounded-[8px] text-[var(--accent-primary)] hover:bg-[#F0EDFD] transition-colors"
+                      title="Reset Student Password"
+                    >
+                      <i class="fa-solid fa-key text-xs"></i>
                     </button>
 
                     <form action="/admin/students/delete/<%= st.id %>" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this student? All attendance, marks, and quiz records will be erased.');" class="inline">
@@ -230,6 +239,26 @@
         </select>
       </div>
 
+      <!-- Security Credential Edit Guard: Acting Admin Confirmation -->
+      <div class="p-3.5 bg-[#F7F7F9] rounded-[8px] border border-[#E5E7EB] space-y-2">
+        <div class="flex items-center gap-2 text-xs font-semibold text-[#111318]">
+          <i class="fa-solid fa-shield-halved text-[var(--warning)]"></i>
+          <span>Credential Security Protection</span>
+        </div>
+        <p class="text-[11px] text-[#5B5F6B] leading-relaxed">
+          If modifying the student's email address, re-enter your own current Admin Password below to confirm authorization.
+        </p>
+        <div>
+          <input 
+            type="password" 
+            id="edit-admin-password" 
+            name="admin_password" 
+            placeholder="Your Admin Password (required if email is changed)"
+            class="w-full px-3 py-2 text-xs bg-[#FFFFFF] border border-[#E5E7EB] rounded-[6px] text-[#111318] focus:border-[var(--accent-primary)] focus:outline-none"
+          >
+        </div>
+      </div>
+
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#E5E7EB]">
         <button type="button" onclick="closeModal('edit-student-modal')" class="btn-secondary py-2 px-4 text-xs font-medium">
           Cancel
@@ -242,13 +271,78 @@
   </div>
 </div>
 
+<!-- Modal: Reset Student Password (Requires Acting Admin Password) -->
+<div id="reset-student-password-modal" class="modal-backdrop hidden">
+  <div class="modal-panel max-w-md">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk']">Reset Student Password</h3>
+        <p class="text-xs text-[#5B5F6B] mt-0.5" id="reset-student-target-label">Target account</p>
+      </div>
+      <button type="button" onclick="closeModal('reset-student-password-modal')" class="text-[#5B5F6B] hover:text-[#111318]">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <form id="reset-student-password-form" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-[#5B5F6B] mb-1.5">New Student Password *</label>
+        <input 
+          type="password" 
+          name="new_password" 
+          required 
+          minlength="6"
+          placeholder="Min. 6 characters"
+          class="w-full px-4 py-2.5 text-sm bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-[#111318] focus:border-[var(--accent-primary)] focus:outline-none"
+        >
+      </div>
+
+      <div class="p-3.5 bg-[#FEECEE]/60 rounded-[8px] border border-[var(--danger)]/30 space-y-2">
+        <div class="flex items-center gap-2 text-xs font-semibold text-[#E5384B]">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Confirm Your Admin Identity *</span>
+        </div>
+        <p class="text-[11px] text-[#5B5F6B] leading-relaxed">
+          To prevent unauthorized credential tampering, re-enter your own logged-in admin password.
+        </p>
+        <input 
+          type="password" 
+          name="admin_password" 
+          required 
+          placeholder="Your Admin Password"
+          class="w-full px-3 py-2 text-xs bg-[#FFFFFF] border border-[#E5E7EB] rounded-[6px] text-[#111318] focus:border-[var(--danger)] focus:outline-none"
+        >
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#E5E7EB]">
+        <button type="button" onclick="closeModal('reset-student-password-modal')" class="btn-secondary py-2 px-4 text-xs font-medium">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary py-2 px-5 text-xs font-semibold">
+          Confirm & Reset Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+  let originalStudentEmail = '';
+
   function openEditStudentModal(id, name, email, roll, course) {
     document.getElementById('edit-student-form').action = `/admin/students/edit/${id}`;
     document.getElementById('edit-name').value = name;
     document.getElementById('edit-email').value = email;
     document.getElementById('edit-roll').value = roll;
     document.getElementById('edit-course').value = course;
+    document.getElementById('edit-admin-password').value = '';
+    originalStudentEmail = email;
     openModal('edit-student-modal');
+  }
+
+  function openResetPasswordModal(id, name, email) {
+    document.getElementById('reset-student-password-form').action = `/admin/students/reset-password/${id}`;
+    document.getElementById('reset-student-target-label').textContent = `Target: ${name} (${email})`;
+    openModal('reset-student-password-modal');
   }
 </script>

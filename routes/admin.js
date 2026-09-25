@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireSuperAdmin } = require('../middleware/auth');
 const { logAudit } = require('../utils/audit');
 const { createNotification, broadcastToStudents } = require('../utils/notify');
 const { avatarUpload } = require('../utils/upload');
@@ -152,16 +152,42 @@ router.post('/students/add', (req, res) => {
   }
 });
 
-// POST /admin/students/edit/:id - Update student details
+// POST /admin/students/edit/:id - Update student details with credential edit protection
 router.post('/students/edit/:id', (req, res) => {
   const studentId = parseInt(req.params.id, 10);
-  const { name, email, roll_no, course } = req.body;
+  const { name, email, roll_no, course, admin_password } = req.body;
+  const actingAdmin = req.session.user;
 
   if (!name || !email || !roll_no || !course) {
     return res.redirect('/admin/students?error=' + encodeURIComponent('All fields are required.'));
   }
 
   try {
+    const student = db.prepare("SELECT * FROM users WHERE id = ? AND role = 'student'").get(studentId);
+    if (!student) {
+      return res.redirect('/admin/students?error=' + encodeURIComponent('Student record not found.'));
+    }
+
+    const emailChanged = email.trim().toLowerCase() !== student.email.toLowerCase();
+
+    // Credential Protection: changing email requires acting admin's current password
+    if (emailChanged) {
+      if (!admin_password) {
+        return res.redirect('/admin/students?error=' + encodeURIComponent('Security Confirmation Required: Enter your Admin Password to change a student email.'));
+      }
+
+      const actingUser = db.prepare("SELECT password FROM users WHERE id = ?").get(actingAdmin.id);
+      if (!bcrypt.compareSync(admin_password, actingUser.password)) {
+        logAudit(
+          actingAdmin.id,
+          'Unauthorized Credential Edit Attempt',
+          `Admin ${actingAdmin.email} provided invalid password attempting to change email for student ${student.name} (ID: ${studentId}).`,
+          studentId
+        );
+        return res.redirect('/admin/students?error=' + encodeURIComponent('Security Verification Failed: Incorrect Admin Password. Email change aborted.'));
+      }
+    }
+
     // Check if email/roll belongs to another user
     const conflict = db.prepare(`
       SELECT id FROM users 
@@ -178,18 +204,97 @@ router.post('/students/edit/:id', (req, res) => {
       WHERE id = ? AND role = 'student'
     `).run(name.trim(), email.trim().toLowerCase(), roll_no.trim().toUpperCase(), course.trim(), studentId);
 
+    if (emailChanged) {
+      logAudit(
+        actingAdmin.id,
+        'Student Email Changed',
+        `Admin ${actingAdmin.email} changed email for student ${student.name} from "${student.email}" to "${email.trim().toLowerCase()}".`,
+        studentId
+      );
+    } else {
+      logAudit(
+        actingAdmin.id,
+        'Student Profile Updated',
+        `Admin ${actingAdmin.email} updated profile details for student ${student.name} (${student.roll_no}).`,
+        studentId
+      );
+    }
+
     res.redirect('/admin/students?success=' + encodeURIComponent('Student details updated successfully!'));
   } catch (err) {
     console.error('Edit student error:', err);
-    res.redirect('/admin/students?error=' + encodeURIComponent('Failed to update student.'));
+    res.redirect('/admin/students?error=' + encodeURIComponent('Failed to update student: ' + err.message));
+  }
+});
+
+// POST /admin/students/reset-password/:id - Reset student password (requires acting admin password)
+router.post('/students/reset-password/:id', (req, res) => {
+  const studentId = parseInt(req.params.id, 10);
+  const { new_password, admin_password } = req.body;
+  const actingAdmin = req.session.user;
+
+  if (!new_password || !admin_password) {
+    return res.redirect('/admin/students?error=' + encodeURIComponent('Both new student password and your admin password are required.'));
+  }
+
+  if (new_password.length < 6) {
+    return res.redirect('/admin/students?error=' + encodeURIComponent('New student password must be at least 6 characters long.'));
+  }
+
+  try {
+    const student = db.prepare("SELECT * FROM users WHERE id = ? AND role = 'student'").get(studentId);
+    if (!student) {
+      return res.redirect('/admin/students?error=' + encodeURIComponent('Student not found.'));
+    }
+
+    // Verify acting admin's password
+    const actingUser = db.prepare("SELECT password FROM users WHERE id = ?").get(actingAdmin.id);
+    if (!bcrypt.compareSync(admin_password, actingUser.password)) {
+      logAudit(
+        actingAdmin.id,
+        'Unauthorized Password Reset Attempt',
+        `Admin ${actingAdmin.email} provided invalid admin password attempting to reset password for student ${student.name} (ID: ${studentId}).`,
+        studentId
+      );
+      return res.redirect('/admin/students?error=' + encodeURIComponent('Security Verification Failed: Incorrect Admin Password. Password reset aborted.'));
+    }
+
+    // Hash new password and update
+    const salt = bcrypt.genSaltSync(10);
+    const newHash = bcrypt.hashSync(new_password, salt);
+
+    db.prepare("UPDATE users SET password = ? WHERE id = ? AND role = 'student'").run(newHash, studentId);
+
+    // Audit log (NEVER log the actual password value)
+    logAudit(
+      actingAdmin.id,
+      'Student Password Reset',
+      `Admin ${actingAdmin.email} reset login password for student ${student.name} (${student.email}, Roll: ${student.roll_no}).`,
+      studentId
+    );
+
+    res.redirect('/admin/students?success=' + encodeURIComponent(`Password for student ${student.name} was successfully reset.`));
+  } catch (err) {
+    console.error('Reset student password error:', err);
+    res.redirect('/admin/students?error=' + encodeURIComponent('Failed to reset student password: ' + err.message));
   }
 });
 
 // POST /admin/students/delete/:id - Delete student
 router.post('/students/delete/:id', (req, res) => {
   const studentId = parseInt(req.params.id, 10);
+  const actingAdmin = req.session.user;
   try {
-    db.prepare("DELETE FROM users WHERE id = ? AND role = 'student'").run(studentId);
+    const student = db.prepare("SELECT * FROM users WHERE id = ? AND role = 'student'").get(studentId);
+    if (student) {
+      db.prepare("DELETE FROM users WHERE id = ? AND role = 'student'").run(studentId);
+      logAudit(
+        actingAdmin.id,
+        'Student Record Deleted',
+        `Admin ${actingAdmin.email} permanently deleted student ${student.name} (${student.email}, Roll: ${student.roll_no}).`,
+        studentId
+      );
+    }
     res.redirect('/admin/students?success=' + encodeURIComponent('Student deleted successfully.'));
   } catch (err) {
     console.error('Delete student error:', err);
@@ -1452,6 +1557,157 @@ router.get('/export/:type.csv', (req, res) => {
 router.post('/notifications/read-all', (req, res) => {
   db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").run(req.session.user.id);
   res.redirect('back');
+});
+
+/**
+ * ==========================================
+ * SUPER ADMIN: MANAGE ADMIN ACCOUNTS
+ * ==========================================
+ */
+
+// GET /admin/manage-admins - Super Admin Only
+router.get('/manage-admins', requireSuperAdmin, (req, res) => {
+  const admins = db.prepare(`
+    SELECT id, name, email, role, is_active, created_at, failed_attempts, locked_until, last_failed_at
+    FROM users 
+    WHERE role IN ('admin', 'super_admin')
+    ORDER BY CASE WHEN role = 'super_admin' THEN 1 ELSE 2 END, id ASC
+  `).all();
+
+  const totalAdmins = admins.length;
+  const superAdminCount = admins.filter(a => a.role === 'super_admin').length;
+  const staffAdminCount = admins.filter(a => a.role === 'admin').length;
+  const activeCount = admins.filter(a => a.is_active === 1).length;
+
+  res.render('admin/manage-admins', {
+    title: 'Admin Hierarchy & Access Control - Super Admin',
+    pageName: 'manage-admins',
+    admins,
+    stats: {
+      totalAdmins,
+      superAdminCount,
+      staffAdminCount,
+      activeCount
+    },
+    currentUserId: req.session.user.id,
+    success: req.query.success || null,
+    error: req.query.error || null
+  });
+});
+
+// POST /admin/manage-admins/add - Super Admin creates new Admin / Super Admin
+router.post('/manage-admins/add', requireSuperAdmin, (req, res) => {
+  const { name, email, password, role } = req.body;
+  const actingAdmin = req.session.user;
+
+  if (!name || !email || !password || !role) {
+    return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('All fields are required.'));
+  }
+
+  // Strict role enforcement: only 'admin' or 'super_admin'
+  if (role !== 'admin' && role !== 'super_admin') {
+    return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Invalid role selection. Must be Admin or Super Admin.'));
+  }
+
+  if (password.length < 6) {
+    return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Password must be at least 6 characters long.'));
+  }
+
+  try {
+    const existing = db.prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?)").get(email.trim());
+    if (existing) {
+      return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('An account with this email already exists.'));
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+
+    const result = db.prepare(`
+      INSERT INTO users (name, email, password, role, is_active)
+      VALUES (?, ?, ?, ?, 1)
+    `).run(name.trim(), email.trim().toLowerCase(), hash, role);
+
+    const newAdminId = result.lastInsertRowid;
+    const roleLabel = role === 'super_admin' ? 'Super Administrator' : 'Administrator (Staff)';
+
+    logAudit(
+      actingAdmin.id,
+      'Admin Account Created',
+      `Super Admin ${actingAdmin.email} created new ${roleLabel} account for ${name.trim()} (${email.trim().toLowerCase()}).`,
+      newAdminId
+    );
+
+    res.redirect('/admin/manage-admins?success=' + encodeURIComponent(`New ${roleLabel} account for ${name.trim()} created successfully!`));
+  } catch (err) {
+    console.error('Create admin error:', err);
+    res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Failed to create admin account: ' + err.message));
+  }
+});
+
+// POST /admin/manage-admins/toggle-status/:id - Deactivate or Reactivate Admin account
+router.post('/manage-admins/toggle-status/:id', requireSuperAdmin, (req, res) => {
+  const targetId = parseInt(req.params.id, 10);
+  const actingAdmin = req.session.user;
+
+  // Cannot deactivate self (prevent accidental lockout)
+  if (targetId === actingAdmin.id) {
+    return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Security Protection: You cannot deactivate your own Super Admin account.'));
+  }
+
+  try {
+    const target = db.prepare("SELECT id, name, email, role, is_active FROM users WHERE id = ? AND role IN ('admin', 'super_admin')").get(targetId);
+    if (!target) {
+      return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Admin account not found.'));
+    }
+
+    const newStatus = target.is_active === 1 ? 0 : 1;
+    db.prepare("UPDATE users SET is_active = ? WHERE id = ?").run(newStatus, targetId);
+
+    const actionTitle = newStatus === 1 ? 'Admin Account Reactivated' : 'Admin Account Deactivated';
+    logAudit(
+      actingAdmin.id,
+      actionTitle,
+      `Super Admin ${actingAdmin.email} ${newStatus === 1 ? 'reactivated' : 'deactivated'} account for ${target.name} (${target.email}, Role: ${target.role}).`,
+      targetId
+    );
+
+    res.redirect('/admin/manage-admins?success=' + encodeURIComponent(`Account for ${target.name} ${newStatus === 1 ? 'reactivated' : 'deactivated'} successfully.`));
+  } catch (err) {
+    console.error('Toggle admin status error:', err);
+    res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Failed to update account status: ' + err.message));
+  }
+});
+
+// POST /admin/manage-admins/delete/:id - Delete Admin account
+router.post('/manage-admins/delete/:id', requireSuperAdmin, (req, res) => {
+  const targetId = parseInt(req.params.id, 10);
+  const actingAdmin = req.session.user;
+
+  // Cannot delete self (prevent accidental lockout)
+  if (targetId === actingAdmin.id) {
+    return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Security Protection: You cannot delete your own Super Admin account.'));
+  }
+
+  try {
+    const target = db.prepare("SELECT id, name, email, role FROM users WHERE id = ? AND role IN ('admin', 'super_admin')").get(targetId);
+    if (!target) {
+      return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Admin account not found.'));
+    }
+
+    db.prepare("DELETE FROM users WHERE id = ?").run(targetId);
+
+    logAudit(
+      actingAdmin.id,
+      'Admin Account Deleted',
+      `Super Admin ${actingAdmin.email} permanently deleted admin account for ${target.name} (${target.email}, Role: ${target.role}).`,
+      targetId
+    );
+
+    res.redirect('/admin/manage-admins?success=' + encodeURIComponent(`Admin account for ${target.name} deleted successfully.`));
+  } catch (err) {
+    console.error('Delete admin error:', err);
+    res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Failed to delete admin account: ' + err.message));
+  }
 });
 
 module.exports = router;

@@ -6,10 +6,17 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  role TEXT CHECK(role IN ('student', 'admin')) NOT NULL DEFAULT 'student',
+  role TEXT CHECK(role IN ('student', 'admin', 'super_admin')) NOT NULL DEFAULT 'student',
   roll_no TEXT UNIQUE,
   course TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  profile_photo TEXT,
+  security_question TEXT,
+  security_answer TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  failed_attempts INTEGER NOT NULL DEFAULT 0,
+  locked_until DATETIME,
+  last_failed_at DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS attendance (

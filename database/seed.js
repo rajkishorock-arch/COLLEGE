@@ -28,7 +28,7 @@ function seedDatabase() {
     VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  const adminResult = insertUser.run('Campus Administrator', 'admin@college.edu', adminPassHash, 'admin', null, null);
+  const adminResult = insertUser.run('Campus Administrator', 'admin@college.edu', adminPassHash, 'super_admin', null, null);
   const student1 = insertUser.run('Alex Johnson', 'alex@college.edu', studentPassHash, 'student', 'CS2026-001', 'B.Tech Computer Science');
   const student2 = insertUser.run('Priya Sharma', 'priya@college.edu', studentPassHash, 'student', 'CS2026-002', 'B.Tech Information Technology');
   const student3 = insertUser.run('Rohit Verma', 'rohit@college.edu', studentPassHash, 'student', 'CS2026-003', 'B.Tech AI & Data Science');
