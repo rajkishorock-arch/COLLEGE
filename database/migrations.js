@@ -454,6 +454,51 @@ function runMigrations() {
     `).run(apexQuiz.lastInsertRowid);
   }
 
+  // 19. Phase 3: Departments & Invitations Architecture
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS departments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tenant_id TEXT NOT NULL DEFAULT 'tenant_default' REFERENCES tenants(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      code TEXT NOT NULL,
+      head_of_department TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(tenant_id, code)
+    );
+
+    CREATE TABLE IF NOT EXISTS invitations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tenant_id TEXT NOT NULL DEFAULT 'tenant_default' REFERENCES tenants(id) ON DELETE CASCADE,
+      department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
+      email TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'student',
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at DATETIME NOT NULL,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      used_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(tenant_id, email, token_hash)
+    );
+  `);
+
+  // Optional department_id columns
+  try {
+    const userCols = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+    if (!userCols.includes('department_id')) {
+      db.exec("ALTER TABLE users ADD COLUMN department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL;");
+    }
+    const ttCols = db.prepare("PRAGMA table_info(timetable)").all().map(c => c.name);
+    if (!ttCols.includes('department_id')) {
+      db.exec("ALTER TABLE timetable ADD COLUMN department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL;");
+    }
+    const asgCols = db.prepare("PRAGMA table_info(assignments)").all().map(c => c.name);
+    if (!asgCols.includes('department_id')) {
+      db.exec("ALTER TABLE assignments ADD COLUMN department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL;");
+    }
+  } catch (colErr) {
+    // Non-fatal if already present
+  }
+
   console.log('✅ Migrations complete: all 11 modules and multi-tenant SaaS architecture initialized successfully.');
 }
 

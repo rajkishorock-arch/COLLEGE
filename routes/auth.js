@@ -493,4 +493,55 @@ router.all('/logout', (req, res) => {
   });
 });
 
+/**
+ * ==========================================
+ * TENANT-SCOPED INVITATION ACCEPTANCE
+ * ==========================================
+ */
+const invitationService = require('../services/invitationService');
+
+// GET /invitation/accept - Verify token and render registration form
+router.get('/invitation/accept', (req, res) => {
+  const token = req.query.token;
+  const verification = invitationService.verifyInvitation(token);
+
+  if (!verification.valid) {
+    return res.status(400).render('error', {
+      statusCode: 400,
+      title: 'Invalid Invitation',
+      message: verification.reason,
+      user: null
+    });
+  }
+
+  res.render('invitation-accept', {
+    title: `Accept Invitation — ${verification.invite.tenant_name}`,
+    invite: verification.invite,
+    token,
+    error: req.query.error || null,
+    layout: false
+  });
+});
+
+// POST /invitation/accept - Provision user under invitation's locked tenant and role
+router.post('/invitation/accept', (req, res) => {
+  const { token, name, password, rollNo, course, securityQuestion, securityAnswer } = req.body;
+
+  try {
+    const userId = invitationService.acceptInvitation(token, {
+      name,
+      password,
+      rollNo,
+      course,
+      securityQuestion,
+      securityAnswer
+    });
+
+    logAudit(userId, 'Accepted Institution Invitation', `User registered via invitation token.`);
+    res.redirect('/login?success=' + encodeURIComponent('Your account has been activated! Please sign in with your credentials.'));
+  } catch (err) {
+    res.redirect(`/invitation/accept?token=${encodeURIComponent(token)}&error=` + encodeURIComponent(err.message));
+  }
+});
+
 module.exports = router;

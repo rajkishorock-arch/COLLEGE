@@ -46,12 +46,9 @@ app.set('trust proxy', 1);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Request logger for transparent debugging
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString().substring(11, 19);
-  console.log(`[${timestamp}] ${req.method} ${req.originalUrl}`);
-  next();
-});
+// Observability & Request Logging (RequestId, Duration, Scoped Tenant, Redacted Secrets)
+const observabilityMiddleware = require('./middleware/observability');
+app.use(observabilityMiddleware);
 
 // Session management with configurable inactivity timeout (.env SESSION_TIMEOUT_MINUTES)
 const sessionSecret = process.env.SESSION_SECRET || 'fallback-college-secret-key-39824';
@@ -105,7 +102,94 @@ app.set('layout', 'layout');
 app.use(setUserLocals);
 app.use(resolveTenant);
 
-// Mount Routes
+// ==========================================
+// 1. HEALTH CHECKS (Liveness & Readiness)
+// ==========================================
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health/ready', (req, res) => {
+  try {
+    const db = require('./config/db');
+    if (db.dialect === 'postgres') {
+      db.pool.query('SELECT 1', (err) => {
+        if (err) {
+          return res.status(503).json({ status: 'unready', error: 'Database unreachable', timestamp: new Date().toISOString() });
+        }
+        res.status(200).json({ status: 'ready', dialect: 'postgres', database: 'connected', timestamp: new Date().toISOString() });
+      });
+    } else {
+      db.prepare('SELECT 1').get();
+      res.status(200).json({ status: 'ready', dialect: 'sqlite', database: 'connected', timestamp: new Date().toISOString() });
+    }
+  } catch (err) {
+    res.status(503).json({ status: 'unready', error: err.message, timestamp: new Date().toISOString() });
+  }
+});
+
+// ==========================================
+// 2. PRIVATE STORAGE DOWNLOAD CONTROLLER
+// ==========================================
+const storageProvider = require('./services/storage/storageProvider');
+const fs = require('fs');
+
+app.get('/storage/download', (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.redirect('/login?error=' + encodeURIComponent('Please sign in to access this document.'));
+  }
+
+  const storageKey = req.query.key;
+  if (!storageKey || typeof storageKey !== 'string') {
+    return res.status(400).send('Invalid or missing storage key.');
+  }
+
+  // Format: tenants/{tenantId}/...
+  const parts = storageKey.replace(/\\/g, '/').split('/');
+  if (parts.length < 3 || parts[0] !== 'tenants') {
+    return res.status(400).send('Invalid storage key format.');
+  }
+
+  const fileTenantId = parts[1];
+  const user = req.session.user;
+
+  // Strict tenant boundary check: super_admin can access all; ordinary users only their own tenant's files
+  if (user.role !== 'super_admin' && user.tenantId !== fileTenantId) {
+    return res.status(403).render('error', {
+      statusCode: 403,
+      title: 'Access Denied',
+      message: 'You do not have authorization to view files belonging to another institution.',
+      user
+    });
+  }
+
+  const physicalPath = storageProvider.driver.getPhysicalPath ? storageProvider.driver.getPhysicalPath(storageKey) : null;
+  if (!physicalPath || !fs.existsSync(physicalPath)) {
+    return res.status(404).render('error', {
+      statusCode: 404,
+      title: 'Document Not Found',
+      message: 'The requested document does not exist or has been removed.',
+      user
+    });
+  }
+
+  res.download(physicalPath);
+});
+
+// ==========================================
+// 3. RATE LIMITING ON SENSITIVE ENDPOINTS
+// ==========================================
+const { authLimiter, sensitiveActionLimiter } = require('./middleware/rateLimiter');
+app.use('/login', authLimiter);
+app.use('/signup', authLimiter);
+app.use('/forgot-password', sensitiveActionLimiter);
+app.use('/invitation/accept', sensitiveActionLimiter);
+
+// Mount Application Routes
 app.use('/', authRoutes);
 app.use('/student', studentRoutes);
 app.use('/admin', adminRoutes);

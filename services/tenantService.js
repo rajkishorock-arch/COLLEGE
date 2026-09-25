@@ -115,6 +115,12 @@ const tenantService = {
         adminUserId || 1
       );
 
+      // Provision initial department foundation
+      db.prepare(`
+        INSERT INTO departments (tenant_id, name, code, created_at)
+        VALUES (?, 'Computer Science & Engineering', 'CSE', datetime('now'))
+      `).run(tenantId);
+
       return { tenantId, adminUserId };
     });
 
@@ -178,6 +184,52 @@ const tenantService = {
       totalAdmins,
       totalAuditEvents
     };
+  },
+
+  /**
+   * ==========================================
+   * DEPARTMENT MANAGEMENT (Tenant Hierarchy)
+   * ==========================================
+   */
+  createDepartment(tenantId, { name, code, headOfDepartment }) {
+    if (!tenantId) throw new Error('Tenant ID is required.');
+    if (!name || !name.trim()) throw new Error('Department name is required.');
+    if (!code || !code.trim()) throw new Error('Department code is required.');
+
+    const cleanCode = code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+
+    const existing = db.prepare('SELECT id FROM departments WHERE tenant_id = ? AND UPPER(code) = ?').get(tenantId, cleanCode);
+    if (existing) {
+      throw new Error(`A department with code "${cleanCode}" already exists in this institution.`);
+    }
+
+    const res = db.prepare(`
+      INSERT INTO departments (tenant_id, name, code, head_of_department, created_at)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).run(tenantId, name.trim(), cleanCode, headOfDepartment ? headOfDepartment.trim() : null);
+
+    return res.lastInsertRowid;
+  },
+
+  getDepartments(tenantId) {
+    if (!tenantId) return [];
+    return db.prepare(`
+      SELECT d.*, COUNT(u.id) AS member_count
+      FROM departments d
+      LEFT JOIN users u ON d.id = u.department_id AND u.tenant_id = d.tenant_id
+      WHERE d.tenant_id = ?
+      GROUP BY d.id
+      ORDER BY d.name ASC
+    `).all(tenantId);
+  },
+
+  getDepartmentById(tenantId, departmentId) {
+    return db.prepare('SELECT * FROM departments WHERE id = ? AND tenant_id = ?').get(departmentId, tenantId);
+  },
+
+  deleteDepartment(tenantId, departmentId) {
+    const res = db.prepare('DELETE FROM departments WHERE id = ? AND tenant_id = ?').run(departmentId, tenantId);
+    return res.changes > 0;
   }
 };
 
