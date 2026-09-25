@@ -54,6 +54,9 @@ app.use(
 
 // Serve static assets
 app.use(express.static(path.join(__dirname, 'public')));
+if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.use('/uploads', express.static('/tmp/uploads'));
+}
 
 // View Engine & Layout Setup
 app.set('views', path.join(__dirname, 'views'));
@@ -93,14 +96,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🎓 College Management Platform is running live!`);
-  console.log(`🚀 URL: http://localhost:${PORT}`);
-  console.log(`🔑 Default Admin: admin@college.edu | admin123`);
-  console.log(`🎓 Demo Student: alex@college.edu   | student123`);
-  console.log(`====================================================`);
-});
+// Start server when run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`🎓 College Management Platform is running live!`);
+    console.log(`🚀 URL: http://localhost:${PORT}`);
+    console.log(`🔑 Default Admin: admin@college.edu | admin123`);
+    console.log(`🎓 Demo Student: alex@college.edu   | student123`);
+    console.log(`====================================================`);
+  });
+}
 
-module.exports = { app, server };
+module.exports = app;

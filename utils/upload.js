@@ -2,12 +2,18 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const avatarsDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
-const assignmentsDir = path.join(__dirname, '..', 'public', 'uploads', 'assignments');
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const baseUploads = isVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'public', 'uploads');
+const avatarsDir = path.join(baseUploads, 'avatars');
+const assignmentsDir = path.join(baseUploads, 'assignments');
 
 [avatarsDir, assignmentsDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      console.warn('Could not create upload directory:', e.message);
+    }
   }
 });
 
