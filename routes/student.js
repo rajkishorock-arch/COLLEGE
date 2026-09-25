@@ -675,7 +675,7 @@ router.get('/timetable', (req, res) => {
         ELSE 7
       END,
       start_time ASC
-  `).all(studentCourse);
+  `).all(studentCourse, tenantId);
 
   // Group by day for the visual grid
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

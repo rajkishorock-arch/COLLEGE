@@ -65,7 +65,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false, // Allows session cookie to persist reliably behind Vercel/Render reverse proxies
+      secure: process.env.NODE_ENV === 'production' && process.env.ALLOW_INSECURE_COOKIES !== 'true',
       maxAge: sessionTimeoutMs
     }
   })

@@ -223,6 +223,7 @@ function setUserLocals(req, res, next) {
   }
   res.locals.currentPath = req.path;
   res.locals.query = req.query;
+  res.locals.showDemoCredentials = (process.env.NODE_ENV !== 'production' || process.env.SHOW_DEMO_CREDENTIALS === 'true');
   next();
 }
 

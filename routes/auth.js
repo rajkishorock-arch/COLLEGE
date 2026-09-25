@@ -36,6 +36,7 @@ router.get('/login', (req, res) => {
     title: 'Sign In - College Management Platform',
     error: req.query.error || null,
     success: req.query.success || null,
+    showDemoCredentials: (process.env.NODE_ENV !== 'production' || process.env.SHOW_DEMO_CREDENTIALS === 'true'),
     layout: false // Standalone auth page
   });
 });
