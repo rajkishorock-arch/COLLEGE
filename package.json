@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Full-Stack College Management Platform with Student and Admin Portals",
   "main": "server.js",
+  "engines": {
+    "node": ">=20.0.0 <23.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "seed": "node database/seed.js",

@@ -126,6 +126,10 @@ if (DIALECT === 'postgres') {
       };
     },
 
+    async exec(sql) {
+      return pool.query(sql);
+    },
+
     async close() {
       await pool.end();
     }
@@ -169,7 +173,11 @@ if (DIALECT === 'postgres') {
 
   const sqliteDb = new Database(dbPath);
   sqliteDb.pragma('foreign_keys = ON');
-  sqliteDb.pragma('journal_mode = WAL');
+  try {
+    sqliteDb.pragma('journal_mode = WAL');
+  } catch (e) {
+    sqliteDb.pragma('journal_mode = DELETE');
+  }
   sqliteDb.pragma('synchronous = NORMAL');
 
   adapter = sqliteDb;

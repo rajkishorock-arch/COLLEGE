@@ -1,3 +1,5 @@
+console.log(`[CampusPulse:Init] Booting server on Node ${process.version} (PID: ${process.pid})...`);
+
 const express = require('express');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
@@ -27,6 +29,7 @@ const { resolveTenant } = require('./middleware/tenant');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
 // Security hardening: hide server tech stack
 app.disable('x-powered-by');
@@ -224,13 +227,18 @@ app.use((err, req, res, next) => {
 
 // Start server when run directly
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, HOST, () => {
     console.log(`====================================================`);
-    console.log(`🎓 College Management Platform is running live!`);
-    console.log(`🚀 URL: http://localhost:${PORT}`);
+    console.log(`🎓 CampusPulse Platform is running live!`);
+    console.log(`🚀 URL: http://${HOST}:${PORT}`);
     console.log(`🔑 Default Admin: admin@college.edu | admin123`);
     console.log(`🎓 Demo Student: alex@college.edu   | student123`);
     console.log(`====================================================`);
+  });
+
+  server.on('error', (err) => {
+    console.error('[CampusPulse:ServerError] Fatal error during listen:', err);
+    process.exit(1);
   });
 }
 
