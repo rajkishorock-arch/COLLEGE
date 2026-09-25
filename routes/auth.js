@@ -7,7 +7,10 @@ const { logAudit } = require('../utils/audit');
 // Root route: Show landing page to visitors, redirect logged-in users to dashboard
 router.get('/', (req, res) => {
   if (req.session && req.session.user) {
-    if (req.session.user.role === 'admin' || req.session.user.role === 'super_admin') {
+    if (req.session.user.role === 'super_admin') {
+      return res.redirect('/super-admin');
+    }
+    if (req.session.user.role === 'admin' || req.session.user.role === 'college_admin') {
       return res.redirect('/admin/dashboard');
     }
     return res.redirect('/student/dashboard');
@@ -21,7 +24,10 @@ router.get('/', (req, res) => {
 // GET /login
 router.get('/login', (req, res) => {
   if (req.session && req.session.user) {
-    if (req.session.user.role === 'admin' || req.session.user.role === 'super_admin') {
+    if (req.session.user.role === 'super_admin') {
+      return res.redirect('/super-admin');
+    }
+    if (req.session.user.role === 'admin' || req.session.user.role === 'college_admin') {
       return res.redirect('/admin/dashboard');
     }
     return res.redirect('/student/dashboard');
@@ -166,7 +172,9 @@ router.post('/login', (req, res) => {
 
     req.session.save((saveErr) => {
       if (saveErr) console.error('[Auth] Session save error:', saveErr);
-      if (user.role === 'admin' || user.role === 'super_admin') {
+      if (user.role === 'super_admin') {
+        return res.redirect('/super-admin');
+      } else if (user.role === 'admin' || user.role === 'college_admin') {
         return res.redirect('/admin/dashboard');
       } else {
         return res.redirect('/student/dashboard');
@@ -186,11 +194,13 @@ router.post('/login', (req, res) => {
 // GET /signup
 router.get('/signup', (req, res) => {
   if (req.session && req.session.user) {
-    return res.redirect(
-      (req.session.user.role === 'admin' || req.session.user.role === 'super_admin')
-        ? '/admin/dashboard'
-        : '/student/dashboard'
-    );
+    if (req.session.user.role === 'super_admin') {
+      return res.redirect('/super-admin');
+    }
+    if (req.session.user.role === 'admin' || req.session.user.role === 'college_admin') {
+      return res.redirect('/admin/dashboard');
+    }
+    return res.redirect('/student/dashboard');
   }
 
   const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();

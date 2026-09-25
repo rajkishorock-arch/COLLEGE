@@ -182,11 +182,11 @@ function setUserLocals(req, res, next) {
       res.locals.hasPermission = (perm) => hasPermission(user.role, perm);
 
       // Unread notifications count scoped to user
-      const unreadCount = db.prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0").get(user.id);
+      const unreadCount = db.prepare("SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND tenant_id = ? AND is_read = 0").get(user.id, req.tenantId);
       res.locals.unreadNotifCount = unreadCount ? unreadCount.count : 0;
 
       // Top 5 recent notifications
-      const recentNotifs = db.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT 6").all(user.id);
+      const recentNotifs = db.prepare("SELECT * FROM notifications WHERE user_id = ? AND tenant_id = ? ORDER BY id DESC LIMIT 6").all(user.id, req.tenantId);
       res.locals.recentNotifications = recentNotifs || [];
     } catch (err) {
       console.error('[Middleware:setUserLocals]', err.message);

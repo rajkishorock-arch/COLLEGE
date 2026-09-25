@@ -52,9 +52,9 @@ router.get('/dashboard', (req, res) => {
   // 2. Results summary
   const results = db.prepare(`
     SELECT * FROM results 
-    WHERE student_id = ? 
+    WHERE student_id = ? AND tenant_id = ?
     ORDER BY id DESC
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   let averageMarks = 0;
   if (results.length > 0) {
@@ -306,24 +306,26 @@ router.get('/library', (req, res) => {
   const searchQuery = (req.query.q || '').trim();
   const todayStr = new Date().toISOString().split('T')[0];
 
+  const tenantId = req.tenantId || 'tenant_default';
+
   // Books issued to this student
   const myIssuedBooks = db.prepare(`
     SELECT bi.*, b.title, b.author, b.category
     FROM book_issues bi
     JOIN books b ON bi.book_id = b.id
-    WHERE bi.student_id = ?
+    WHERE bi.student_id = ? AND bi.tenant_id = ?
     ORDER BY bi.status DESC, bi.due_date ASC
-  `).all(studentId).map(item => ({
+  `).all(studentId, tenantId).map(item => ({
     ...item,
     isOverdue: item.status === 'Issued' && item.due_date < todayStr
   }));
 
   // Catalog search
-  let booksQuery = `SELECT * FROM books`;
-  let booksParams = [];
+  let booksQuery = `SELECT * FROM books WHERE tenant_id = ?`;
+  let booksParams = [tenantId];
 
   if (searchQuery) {
-    booksQuery += ` WHERE title LIKE ? OR author LIKE ? OR category LIKE ?`;
+    booksQuery += ` AND (title LIKE ? OR author LIKE ? OR category LIKE ?)`;
     const searchPattern = `%${searchQuery}%`;
     booksParams.push(searchPattern, searchPattern, searchPattern);
   }
@@ -352,14 +354,15 @@ router.get('/quiz', (req, res) => {
     SELECT 
       q.*,
       COUNT(qq.id) AS question_count,
-      (SELECT MAX(score) FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ?) AS user_high_score,
-      (SELECT total FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ? ORDER BY qa.id DESC LIMIT 1) AS last_total,
-      (SELECT COUNT(*) FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ?) AS attempts_count
+      (SELECT MAX(score) FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ? AND qa.tenant_id = ?) AS user_high_score,
+      (SELECT total FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ? AND qa.tenant_id = ? ORDER BY qa.id DESC LIMIT 1) AS last_total,
+      (SELECT COUNT(*) FROM quiz_attempts qa WHERE qa.quiz_id = q.id AND qa.student_id = ? AND qa.tenant_id = ?) AS attempts_count
     FROM quizzes q
-    LEFT JOIN quiz_questions qq ON q.id = qq.quiz_id
+    LEFT JOIN quiz_questions qq ON q.id = qq.quiz_id AND qq.tenant_id = q.tenant_id
+    WHERE q.tenant_id = ?
     GROUP BY q.id
     ORDER BY q.id DESC
-  `).all(studentId, studentId, studentId);
+  `).all(studentId, tenantId, studentId, tenantId, studentId, tenantId, tenantId);
 
   // Past attempt history
   const attempts = db.prepare(`
@@ -369,9 +372,9 @@ router.get('/quiz', (req, res) => {
       q.subject AS quiz_subject
     FROM quiz_attempts qa
     JOIN quizzes q ON qa.quiz_id = q.id
-    WHERE qa.student_id = ?
+    WHERE qa.student_id = ? AND qa.tenant_id = ?
     ORDER BY qa.attempted_at DESC
-  `).all(studentId).map(att => ({
+  `).all(studentId, tenantId).map(att => ({
     ...att,
     percentage: Math.round((att.score / att.total) * 100)
   }));
@@ -405,9 +408,9 @@ router.get('/quiz/:id', (req, res) => {
   const questions = db.prepare(`
     SELECT id, quiz_id, question, option_a, option_b, option_c, option_d 
     FROM quiz_questions 
-    WHERE quiz_id = ?
+    WHERE quiz_id = ? AND tenant_id = ?
     ORDER BY id ASC
-  `).all(quizId);
+  `).all(quizId, tenantId);
 
   if (questions.length === 0) {
     return res.render('error', {
@@ -470,10 +473,10 @@ router.post('/quiz/:id/submit', (req, res) => {
 
   // Save attempt
   const insertAttempt = db.prepare(`
-    INSERT INTO quiz_attempts (quiz_id, student_id, score, total)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO quiz_attempts (tenant_id, quiz_id, student_id, score, total)
+    VALUES (?, ?, ?, ?, ?)
   `);
-  insertAttempt.run(quizId, studentId, score, total);
+  insertAttempt.run(tenantId, quizId, studentId, score, total);
 
   const percentage = Math.round((score / total) * 100);
 
@@ -567,10 +570,10 @@ router.get('/checkin', (req, res) => {
 
   const recentCheckins = db.prepare(`
     SELECT * FROM attendance
-    WHERE student_id = ?
+    WHERE student_id = ? AND tenant_id = ?
     ORDER BY date DESC, id DESC
     LIMIT 6
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   res.render('student/checkin', {
     title: 'Classroom Self Check-In - Student Portal',
@@ -632,12 +635,14 @@ router.post('/checkin', (req, res) => {
  * ==========================================
  */
 router.get('/announcements', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const announcements = db.prepare(`
     SELECT a.*, u.name AS posted_by_name
     FROM announcements a
     JOIN users u ON a.posted_by = u.id
+    WHERE a.tenant_id = ?
     ORDER BY a.priority = 'urgent' DESC, a.id DESC
-  `).all();
+  `).all(tenantId);
 
   res.render('student/announcements', {
     title: 'Notices & Announcements - Student Portal',
@@ -652,12 +657,13 @@ router.get('/announcements', (req, res) => {
  * ==========================================
  */
 router.get('/timetable', (req, res) => {
-  const student = db.prepare("SELECT course FROM users WHERE id = ?").get(req.session.user.id);
+  const tenantId = req.tenantId || 'tenant_default';
+  const student = db.prepare("SELECT course FROM users WHERE id = ? AND tenant_id = ?").get(req.session.user.id, tenantId);
   const studentCourse = student ? student.course : 'B.Tech Computer Science';
 
   const slots = db.prepare(`
     SELECT * FROM timetable
-    WHERE course = ?
+    WHERE course = ? AND tenant_id = ?
     ORDER BY 
       CASE day_of_week
         WHEN 'Monday' THEN 1
@@ -704,8 +710,9 @@ router.get('/assignments', (req, res) => {
     FROM assignments a
     JOIN users u ON a.created_by = u.id
     LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND sub.student_id = ?
+    WHERE a.tenant_id = ?
     ORDER BY a.id DESC
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   const assignments = rawAssignments.map(asg => {
     const isSubmitted = !!asg.submission_id;
@@ -749,13 +756,13 @@ router.post('/assignments/submit/:id', assignmentUpload.single('file'), (req, re
       db.prepare(`
         UPDATE assignment_submissions
         SET file_path = ?, submitted_at = datetime('now')
-        WHERE id = ?
-      `).run(filePath, existing.id);
+        WHERE id = ? AND tenant_id = ?
+      `).run(filePath, existing.id, tenantId);
     } else {
       db.prepare(`
-        INSERT INTO assignment_submissions (assignment_id, student_id, file_path, submitted_at)
-        VALUES (?, ?, ?, datetime('now'))
-      `).run(assignmentId, studentId, filePath);
+        INSERT INTO assignment_submissions (tenant_id, assignment_id, student_id, file_path, submitted_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+      `).run(tenantId, assignmentId, studentId, filePath);
     }
 
     createNotification(studentId, `📤 File submitted for "${assignment.title}". Faculty evaluation pending.`, 'assignment');
@@ -775,11 +782,12 @@ router.post('/assignments/submit/:id', assignmentUpload.single('file'), (req, re
 router.get('/fees', (req, res) => {
   const studentId = req.session.user.id;
 
+  const tenantId = req.tenantId || 'tenant_default';
   const fees = db.prepare(`
     SELECT * FROM fees
-    WHERE student_id = ?
+    WHERE student_id = ? AND tenant_id = ?
     ORDER BY id DESC
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   const totalDue = fees.reduce((acc, f) => acc + (f.status !== 'Paid' ? (f.amount_due - f.amount_paid) : 0), 0);
   const totalPaid = fees.reduce((acc, f) => acc + f.amount_paid, 0);
@@ -810,8 +818,8 @@ router.post('/fees/pay/:id', (req, res) => {
     db.prepare(`
       UPDATE fees
       SET amount_paid = amount_due, status = 'Paid', paid_at = datetime('now')
-      WHERE id = ?
-    `).run(feeId);
+      WHERE id = ? AND tenant_id = ?
+    `).run(feeId, tenantId);
 
     createNotification(studentId, `✅ Demo Transaction Approved: Paid ₹${fee.amount_due} for ${fee.term}. Payment recorded.`, 'fee');
 
@@ -866,11 +874,12 @@ router.post('/profile', avatarUpload.single('profile_photo'), (req, res) => {
       newHash = bcrypt.hashSync(new_password, bcrypt.genSaltSync(10));
     }
 
+    const tenantId = req.tenantId || 'tenant_default';
     db.prepare(`
       UPDATE users 
       SET name = ?, course = ?, password = ?, profile_photo = ?
-      WHERE id = ?
-    `).run(name.trim(), course ? course.trim() : currentUser.course, newHash, photoPath, studentId);
+      WHERE id = ? AND tenant_id = ?
+    `).run(name.trim(), course ? course.trim() : currentUser.course, newHash, photoPath, studentId, tenantId);
 
     req.session.user.name = name.trim();
     req.session.user.profile_photo = photoPath;
@@ -889,9 +898,10 @@ router.post('/profile', avatarUpload.single('profile_photo'), (req, res) => {
  */
 router.get('/export/report.csv', (req, res) => {
   const studentId = req.session.user.id;
-  const student = db.prepare("SELECT name, roll_no, course FROM users WHERE id = ?").get(studentId);
-  const results = db.prepare("SELECT * FROM results WHERE student_id = ? ORDER BY id DESC").all(studentId);
-  const attendance = db.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS attended FROM attendance WHERE student_id = ?").get(studentId);
+  const tenantId = req.tenantId || 'tenant_default';
+  const student = db.prepare("SELECT name, roll_no, course FROM users WHERE id = ? AND tenant_id = ?").get(studentId, tenantId);
+  const results = db.prepare("SELECT * FROM results WHERE student_id = ? AND tenant_id = ? ORDER BY id DESC").all(studentId, tenantId);
+  const attendance = db.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN status='Present' THEN 1 ELSE 0 END) AS attended FROM attendance WHERE student_id = ? AND tenant_id = ?").get(studentId, tenantId);
 
   const attPct = attendance.total > 0 ? Math.round((attendance.attended / attendance.total) * 100) : 0;
 
@@ -912,7 +922,8 @@ router.get('/export/report.csv', (req, res) => {
 
 // Notifications mark read for student
 router.post('/notifications/read-all', (req, res) => {
-  db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").run(req.session.user.id);
+  const tenantId = req.tenantId || 'tenant_default';
+  db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND tenant_id = ?").run(req.session.user.id, tenantId);
   res.redirect('back');
 });
 

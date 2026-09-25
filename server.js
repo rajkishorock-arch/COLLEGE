@@ -27,6 +27,18 @@ const { resolveTenant } = require('./middleware/tenant');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Security hardening: hide server tech stack
+app.disable('x-powered-by');
+
+// Security headers (clickjacking protection, MIME sniffing prevention, referrer policy)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // Trust reverse proxy (essential for Vercel, Render, Heroku HTTPS)
 app.set('trust proxy', 1);
 

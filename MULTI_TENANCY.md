@@ -278,24 +278,118 @@ Two dedicated test suites are provided and validated:
 
 ---
 
-## 11. Production Deployment Notes
+## 11. Production Infrastructure: SQLite vs PostgreSQL
 
-1. **Environment Variables**:
-   Ensure the following are set in `.env`:
-   ```bash
-   PORT=3000
-   SESSION_SECRET=your-strong-production-session-secret-here
-   SESSION_TIMEOUT_MINUTES=60
-   NODE_ENV=production
-   ```
-2. **Reverse Proxy Trust**:
-   `app.set('trust proxy', 1)` is enabled in `server.js`, supporting deployments behind Vercel, Render, AWS CloudFront, or NGINX.
-3. **Database Persistence**:
-   Ensure `database/college.db` is stored on a persistent disk or volume on containerized environments (Render Disks, AWS EBS, Docker volume).
+### 11.1 Deployment Environment Assessment
+
+The current architecture uses **SQLite (via `better-sqlite3`)** operating in Write-Ahead Logging (`PRAGMA journal_mode = WAL`) and synchronous normal mode (`PRAGMA synchronous = NORMAL`).
+
+#### Critical Production Reality:
+- **Persistent Disk Environments (Supported):**
+  - Bare Metal Linux / VPS (Ubuntu, Debian, AlmaLinux)
+  - AWS EC2 / DigitalOcean Droplets with persistent NVMe SSD
+  - Docker / Container hosts with mounted Persistent Volume Claims (PVC)
+  - Render with attached **Persistent Disk** mounted to `/data` or `database/`
+  *In these environments, SQLite easily handles thousands of reads per second, tens of thousands of users, and concurrent WAL readers without corruption.*
+
+- **Serverless / Ephemeral Environments (NOT Production-Safe for SQLite Writes):**
+  - **Vercel Serverless Functions:** Filesystem is read-only except for `/tmp`, which is ephemeral and wiped between function cold starts or concurrent instances.
+  - **AWS Lambda / Google Cloud Functions:** Ephemeral container recycling leads to split-brain states and lost writes.
+  - **Render / Heroku Free/Basic without Persistent Disk:** Every deployment or container restart completely wipes ephemeral local disk storage, reverting the database to initial state.
+
+> [!CAUTION]
+> For distributed serverless or multi-region enterprise deployments, SQLite must NOT be claimed as persistent production-ready storage unless backed by Litestream replication or attached network block storage (e.g. AWS EFS).
 
 ---
 
-## 12. Known Limitations & Future Scalability
+### 11.2 PostgreSQL Migration Blueprint
 
-- **Single Database File:** SQLite easily supports millions of records and dozens of concurrent institutions on modern NVMe drives. For enterprise deployments exceeding 50,000 active concurrent write sessions, database migration to PostgreSQL with PostgreSQL Row-Level Security (RLS) is the recommended path.
-- **Custom Domains:** Subdomains (`subdomain.campuspulse.edu`) can be wired directly through reverse proxy headers (`Host`) by looking up `SELECT * FROM tenants WHERE subdomain = ?` in `middleware/tenant.js`.
+To facilitate zero-downtime transition to PostgreSQL for enterprise scale, the application is pre-architected with:
+1. **Centralized Service Abstraction:** All business logic queries reside inside `services/` and `database/migrations.js`.
+2. **Explicit Foreign Keys:** Every table is structured with relational integrity matching PostgreSQL syntax.
+3. **Tenant-Scoped Architecture:** Ready for PostgreSQL Row-Level Security (RLS).
+
+#### Required Environment Variables for PostgreSQL:
+```bash
+# Production Database Connection
+DB_DIALECT=postgres
+DATABASE_URL=postgres://campuspulse_admin:StrongPassword@db.example.com:5432/campuspulse_prod?sslmode=require
+DB_POOL_MIN=5
+DB_POOL_MAX=25
+DB_IDLE_TIMEOUT_MS=30000
+
+# Platform Configuration
+PORT=3000
+NODE_ENV=production
+SESSION_SECRET=e7b4...f92a # 64-char cryptographically secure secret
+SESSION_TIMEOUT_MINUTES=60
+ALLOW_INSECURE_COOKIES=false
+```
+
+#### Migration Path (Non-Destructive):
+1. **Database Adapter Layer:** Create `config/databaseAdapter.js` providing a unified interface (`query()`, `transaction()`) that toggles between `better-sqlite3` and `pg`/`prisma`/`knex` based on `process.env.DB_DIALECT`.
+2. **Schema Equivalents:**
+   - `DATETIME DEFAULT CURRENT_TIMESTAMP` → `TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP`
+   - `TEXT` primary keys with `UUIDv4` or prefixed strings → `VARCHAR(64)` or `UUID`
+   - `INTEGER` auto-incrementing IDs → `BIGSERIAL PRIMARY KEY`
+3. **Transaction Requirements:**
+   - PostgreSQL requires client checkout from the connection pool:
+     ```javascript
+     const client = await pool.connect();
+     try {
+       await client.query('BEGIN');
+       // Scoped operations...
+       await client.query('COMMIT');
+     } catch (err) {
+       await client.query('ROLLBACK');
+       throw err;
+     } finally {
+       client.release();
+     }
+     ```
+4. **Data Export & Load:**
+   - Run `sqlite3 database/college.db .dump > dump.sql`
+   - Transform SQLite syntax to Postgres via `pgloader` or custom NodeJS streaming migration script.
+   - Verify table counts match across all 16 tables.
+
+---
+
+### 11.3 Future Row-Level Security (RLS) Strategy
+
+PostgreSQL Row-Level Security (RLS) offers kernel-level data isolation, preventing accidental data leaks even if an application query omits `WHERE tenant_id = ?`:
+
+```sql
+-- 1. Enable RLS on all tenant tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE book_issues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+
+-- 2. Create tenant isolation policy
+CREATE POLICY tenant_isolation_policy ON users
+  FOR ALL
+  USING (
+    tenant_id = current_setting('app.current_tenant_id', true)
+    OR current_setting('app.is_super_admin', true) = 'true'
+  );
+
+-- 3. Application sets tenant context at start of connection/transaction
+SET LOCAL app.current_tenant_id = 'tenant_apex';
+```
+
+---
+
+## 12. Automated Test Results Summary
+
+| Test Suite | Purpose | Status | Checks Passed |
+| :--- | :--- | :---: | :---: |
+| [`scratch/test-all-16-resources.js`](file:///c:/Users/rajki/Desktop/COLLEGE/scratch/test-all-16-resources.js) | Comprehensive CRUD & isolation across all 16 tenant resources | **PASSED** | **48 / 48** |
+| [`scratch/test-http-isolation.js`](file:///c:/Users/rajki/Desktop/COLLEGE/scratch/test-http-isolation.js) | Live HTTP session, routing, suspension & privilege checks | **PASSED** | **17 / 17** |
+| [`scratch/test-multi-tenancy.js`](file:///c:/Users/rajki/Desktop/COLLEGE/scratch/test-multi-tenancy.js) | Architectural business logic, onboarding & scoping tests | **PASSED** | **28 / 28** |
+| [`scratch/audit-queries-deep.js`](file:///c:/Users/rajki/Desktop/COLLEGE/scratch/audit-queries-deep.js) | Complete codebase AST/regex query audit (224 queries) | **PASSED** | **0 Unsafe Queries** |

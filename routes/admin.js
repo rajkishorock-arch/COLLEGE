@@ -339,9 +339,9 @@ router.get('/students/:id', (req, res) => {
       SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS attended,
       SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) AS missed
     FROM attendance
-    WHERE student_id = ?
+    WHERE student_id = ? AND tenant_id = ?
     GROUP BY subject
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   let totalClasses = 0;
   let totalPresent = 0;
@@ -359,9 +359,9 @@ router.get('/students/:id', (req, res) => {
   // Results
   const results = db.prepare(`
     SELECT * FROM results 
-    WHERE student_id = ? 
+    WHERE student_id = ? AND tenant_id = ?
     ORDER BY id DESC
-  `).all(studentId).map(r => ({
+  `).all(studentId, tenantId).map(r => ({
     ...r,
     percentage: Math.round((r.marks_obtained / r.max_marks) * 100)
   }));
@@ -372,9 +372,9 @@ router.get('/students/:id', (req, res) => {
     SELECT bi.*, b.title, b.author
     FROM book_issues bi
     JOIN books b ON bi.book_id = b.id
-    WHERE bi.student_id = ?
+    WHERE bi.student_id = ? AND bi.tenant_id = ?
     ORDER BY bi.issue_date DESC
-  `).all(studentId).map(b => ({
+  `).all(studentId, tenantId).map(b => ({
     ...b,
     isOverdue: b.status === 'Issued' && b.due_date < todayStr
   }));
@@ -384,9 +384,9 @@ router.get('/students/:id', (req, res) => {
     SELECT qa.*, q.title AS quiz_title
     FROM quiz_attempts qa
     JOIN quizzes q ON qa.quiz_id = q.id
-    WHERE qa.student_id = ?
+    WHERE qa.student_id = ? AND qa.tenant_id = ?
     ORDER BY qa.attempted_at DESC
-  `).all(studentId);
+  `).all(studentId, tenantId);
 
   res.render('admin/student-detail', {
     title: `Student Profile: ${student.name}`,
@@ -542,10 +542,11 @@ router.post('/attendance/start-session', (req, res) => {
     const randNum = Math.floor(1000 + Math.random() * 9000);
     const sessionCode = `${initials}-${randNum}`;
 
+    const tenantId = req.tenantId || 'tenant_default';
     db.prepare(`
-      INSERT INTO attendance_sessions (subject, session_code, created_by, date, valid_from, valid_until)
-      VALUES (?, ?, ?, ?, datetime('now'), datetime('now', '+15 minutes'))
-    `).run(subject, sessionCode, req.session.user.id, date);
+      INSERT INTO attendance_sessions (tenant_id, subject, session_code, created_by, date, valid_from, valid_until)
+      VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now', '+15 minutes'))
+    `).run(tenantId, subject, sessionCode, req.session.user.id, date);
 
     logAudit(req.session.user.id, 'Started Check-In Session', `Code: ${sessionCode}, Subject: ${subject}, Date: ${date} (Valid 15m)`);
     broadcastToStudents(`Live attendance check-in session started for ${subject}! Code: ${sessionCode} (Valid 15m)`, 'attendance');
@@ -650,13 +651,17 @@ router.post('/results/add', (req, res) => {
   }
 
   try {
-    const student = db.prepare('SELECT name FROM users WHERE id = ?').get(student_id);
-    const studentName = student ? student.name : `Student #${student_id}`;
+    const tenantId = req.tenantId || 'tenant_default';
+    const student = db.prepare('SELECT name FROM users WHERE id = ? AND tenant_id = ?').get(student_id, tenantId);
+    if (!student) {
+      return res.redirect('/admin/results?error=' + encodeURIComponent('Student not found in your institution.'));
+    }
+    const studentName = student.name;
 
     db.prepare(`
-      INSERT INTO results (student_id, subject, marks_obtained, max_marks, exam_type, semester)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(parseInt(student_id, 10), subject.trim(), marks, max, exam_type.trim(), chosenSemester);
+      INSERT INTO results (tenant_id, student_id, subject, marks_obtained, max_marks, exam_type, semester)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(tenantId, parseInt(student_id, 10), subject.trim(), marks, max, exam_type.trim(), chosenSemester);
 
     logAudit(req.session.user.id, 'Recorded Student Result', `${studentName} — ${subject.trim()} (${chosenSemester}): ${marks}/${max}`);
     createNotification(student_id, `New assessment marks published for ${subject.trim()} (${chosenSemester}): ${marks}/${max} marks`, 'assignment');
@@ -693,10 +698,11 @@ router.post('/results/delete/:id', (req, res) => {
 
 // GET /admin/library
 router.get('/library', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const todayStr = new Date().toISOString().split('T')[0];
 
   // All books
-  const books = db.prepare(`SELECT * FROM books ORDER BY title ASC`).all();
+  const books = db.prepare(`SELECT * FROM books WHERE tenant_id = ? ORDER BY title ASC`).all(tenantId);
 
   // Active & overdue issues
   const issuedBooks = db.prepare(`
@@ -707,8 +713,9 @@ router.get('/library', (req, res) => {
     FROM book_issues bi
     JOIN books b ON bi.book_id = b.id
     JOIN users u ON bi.student_id = u.id
+    WHERE bi.tenant_id = ?
     ORDER BY bi.status DESC, bi.due_date ASC
-  `).all().map(item => ({
+  `).all(tenantId).map(item => ({
     ...item,
     isOverdue: item.status === 'Issued' && item.due_date < todayStr
   }));
@@ -777,16 +784,16 @@ router.post('/library/issue', (req, res) => {
     const issueTransaction = db.transaction(() => {
       // Record issue
       db.prepare(`
-        INSERT INTO book_issues (book_id, student_id, issue_date, due_date, status)
-        VALUES (?, ?, ?, ?, 'Issued')
-      `).run(bookId, studentId, todayStr, due_date);
+        INSERT INTO book_issues (tenant_id, book_id, student_id, issue_date, due_date, status)
+        VALUES (?, ?, ?, ?, ?, 'Issued')
+      `).run(tenantId, bookId, studentId, todayStr, due_date);
 
       // Decrement available copies
       db.prepare(`
         UPDATE books 
         SET available_copies = available_copies - 1 
-        WHERE id = ?
-      `).run(bookId);
+        WHERE id = ? AND tenant_id = ?
+      `).run(bookId, tenantId);
     });
 
     issueTransaction();
@@ -822,8 +829,8 @@ router.post('/library/return/:id', (req, res) => {
       db.prepare(`
         UPDATE books 
         SET available_copies = available_copies + 1 
-        WHERE id = ?
-      `).run(issue.book_id);
+        WHERE id = ? AND tenant_id = ?
+      `).run(issue.book_id, tenantId);
     });
 
     returnTransaction();
@@ -862,6 +869,7 @@ router.post('/library/delete/:id', (req, res) => {
 
 // GET /admin/quiz - List quizzes
 router.get('/quiz', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const quizzes = db.prepare(`
     SELECT 
       q.*,
@@ -869,11 +877,12 @@ router.get('/quiz', (req, res) => {
       COUNT(DISTINCT qa.id) AS attempts_count,
       COALESCE(AVG(qa.score * 100.0 / qa.total), 0) AS average_score
     FROM quizzes q
-    LEFT JOIN quiz_questions qq ON q.id = qq.quiz_id
-    LEFT JOIN quiz_attempts qa ON q.id = qa.quiz_id
+    LEFT JOIN quiz_questions qq ON q.id = qq.quiz_id AND qq.tenant_id = q.tenant_id
+    LEFT JOIN quiz_attempts qa ON q.id = qa.quiz_id AND qa.tenant_id = q.tenant_id
+    WHERE q.tenant_id = ?
     GROUP BY q.id
     ORDER BY q.id DESC
-  `).all().map(q => ({
+  `).all(tenantId).map(q => ({
     ...q,
     average_score: Math.round(q.average_score)
   }));
@@ -937,9 +946,9 @@ router.get('/quiz/:id', (req, res) => {
     SELECT qa.*, u.name AS student_name, u.roll_no
     FROM quiz_attempts qa
     JOIN users u ON qa.student_id = u.id
-    WHERE qa.quiz_id = ?
+    WHERE qa.quiz_id = ? AND qa.tenant_id = ?
     ORDER BY qa.attempted_at DESC
-  `).all(quizId).map(att => ({
+  `).all(quizId, tenantId).map(att => ({
     ...att,
     percentage: Math.round((att.score / att.total) * 100)
   }));
@@ -1069,12 +1078,14 @@ router.get('/audit-log', (req, res) => {
  * ==========================================
  */
 router.get('/announcements', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const announcements = db.prepare(`
     SELECT a.*, u.name AS posted_by_name
     FROM announcements a
     JOIN users u ON a.posted_by = u.id
+    WHERE a.tenant_id = ?
     ORDER BY a.id DESC
-  `).all();
+  `).all(tenantId);
 
   res.render('admin/announcements', {
     title: 'Manage Announcements - Admin Portal',
@@ -1086,6 +1097,7 @@ router.get('/announcements', (req, res) => {
 });
 
 router.post('/announcements/create', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const { title, body, priority } = req.body;
   if (!title || !body) {
     return res.redirect('/admin/announcements?error=' + encodeURIComponent('Title and body are required.'));
@@ -1094,9 +1106,9 @@ router.post('/announcements/create', (req, res) => {
   try {
     const p = (priority === 'urgent') ? 'urgent' : 'normal';
     db.prepare(`
-      INSERT INTO announcements (title, body, posted_by, priority, created_at)
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `).run(title.trim(), body.trim(), req.session.user.id, p);
+      INSERT INTO announcements (tenant_id, title, body, posted_by, priority, created_at)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))
+    `).run(tenantId, title.trim(), body.trim(), req.session.user.id, p);
 
     logAudit(req.session.user.id, 'Posted Announcement', `Title: "${title.trim()}", Priority: ${p}`);
     broadcastToStudents(`📢 Notice: ${title.trim()}`, 'announcement');
@@ -1130,11 +1142,12 @@ router.post('/announcements/delete/:id', (req, res) => {
  * ==========================================
  */
 router.get('/timetable', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const filterCourse = req.query.course || 'B.Tech Computer Science';
 
   const slots = db.prepare(`
     SELECT * FROM timetable
-    WHERE course = ?
+    WHERE course = ? AND tenant_id = ?
     ORDER BY 
       CASE day_of_week
         WHEN 'Monday' THEN 1
@@ -1146,7 +1159,7 @@ router.get('/timetable', (req, res) => {
         ELSE 7
       END,
       start_time ASC
-  `).all(filterCourse);
+  `).all(filterCourse, tenantId);
 
   const subjects = [
     'Data Structures & Algorithms',
@@ -1180,6 +1193,7 @@ router.get('/timetable', (req, res) => {
 });
 
 router.post('/timetable/create', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const { subject, day_of_week, start_time, end_time, room, course } = req.body;
   if (!subject || !day_of_week || !start_time || !end_time || !course) {
     return res.redirect('/admin/timetable?error=' + encodeURIComponent('All timetable slot fields are required.'));
@@ -1223,16 +1237,18 @@ router.post('/timetable/delete/:id', (req, res) => {
  * ==========================================
  */
 router.get('/assignments', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const assignments = db.prepare(`
     SELECT a.*, u.name AS creator_name,
       COUNT(DISTINCT sub.id) AS submission_count,
       COUNT(DISTINCT CASE WHEN sub.grade IS NOT NULL THEN sub.id END) AS graded_count
     FROM assignments a
     JOIN users u ON a.created_by = u.id
-    LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id
+    LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND sub.tenant_id = a.tenant_id
+    WHERE a.tenant_id = ?
     GROUP BY a.id
     ORDER BY a.id DESC
-  `).all();
+  `).all(tenantId);
 
   // If viewing specific assignment submissions
   const selectedAssignmentId = req.query.id ? parseInt(req.query.id, 10) : (assignments.length > 0 ? assignments[0].id : null);
@@ -1247,9 +1263,9 @@ router.get('/assignments', (req, res) => {
       FROM assignment_submissions sub
       JOIN users u ON sub.student_id = u.id
       JOIN assignments a ON sub.assignment_id = a.id
-      WHERE sub.assignment_id = ?
+      WHERE sub.assignment_id = ? AND a.tenant_id = ?
       ORDER BY sub.id DESC
-    `).all(selectedAssignmentId);
+    `).all(selectedAssignmentId, tenantId);
   }
 
   const subjects = [
@@ -1275,6 +1291,7 @@ router.get('/assignments', (req, res) => {
 });
 
 router.post('/assignments/create', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const { title, subject, description, due_date } = req.body;
   if (!title || !subject || !due_date) {
     return res.redirect('/admin/assignments?error=' + encodeURIComponent('Title, subject, and due date are required.'));
@@ -1282,12 +1299,12 @@ router.post('/assignments/create', (req, res) => {
 
   try {
     db.prepare(`
-      INSERT INTO assignments (title, subject, description, due_date, created_by, created_at)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))
-    `).run(title.trim(), subject, description || '', due_date, req.session.user.id);
+      INSERT INTO assignments (tenant_id, title, subject, description, due_date, created_by, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(tenantId, title.trim(), subject, description || '', due_date, req.session.user.id);
 
     logAudit(req.session.user.id, 'Created Assignment', `Title: "${title.trim()}", Subject: ${subject}, Due: ${due_date}`);
-    broadcastToStudents(`📝 New Assignment: ${title.trim()} (${subject}). Due: ${due_date}`, 'assignment');
+    broadcastToStudents(`📝 New Assignment: ${title.trim()} (${subject}). Due: ${due_date}`, 'assignment', tenantId);
 
     res.redirect('/admin/assignments?success=' + encodeURIComponent('Assignment posted to student portals!'));
   } catch (err) {
@@ -1298,6 +1315,7 @@ router.post('/assignments/create', (req, res) => {
 
 router.post('/assignments/grade/:submissionId', (req, res) => {
   const submissionId = parseInt(req.params.submissionId, 10);
+  const tenantId = req.tenantId || 'tenant_default';
   const { grade, feedback, assignment_id } = req.body;
 
   try {
@@ -1305,8 +1323,8 @@ router.post('/assignments/grade/:submissionId', (req, res) => {
       SELECT sub.*, a.title AS assignment_title, a.subject 
       FROM assignment_submissions sub
       JOIN assignments a ON sub.assignment_id = a.id
-      WHERE sub.id = ?
-    `).get(submissionId);
+      WHERE sub.id = ? AND a.tenant_id = ?
+    `).get(submissionId, tenantId);
 
     if (!sub) {
       return res.redirect('/admin/assignments?error=' + encodeURIComponent('Submission not found.'));
@@ -1315,8 +1333,8 @@ router.post('/assignments/grade/:submissionId', (req, res) => {
     db.prepare(`
       UPDATE assignment_submissions
       SET grade = ?, feedback = ?
-      WHERE id = ?
-    `).run(grade.trim(), feedback || '', submissionId);
+      WHERE id = ? AND tenant_id = ?
+    `).run(grade.trim(), feedback || '', submissionId, tenantId);
 
     logAudit(req.session.user.id, 'Graded Assignment Submission', `Student ID: ${sub.student_id}, Grade: ${grade}, Assignment: ${sub.assignment_title}`);
     createNotification(sub.student_id, `📊 Your submission for "${sub.assignment_title}" has been graded: ${grade}. Check feedback in portal.`, 'assignment');
@@ -1397,6 +1415,7 @@ router.get('/fees', (req, res) => {
 });
 
 router.post('/fees/create', (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const { student_id, term, amount_due, due_date } = req.body;
   if (!student_id || !term || !amount_due) {
     return res.redirect('/admin/fees?error=' + encodeURIComponent('Student, term, and amount due are required.'));
@@ -1406,9 +1425,9 @@ router.post('/fees/create', (req, res) => {
     const stId = parseInt(student_id, 10);
     const amt = parseInt(amount_due, 10);
     db.prepare(`
-      INSERT INTO fees (student_id, term, amount_due, amount_paid, due_date, status)
-      VALUES (?, ?, ?, 0, ?, 'Pending')
-    `).run(stId, term.trim(), amt, due_date || null);
+      INSERT INTO fees (tenant_id, student_id, term, amount_due, amount_paid, due_date, status)
+      VALUES (?, ?, ?, ?, 0, ?, 'Pending')
+    `).run(tenantId, stId, term.trim(), amt, due_date || null);
 
     logAudit(req.session.user.id, 'Assigned Student Fee Dues', `Student ID: ${stId}, Term: ${term}, Amount: ₹${amt}`);
     createNotification(stId, `💳 Fee invoice generated for ${term}: ₹${amt} due on ${due_date || 'scheduled deadline'}.`, 'fee');
@@ -1432,8 +1451,8 @@ router.post('/fees/mark-paid/:id', (req, res) => {
     db.prepare(`
       UPDATE fees
       SET amount_paid = amount_due, status = 'Paid', paid_at = datetime('now')
-      WHERE id = ?
-    `).run(feeId);
+      WHERE id = ? AND tenant_id = ?
+    `).run(feeId, tenantId);
 
     logAudit(req.session.user.id, 'Marked Fee Paid (Manual/Offline)', `Fee ID: ${feeId}, Student ID: ${fee.student_id}, Amount: ₹${fee.amount_due}`);
     createNotification(fee.student_id, `✅ Fee payment confirmed! Receipt generated for ${fee.term} (₹${fee.amount_due}). Status: Paid.`, 'fee');
@@ -1489,11 +1508,12 @@ router.post('/profile', avatarUpload.single('profile_photo'), (req, res) => {
       newHash = bcrypt.hashSync(new_password, bcrypt.genSaltSync(10));
     }
 
+    const tenantId = req.tenantId || 'tenant_default';
     db.prepare(`
       UPDATE users 
       SET name = ?, password = ?, profile_photo = ?
-      WHERE id = ?
-    `).run(name.trim(), newHash, photoPath, adminId);
+      WHERE id = ? AND tenant_id = ?
+    `).run(name.trim(), newHash, photoPath, adminId, tenantId);
 
     req.session.user.name = name.trim();
     req.session.user.profile_photo = photoPath;
@@ -1514,11 +1534,12 @@ router.post('/profile', avatarUpload.single('profile_photo'), (req, res) => {
  */
 router.get('/export/:type.csv', (req, res) => {
   const type = req.params.type;
+  const tenantId = req.tenantId || 'tenant_default';
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', `attachment; filename="${type}-report-${new Date().toISOString().split('T')[0]}.csv"`);
 
   if (type === 'students') {
-    const rows = db.prepare("SELECT id, name, roll_no, email, course, created_at FROM users WHERE role = 'student' ORDER BY roll_no ASC").all();
+    const rows = db.prepare("SELECT id, name, roll_no, email, course, created_at FROM users WHERE role = 'student' AND tenant_id = ? ORDER BY roll_no ASC").all(tenantId);
     let csv = 'ID,Name,Roll Number,Email,Course,Registered Date\n';
     rows.forEach(r => {
       csv += `"${r.id}","${r.name}","${r.roll_no}","${r.email}","${r.course}","${r.created_at}"\n`;
@@ -1531,8 +1552,9 @@ router.get('/export/:type.csv', (req, res) => {
       SELECT a.id, u.name, u.roll_no, a.subject, a.date, a.status
       FROM attendance a
       JOIN users u ON a.student_id = u.id
+      WHERE a.tenant_id = ?
       ORDER BY a.date DESC, a.subject ASC
-    `).all();
+    `).all(tenantId);
     let csv = 'Record ID,Student Name,Roll Number,Subject,Date,Status\n';
     rows.forEach(r => {
       csv += `"${r.id}","${r.name}","${r.roll_no}","${r.subject}","${r.date}","${r.status}"\n`;
@@ -1545,8 +1567,9 @@ router.get('/export/:type.csv', (req, res) => {
       SELECT r.id, u.name, u.roll_no, r.semester, r.subject, r.marks_obtained, r.max_marks, r.exam_type
       FROM results r
       JOIN users u ON r.student_id = u.id
+      WHERE r.tenant_id = ?
       ORDER BY r.id DESC
-    `).all();
+    `).all(tenantId);
     let csv = 'Result ID,Student Name,Roll Number,Semester,Subject,Marks Obtained,Max Marks,Percentage,Exam Type\n';
     rows.forEach(r => {
       const pct = Math.round((r.marks_obtained / r.max_marks) * 100);
@@ -1561,8 +1584,9 @@ router.get('/export/:type.csv', (req, res) => {
       FROM book_issues bi
       JOIN books b ON bi.book_id = b.id
       JOIN users u ON bi.student_id = u.id
+      WHERE bi.tenant_id = ?
       ORDER BY bi.id DESC
-    `).all();
+    `).all(tenantId);
     let csv = 'Issue ID,Book Title,Author,Student Name,Roll Number,Issue Date,Due Date,Return Date,Status\n';
     rows.forEach(r => {
       csv += `"${r.id}","${r.title}","${r.author}","${r.student_name}","${r.roll_no}","${r.issue_date}","${r.due_date}","${r.return_date || 'N/A'}","${r.status}"\n`;
@@ -1575,8 +1599,9 @@ router.get('/export/:type.csv', (req, res) => {
       SELECT a.id, a.created_at, u.name AS admin_name, a.action, a.details
       FROM audit_log a
       JOIN users u ON a.admin_id = u.id
+      WHERE a.tenant_id = ?
       ORDER BY a.id DESC
-    `).all();
+    `).all(tenantId);
     let csv = 'Log ID,Timestamp,Administrator,Action,Details\n';
     rows.forEach(r => {
       csv += `"${r.id}","${r.created_at}","${r.admin_name}","${r.action}","${(r.details || '').replace(/"/g, '""')}"\n`;
@@ -1589,7 +1614,8 @@ router.get('/export/:type.csv', (req, res) => {
 
 // Notifications mark read for admin
 router.post('/notifications/read-all', (req, res) => {
-  db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").run(req.session.user.id);
+  const tenantId = req.tenantId || 'tenant_default';
+  db.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND tenant_id = ?").run(req.session.user.id, tenantId);
   res.redirect('back');
 });
 
@@ -1601,12 +1627,13 @@ router.post('/notifications/read-all', (req, res) => {
 
 // GET /admin/manage-admins - Super Admin Only
 router.get('/manage-admins', requireSuperAdmin, (req, res) => {
+  const tenantId = req.tenantId || 'tenant_default';
   const admins = db.prepare(`
     SELECT id, name, email, role, is_active, created_at, failed_attempts, locked_until, last_failed_at
     FROM users 
-    WHERE role IN ('admin', 'super_admin')
+    WHERE role IN ('admin', 'super_admin') AND tenant_id = ?
     ORDER BY CASE WHEN role = 'super_admin' THEN 1 ELSE 2 END, id ASC
-  `).all();
+  `).all(tenantId);
 
   const totalAdmins = admins.length;
   const superAdminCount = admins.filter(a => a.role === 'super_admin').length;
@@ -1633,6 +1660,7 @@ router.get('/manage-admins', requireSuperAdmin, (req, res) => {
 router.post('/manage-admins/add', requireSuperAdmin, (req, res) => {
   const { name, email, password, role } = req.body;
   const actingAdmin = req.session.user;
+  const tenantId = req.tenantId || 'tenant_default';
 
   if (!name || !email || !password || !role) {
     return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('All fields are required.'));
@@ -1657,9 +1685,9 @@ router.post('/manage-admins/add', requireSuperAdmin, (req, res) => {
     const hash = bcrypt.hashSync(password, salt);
 
     const result = db.prepare(`
-      INSERT INTO users (name, email, password, role, is_active)
-      VALUES (?, ?, ?, ?, 1)
-    `).run(name.trim(), email.trim().toLowerCase(), hash, role);
+      INSERT INTO users (tenant_id, name, email, password, role, is_active)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `).run(tenantId, name.trim(), email.trim().toLowerCase(), hash, role);
 
     const newAdminId = result.lastInsertRowid;
     const roleLabel = role === 'super_admin' ? 'Super Administrator' : 'Administrator (Staff)';
@@ -1682,6 +1710,7 @@ router.post('/manage-admins/add', requireSuperAdmin, (req, res) => {
 router.post('/manage-admins/toggle-status/:id', requireSuperAdmin, (req, res) => {
   const targetId = parseInt(req.params.id, 10);
   const actingAdmin = req.session.user;
+  const tenantId = req.tenantId || 'tenant_default';
 
   // Cannot deactivate self (prevent accidental lockout)
   if (targetId === actingAdmin.id) {
@@ -1689,13 +1718,13 @@ router.post('/manage-admins/toggle-status/:id', requireSuperAdmin, (req, res) =>
   }
 
   try {
-    const target = db.prepare("SELECT id, name, email, role, is_active FROM users WHERE id = ? AND role IN ('admin', 'super_admin')").get(targetId);
+    const target = db.prepare("SELECT id, name, email, role, is_active FROM users WHERE id = ? AND role IN ('admin', 'super_admin') AND tenant_id = ?").get(targetId, tenantId);
     if (!target) {
       return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Admin account not found.'));
     }
 
     const newStatus = target.is_active === 1 ? 0 : 1;
-    db.prepare("UPDATE users SET is_active = ? WHERE id = ?").run(newStatus, targetId);
+    db.prepare("UPDATE users SET is_active = ? WHERE id = ? AND tenant_id = ?").run(newStatus, targetId, tenantId);
 
     const actionTitle = newStatus === 1 ? 'Admin Account Reactivated' : 'Admin Account Deactivated';
     logAudit(
@@ -1716,6 +1745,7 @@ router.post('/manage-admins/toggle-status/:id', requireSuperAdmin, (req, res) =>
 router.post('/manage-admins/delete/:id', requireSuperAdmin, (req, res) => {
   const targetId = parseInt(req.params.id, 10);
   const actingAdmin = req.session.user;
+  const tenantId = req.tenantId || 'tenant_default';
 
   // Cannot delete self (prevent accidental lockout)
   if (targetId === actingAdmin.id) {
@@ -1723,12 +1753,12 @@ router.post('/manage-admins/delete/:id', requireSuperAdmin, (req, res) => {
   }
 
   try {
-    const target = db.prepare("SELECT id, name, email, role FROM users WHERE id = ? AND role IN ('admin', 'super_admin')").get(targetId);
+    const target = db.prepare("SELECT id, name, email, role FROM users WHERE id = ? AND role IN ('admin', 'super_admin') AND tenant_id = ?").get(targetId, tenantId);
     if (!target) {
       return res.redirect('/admin/manage-admins?error=' + encodeURIComponent('Admin account not found.'));
     }
 
-    db.prepare("DELETE FROM users WHERE id = ?").run(targetId);
+    db.prepare("DELETE FROM users WHERE id = ? AND tenant_id = ?").run(targetId, tenantId);
 
     logAudit(
       actingAdmin.id,
