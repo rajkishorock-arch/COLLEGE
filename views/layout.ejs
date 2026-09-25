@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'College Management Platform' %></title>
   
+  <!-- Anti-Flash Instant Theme Detection -->
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('campuspulse-theme') || 'system';
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Exact Google Fonts Pairing: Space Grotesk + Inter ONLY -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,18 +33,18 @@
       theme: {
         extend: {
           colors: {
-            bgPrimary: '#FFFFFF',
-            bgSurface: '#FFFFFF',
-            bgSurfaceHover: '#F7F7F9',
-            borderSubtle: '#E5E7EB',
-            textPrimary: '#111318',
-            textSecondary: '#5B5F6B',
-            textMuted: '#8B8F99',
-            accentPrimary: '#6C5CE7',
-            accentPrimaryHover: '#5B4BD6',
-            success: '#1E9E57',
-            danger: '#E5384B',
-            warning: '#E08E00',
+            bgPrimary: 'var(--bg-primary)',
+            bgSurface: 'var(--bg-surface)',
+            bgSurfaceHover: 'var(--bg-surface-hover)',
+            borderSubtle: 'var(--border-subtle)',
+            textPrimary: 'var(--text-primary)',
+            textSecondary: 'var(--text-secondary)',
+            textMuted: 'var(--text-muted)',
+            accentPrimary: 'var(--accent-primary)',
+            accentPrimaryHover: 'var(--accent-primary-hover)',
+            success: 'var(--success)',
+            danger: 'var(--danger)',
+            warning: 'var(--warning)',
           },
           fontFamily: {
             heading: ['"Space Grotesk"', 'sans-serif'],
@@ -49,7 +64,7 @@
   <!-- Custom Stylesheets (Exact Design Tokens & Animations) -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[#FFFFFF] text-[#111318] min-h-screen flex flex-col antialiased selection:bg-[#6C5CE7] selection:text-white">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased selection:bg-[#6C5CE7] selection:text-white transition-colors duration-200">
 
   <% if (typeof user !== 'undefined' && user) { %>
     <!-- Authenticated Layout with Sidebar -->
@@ -66,7 +81,7 @@
       </main>
 
       <!-- Footer -->
-      <footer class="py-5 px-6 border-t border-[#E5E7EB] bg-[#FFFFFF] text-center text-xs text-[#8B8F99]">
+      <footer class="py-5 px-6 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center text-xs text-[var(--text-muted)]">
         <p>&copy; <%= new Date().getFullYear() %> College Management Platform • Engineered with Node.js, Express & SQLite</p>
       </footer>
     </div>

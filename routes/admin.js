@@ -1783,11 +1783,15 @@ router.post('/manage-admins/delete/:id', requireSuperAdmin, (req, res) => {
 router.get('/tenant-settings', (req, res) => {
   const tenantId = req.tenantId || 'tenant_default';
   const tenant = db.prepare('SELECT * FROM tenants WHERE id = ?').get(tenantId);
+  const owner = tenantService.getTenantOwner(tenantId);
+  const departments = tenantService.getDepartments(tenantId);
 
   res.render('admin/tenant-settings', {
     title: 'Institution Settings - Admin Portal',
     pageName: 'tenant-settings',
     tenant,
+    owner,
+    departments,
     error: req.query.error || null,
     success: req.query.success || null
   });
@@ -1795,7 +1799,7 @@ router.get('/tenant-settings', (req, res) => {
 
 router.post('/tenant-settings', (req, res) => {
   const tenantId = req.tenantId || 'tenant_default';
-  const { name, short_name, email, phone, address, academic_year, primary_color, secondary_color } = req.body;
+  const { name, short_name, email, phone, address, academic_year, primary_color, secondary_color, institution_type } = req.body;
 
   if (!name) {
     return res.redirect('/admin/tenant-settings?error=' + encodeURIComponent('Institution Name is required.'));
@@ -1806,6 +1810,7 @@ router.post('/tenant-settings', (req, res) => {
       UPDATE tenants 
       SET name = ?, short_name = ?, email = ?, phone = ?, address = ?, 
           academic_year = ?, primary_color = ?, secondary_color = ?,
+          institution_type = COALESCE(?, institution_type),
           updated_at = datetime('now')
       WHERE id = ?
     `).run(
@@ -1817,6 +1822,7 @@ router.post('/tenant-settings', (req, res) => {
       (academic_year || '2025-2026').trim(),
       primary_color || '#6C5CE7',
       secondary_color || '#111318',
+      institution_type || null,
       tenantId
     );
 
@@ -1833,6 +1839,11 @@ router.post('/tenant-settings', (req, res) => {
     console.error('Update tenant settings error:', err);
     res.redirect('/admin/tenant-settings?error=' + encodeURIComponent('Failed to update institution settings: ' + err.message));
   }
+});
+
+// Alias /settings -> /admin/tenant-settings
+router.get('/settings', (req, res) => {
+  res.redirect('/admin/tenant-settings');
 });
 
 module.exports = router;

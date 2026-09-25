@@ -20,6 +20,9 @@
 
   <!-- Right Actions & User Pill -->
   <div class="flex items-center gap-3">
+    <!-- Theme Toggle (Light / Dark / System) -->
+    <%- include('theme-toggle') %>
+
     <% if (typeof tenant !== 'undefined' && tenant) { %>
       <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0EEFF] text-[#6C5CE7] border border-[#DDD6FE]">
         <i class="fa-solid fa-building-columns text-[10px]"></i>

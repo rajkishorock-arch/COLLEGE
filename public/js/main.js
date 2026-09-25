@@ -1,10 +1,65 @@
 /**
  * CampusPulse - EXACT Interaction & Animation Engine
  * Implements precise easing, RAF ease-out count-ups, sliding nav indicator,
- * snappy modals, row scale-pulses, and tactile feedback.
+ * snappy modals, row scale-pulses, dark mode theme engine, and tactile feedback.
  */
 
+// 0. Instant Theme Engine Initialization
+(function initThemeEngine() {
+  const THEME_KEY = 'campuspulse-theme';
+
+  function getSystemPrefersDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === 'dark' || (theme === 'system' && getSystemPrefersDark());
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Update active state on any theme buttons in DOM
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+      const btnTheme = btn.getAttribute('data-theme-btn');
+      if (btnTheme === theme) {
+        btn.classList.add('theme-active');
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove('theme-active');
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+  }
+
+  // Initial load
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'system';
+  applyTheme(savedTheme);
+
+  // System OS theme change listener
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      const current = localStorage.getItem(THEME_KEY) || 'system';
+      if (current === 'system') {
+        applyTheme('system');
+      }
+    });
+  }
+
+  // Global toggle function accessible from HTML onclick
+  window.setCampusPulseTheme = function(theme) {
+    if (!['light', 'dark', 'system'].includes(theme)) return;
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
+  };
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Sync buttons on DOM ready
+  const currentTheme = localStorage.getItem('campuspulse-theme') || 'system';
+  window.setCampusPulseTheme(currentTheme);
+
   // 1. Automatic Stagger Indexing for Page Load Fade-Up
   initStaggeredEntrance();
 

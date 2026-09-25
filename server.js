@@ -21,6 +21,7 @@ const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
+const onboardingRoutes = require('./routes/onboarding');
 const { setUserLocals } = require('./middleware/auth');
 const { resolveTenant } = require('./middleware/tenant');
 
@@ -186,11 +187,13 @@ app.get('/storage/download', (req, res) => {
 const { authLimiter, sensitiveActionLimiter } = require('./middleware/rateLimiter');
 app.use('/login', authLimiter);
 app.use('/signup', authLimiter);
+app.use('/register-institution', authLimiter);
 app.use('/forgot-password', sensitiveActionLimiter);
 app.use('/invitation/accept', sensitiveActionLimiter);
 
 // Mount Application Routes
 app.use('/', authRoutes);
+app.use('/onboarding', onboardingRoutes);
 app.use('/student', studentRoutes);
 app.use('/admin', adminRoutes);
 app.use('/super-admin', superAdminRoutes);

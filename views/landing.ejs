@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CampusPulse - The Modern College Management Platform</title>
 
+  <!-- Anti-Flash Instant Theme Detection -->
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('campuspulse-theme') || 'system';
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Google Fonts: Space Grotesk (Headings/Stats) + Inter (Body/UI) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,12 +29,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[#FFFFFF] text-[#111318] antialiased selection:bg-[var(--accent-primary)] selection:text-white">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased selection:bg-[var(--accent-primary)] selection:text-white transition-colors duration-200">
 
   <!-- =========================================================================
        1. Top Sticky Navigation Bar
        ========================================================================= -->
-  <header class="sticky top-0 z-50 bg-[#FFFFFF]/90 backdrop-blur-md border-b border-[#E5E7EB] transition-all">
+  <header class="sticky top-0 z-50 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
       <!-- Brand Logo -->
@@ -28,25 +43,26 @@
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
         <div>
-          <span class="font-bold text-xl tracking-tight text-[#111318] block leading-none font-['Space_Grotesk']">
+          <span class="font-bold text-xl tracking-tight text-[var(--text-primary)] block leading-none font-['Space_Grotesk']">
             CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span>
           </span>
-          <span class="text-[10px] uppercase tracking-wider text-[#5B5F6B] font-medium block mt-1">
-            College Management Platform
+          <span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-medium block mt-1">
+            Autonomous SaaS Platform
           </span>
         </div>
       </a>
 
       <!-- Desktop Anchor Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-[#5B5F6B]">
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-[var(--text-secondary)]">
         <a href="#features" class="hover:text-[var(--accent-primary)] transition-colors">Features</a>
         <a href="#preview" class="hover:text-[var(--accent-primary)] transition-colors">Live Preview</a>
         <a href="#how-it-works" class="hover:text-[var(--accent-primary)] transition-colors">How It Works</a>
         <a href="#security" class="hover:text-[var(--accent-primary)] transition-colors">Security</a>
       </nav>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons & Theme Selector -->
       <div class="hidden sm:flex items-center gap-3">
+        <%- include('partials/theme-toggle') %>
         <a 
           href="/login" 
           class="btn-secondary py-2.5 px-4 text-xs font-semibold rounded-[8px]"
@@ -57,32 +73,35 @@
           href="/signup" 
           class="btn-primary py-2.5 px-5 text-xs font-semibold rounded-[8px] flex items-center gap-2"
         >
-          <span>Get Started Free</span>
+          <span>Create Institution</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </a>
       </div>
 
       <!-- Mobile Hamburger Button -->
-      <button 
-        id="landing-mobile-menu-btn" 
-        type="button" 
-        aria-label="Toggle Navigation Menu"
-        class="md:hidden p-2 rounded-[8px] border border-[#E5E7EB] text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9]"
-      >
-        <i class="fa-solid fa-bars text-lg"></i>
-      </button>
+      <div class="flex md:hidden items-center gap-2">
+        <%- include('partials/theme-toggle') %>
+        <button 
+          id="landing-mobile-menu-btn" 
+          type="button" 
+          aria-label="Toggle Navigation Menu"
+          class="p-2 rounded-[8px] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]"
+        >
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+      </div>
 
     </div>
 
     <!-- Mobile Navigation Dropdown -->
-    <div id="landing-mobile-menu" class="hidden md:hidden border-b border-[#E5E7EB] bg-[#FFFFFF] px-6 py-4 space-y-3">
-      <a href="#features" class="block text-sm font-semibold text-[#5B5F6B] hover:text-[var(--accent-primary)]">Features</a>
-      <a href="#preview" class="block text-sm font-semibold text-[#5B5F6B] hover:text-[var(--accent-primary)]">Live Preview</a>
-      <a href="#how-it-works" class="block text-sm font-semibold text-[#5B5F6B] hover:text-[var(--accent-primary)]">How It Works</a>
-      <a href="#security" class="block text-sm font-semibold text-[#5B5F6B] hover:text-[var(--accent-primary)]">Security</a>
-      <div class="pt-3 border-t border-[#E5E7EB] flex flex-col gap-2">
+    <div id="landing-mobile-menu" class="hidden md:hidden border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-4 space-y-3">
+      <a href="#features" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Features</a>
+      <a href="#preview" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Live Preview</a>
+      <a href="#how-it-works" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">How It Works</a>
+      <a href="#security" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Security</a>
+      <div class="pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
         <a href="/login" class="btn-secondary py-2.5 text-center text-xs font-semibold">Sign In</a>
-        <a href="/signup" class="btn-primary py-2.5 text-center text-xs font-semibold">Get Started Free</a>
+        <a href="/signup" class="btn-primary py-2.5 text-center text-xs font-semibold">Create Institution</a>
       </div>
     </div>
   </header>
@@ -99,40 +118,40 @@
         <div class="lg:col-span-7 space-y-6 fade-slide-up">
           
           <!-- Live Badge -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDE9FE] border border-[#DDD6FE] text-[#6C5CE7] text-xs font-semibold tracking-wide">
-            <span class="w-2 h-2 rounded-full bg-[#6C5CE7] animate-pulse"></span>
-            <span>Integrated College Operating System</span>
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(108,92,231,0.12)] border border-[rgba(108,92,231,0.25)] text-[var(--accent-primary)] text-xs font-semibold tracking-wide">
+            <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse"></span>
+            <span>Self-Service Multi-Tenant Higher Education SaaS</span>
           </div>
 
           <!-- Main Bold Headline -->
-          <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-bold text-[#111318] leading-[1.12] tracking-tight font-['Space_Grotesk']">
-            Modernize Campus Operations. <br/>
-            <span class="bg-gradient-to-r from-[var(--accent-primary)] via-[#7E69AB] to-[#5B4BD6] bg-clip-text text-transparent">
-              Elevate Student Success.
+          <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-bold text-[var(--text-primary)] leading-[1.12] tracking-tight font-['Space_Grotesk']">
+            Autonomous Campus Operations. <br/>
+            <span class="bg-gradient-to-r from-[var(--accent-primary)] via-[#818CF8] to-[#6366F1] bg-clip-text text-transparent">
+              Instant Institutional Cloud.
             </span>
           </h1>
 
           <!-- Supporting Paragraph -->
-          <p class="text-base sm:text-lg text-[#5B5F6B] leading-relaxed max-w-2xl font-normal">
-            A single, secure platform unifying students, faculty, and administrators. Seamlessly orchestrate PIN-based self check-in attendance, semester gradebooks, central library loans, online quizzes, and two-tier governance with complete audit logging.
+          <p class="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl font-normal">
+            Deploy your college, university, or institute in seconds. An enterprise multi-tenant operating system featuring Row-Level Security, private file storage, PIN-based attendance check-ins, gradebook analytics, and autonomous institutional administration without manual platform bottlenecks.
           </p>
 
           <!-- Dual Call to Action Buttons -->
           <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
             <a 
               href="/signup" 
-              class="btn-primary py-3.5 px-6 text-sm font-semibold rounded-[10px] flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--accent-glow)]"
+              class="btn-primary py-3.5 px-7 text-sm font-bold rounded-[10px] flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--accent-glow)]"
             >
-              <span>Get Started Free</span>
+              <span>Create Your Institution</span>
               <i class="fa-solid fa-arrow-right text-xs"></i>
             </a>
 
             <a 
-              href="#features" 
-              class="btn-secondary py-3.5 px-6 text-sm font-semibold rounded-[10px] flex items-center justify-center gap-2 border border-[#E5E7EB] bg-[#FFFFFF] hover:bg-[#F7F7F9]"
+              href="/signup?tab=student" 
+              class="btn-secondary py-3.5 px-6 text-sm font-semibold rounded-[10px] flex items-center justify-center gap-2"
             >
-              <i class="fa-solid fa-compass text-xs text-[var(--accent-primary)]"></i>
-              <span>Explore All Modules</span>
+              <i class="fa-solid fa-user-graduate text-xs text-[var(--accent-primary)]"></i>
+              <span>Join as Student</span>
             </a>
           </div>
 
@@ -590,32 +609,32 @@
   <!-- =========================================================================
        6. Call to Action Banner
        ========================================================================= -->
-  <section class="py-16 lg:py-20 bg-[#FFFFFF]">
+  <section class="py-16 lg:py-20 bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 scroll-reveal">
-      <h2 class="text-3xl sm:text-4xl font-bold text-[#111318] font-['Space_Grotesk'] tracking-tight">
-        Ready to Transform Your Campus Experience?
+      <h2 class="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] font-['Space_Grotesk'] tracking-tight">
+        Ready to Launch Your Autonomous Campus?
       </h2>
-      <p class="body-text text-sm sm:text-base text-[#5B5F6B] max-w-xl mx-auto">
-        Join students and faculty across departments using CampusPulse for daily attendance, examinations, and institutional communication.
+      <p class="body-text text-sm sm:text-base text-[var(--text-secondary)] max-w-xl mx-auto">
+        Deploy your institution in 60 seconds with self-service provisioning, isolated multi-tenant data governance, and complete administrative control.
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
         <a 
           href="/signup" 
-          class="btn-primary py-3.5 px-7 text-sm font-semibold rounded-[10px] flex items-center justify-center gap-2 shadow-md shadow-[var(--accent-glow)]"
+          class="btn-primary py-3.5 px-8 text-sm font-bold rounded-[10px] flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
         >
-          <span>Enroll New Student Account</span>
+          <span>Create Your Institution Free</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </a>
         <a 
-          href="/login" 
+          href="/signup?tab=student" 
           class="btn-secondary py-3.5 px-7 text-sm font-semibold rounded-[10px]"
         >
-          Sign In to Existing Portal
+          Join as Student
         </a>
       </div>
-      <p class="text-[11px] text-[#8B8F99]">
-        1-Click demo accounts available for immediate evaluation.
+      <p class="text-[11px] text-[var(--text-muted)]">
+        Instant deployment • Zero credit card required • Dedicated database RLS isolation
       </p>
     </div>
   </section>
@@ -623,10 +642,10 @@
   <!-- =========================================================================
        7. Footer
        ========================================================================= -->
-  <footer class="bg-[#FAFAFB] border-t border-[#E5E7EB] py-12 text-xs text-[#5B5F6B]">
+  <footer class="bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] py-12 text-xs text-[var(--text-secondary)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-[#E5E7EB]">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-[var(--border-subtle)]">
         
         <!-- Logo & Tagline -->
         <div class="flex items-center gap-3">
@@ -634,10 +653,10 @@
             <i class="fa-solid fa-graduation-cap"></i>
           </div>
           <div>
-            <span class="font-bold text-base text-[#111318] font-['Space_Grotesk'] leading-none">
+            <span class="font-bold text-base text-[var(--text-primary)] font-['Space_Grotesk'] leading-none">
               CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span>
             </span>
-            <p class="text-[11px] text-[#8B8F99] mt-0.5">Single Integrated College Management Platform</p>
+            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Autonomous Multi-Tenant Operating Platform</p>
           </div>
         </div>
 
@@ -647,7 +666,8 @@
           <a href="#how-it-works" class="hover:text-[var(--accent-primary)] transition-colors">How It Works</a>
           <a href="#security" class="hover:text-[var(--accent-primary)] transition-colors">Security</a>
           <a href="/login" class="hover:text-[var(--accent-primary)] transition-colors">Sign In</a>
-          <a href="/signup" class="hover:text-[var(--accent-primary)] transition-colors">Register</a>
+          <a href="/signup" class="hover:text-[var(--accent-primary)] transition-colors">Create Institution</a>
+          <a href="/signup?tab=student" class="hover:text-[var(--accent-primary)] transition-colors">Student Sign Up</a>
         </div>
 
       </div>

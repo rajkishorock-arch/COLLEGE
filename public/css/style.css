@@ -31,6 +31,25 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* --- Dark Mode Color Tokens & Elevated Contrast Variables --- */
+html.dark {
+  --bg-primary: #0B0F19;         /* deep slate dark background */
+  --bg-surface: #111827;         /* elevated dark card surface */
+  --bg-surface-hover: #1F2937;   /* surface on hover */
+  --bg-sidebar: #0F1422;         /* dark sidebar surface */
+  --border-subtle: #1F2937;      /* dark subtle border */
+  --border-strong: #374151;      /* noticeable dark border */
+  --text-primary: #F9FAFB;       /* bright crisp text */
+  --text-secondary: #9CA3AF;     /* readable muted text */
+  --text-muted: #6B7280;
+  --accent-primary: #818CF8;     /* vibrant accessible indigo/purple */
+  --accent-primary-hover: #6366F1;
+  --accent-glow: rgba(129, 140, 248, 0.25);
+  --success: #34D399;
+  --danger: #F87171;
+  --warning: #FBBF24;
+}
+
 /* Base Body Styles */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -746,4 +765,238 @@ html {
   transform: translateY(-4px);
   box-shadow: 0 25px 50px -12px rgba(108, 92, 231, 0.12), 0 0 0 1px rgba(108, 92, 231, 0.1);
 }
+
+/* ==========================================================================
+   14. COMPREHENSIVE DARK MODE OVERRIDES & COMPONENT THEMES
+   ========================================================================== */
+
+html.dark body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.dark .card,
+html.dark .bento-card,
+html.dark .content-panel {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+html.dark .card:hover,
+html.dark .bento-card:hover,
+html.dark .card-interactive:hover {
+  border-color: #4B5563 !important;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .preview-card {
+  background: var(--bg-surface) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html.dark header,
+html.dark footer {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+html.dark #app-sidebar,
+html.dark aside {
+  background-color: var(--bg-sidebar) !important;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+}
+
+html.dark #app-sidebar div:first-child {
+  background-color: var(--bg-sidebar) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+html.dark .sidebar-link {
+  color: var(--text-secondary);
+}
+
+html.dark .sidebar-link:hover {
+  background-color: var(--bg-surface-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+html.dark .sidebar-link.active {
+  background-color: rgba(129, 140, 248, 0.15) !important;
+  color: var(--accent-primary) !important;
+}
+
+html.dark .sidebar-link.active i {
+  color: var(--accent-primary) !important;
+}
+
+/* Dark Mode Inputs, Dropdowns & Textareas */
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark select,
+html.dark textarea {
+  background-color: #1F2937 !important;
+  border-color: #374151 !important;
+  color: #F9FAFB !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #6B7280 !important;
+}
+
+/* Dark Mode Tables */
+html.dark table {
+  border-color: #374151 !important;
+}
+
+html.dark th {
+  background-color: #1F2937 !important;
+  color: #D1D5DB !important;
+  border-color: #374151 !important;
+}
+
+html.dark td {
+  border-color: #1F2937 !important;
+  color: #E5E7EB !important;
+}
+
+html.dark tr:hover td {
+  background-color: #1F2937 !important;
+}
+
+/* Dark Mode Buttons */
+html.dark .btn-secondary {
+  background-color: #1F2937 !important;
+  border-color: #374151 !important;
+  color: #F9FAFB !important;
+}
+
+html.dark .btn-secondary:hover {
+  background-color: #374151 !important;
+  border-color: #4B5563 !important;
+}
+
+/* Dark Mode Dropdowns & Modals */
+html.dark #notif-dropdown {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+}
+
+html.dark #notif-dropdown .bg-\[\#F7F7F9\] {
+  background-color: #1F2937 !important;
+  border-color: #374151 !important;
+}
+
+html.dark .modal-content,
+html.dark .dialog-box {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+}
+
+/* Status variants in Dark Mode */
+html.dark .badge-success {
+  background: rgba(52, 211, 153, 0.15) !important;
+  color: #34D399 !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+html.dark .badge-danger {
+  background: rgba(248, 113, 113, 0.15) !important;
+  color: #F87171 !important;
+  border-color: rgba(248, 113, 113, 0.3) !important;
+}
+html.dark .badge-warning {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #FBBF24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+html.dark .badge-accent {
+  background: rgba(129, 140, 248, 0.15) !important;
+  color: #818CF8 !important;
+  border-color: rgba(129, 140, 248, 0.3) !important;
+}
+
+/* Flash alerts in Dark Mode */
+html.dark .flash-alert-error {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: #EF4444 !important;
+  color: #FCA5A5 !important;
+}
+
+html.dark .flash-alert-success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10B981 !important;
+  color: #6EE7B7 !important;
+}
+
+/* Dark Mode Scrollbars */
+html.dark ::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4B5563;
+}
+
+/* Theme Switcher Segmented Control Button Styles */
+.theme-selector-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 8px;
+  background-color: #F3F4F6;
+  border: 1px solid var(--border-subtle);
+  gap: 2px;
+}
+
+html.dark .theme-selector-pill {
+  background-color: #1F2937;
+  border-color: #374151;
+}
+
+[data-theme-btn] {
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 180ms var(--ease-snappy);
+}
+
+[data-theme-btn]:hover {
+  color: var(--text-primary);
+}
+
+[data-theme-btn].theme-active {
+  background-color: #FFFFFF !important;
+  color: var(--accent-primary) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+html.dark [data-theme-btn].theme-active {
+  background-color: #111827 !important;
+  color: var(--accent-primary) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
 

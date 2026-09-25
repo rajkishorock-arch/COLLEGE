@@ -1,0 +1,33 @@
+<!-- CampusPulse Theme Selector (Light / Dark / System) -->
+<div class="theme-selector-pill inline-flex items-center" role="group" aria-label="Theme selection">
+  <button 
+    type="button" 
+    onclick="setCampusPulseTheme('light')" 
+    data-theme-btn="light" 
+    title="Light Mode" 
+    aria-label="Switch to Light Mode"
+  >
+    <i class="fa-solid fa-sun text-xs text-amber-500"></i>
+    <span class="hidden sm:inline">Light</span>
+  </button>
+  <button 
+    type="button" 
+    onclick="setCampusPulseTheme('dark')" 
+    data-theme-btn="dark" 
+    title="Dark Mode" 
+    aria-label="Switch to Dark Mode"
+  >
+    <i class="fa-solid fa-moon text-xs text-indigo-400"></i>
+    <span class="hidden sm:inline">Dark</span>
+  </button>
+  <button 
+    type="button" 
+    onclick="setCampusPulseTheme('system')" 
+    data-theme-btn="system" 
+    title="System Mode" 
+    aria-label="Switch to System Preference"
+  >
+    <i class="fa-solid fa-desktop text-xs text-gray-400"></i>
+    <span class="hidden sm:inline">System</span>
+  </button>
+</div>

@@ -50,10 +50,18 @@
     </div>
 
     <div>
-      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F7F7F9] border border-[#E5E7EB] text-[#111318]">
-        <i class="fa-solid fa-shield-halved text-[var(--accent-primary)]"></i>
-        <span>Tenant Isolated Data Plane</span>
-      </span>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F7F7F9] border border-[#E5E7EB] text-[#111318]">
+          <i class="fa-solid fa-shield-halved text-[var(--accent-primary)]"></i>
+          <span>Row-Level Security Active</span>
+        </span>
+        <% if (typeof owner !== 'undefined' && owner) { %>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+            <i class="fa-solid fa-crown text-amber-500"></i>
+            <span>Owner: <%= owner.name %></span>
+          </span>
+        <% } %>
+      </div>
     </div>
   </div>
 
@@ -69,7 +77,7 @@
         </h2>
 
         <div class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
                 Official College / Institution Name *
@@ -80,7 +88,7 @@
                 name="name" 
                 required 
                 value="<%= tenant ? tenant.name : '' %>"
-                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+                class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
               />
             </div>
 
@@ -93,8 +101,22 @@
                 id="short_name" 
                 name="short_name" 
                 value="<%= tenant && tenant.short_name ? tenant.short_name : '' %>"
-                class="w-full px-4 py-2.5 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px] text-sm text-[#111318] focus:outline-none focus:border-[var(--accent-primary)]"
+                class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
               />
+            </div>
+
+            <div>
+              <label for="institution_type" class="block text-xs font-semibold uppercase tracking-wider text-[#5B5F6B] mb-1.5">
+                Institution Type
+              </label>
+              <select id="institution_type" name="institution_type" class="w-full px-4 py-2.5 rounded-[8px] border text-sm">
+                <option value="university" <%= tenant && tenant.institution_type === 'university' ? 'selected' : '' %>>University</option>
+                <option value="college" <%= !tenant || tenant.institution_type === 'college' ? 'selected' : '' %>>College of Higher Education</option>
+                <option value="engineering" <%= tenant && tenant.institution_type === 'engineering' ? 'selected' : '' %>>Institute of Technology / Engineering</option>
+                <option value="medical" <%= tenant && tenant.institution_type === 'medical' ? 'selected' : '' %>>Medical & Health Sciences Institute</option>
+                <option value="business" <%= tenant && tenant.institution_type === 'business' ? 'selected' : '' %>>Business & Management School</option>
+                <option value="academy" <%= tenant && tenant.institution_type === 'academy' ? 'selected' : '' %>>Polytechnic / Academy</option>
+              </select>
             </div>
           </div>
 
@@ -203,6 +225,30 @@
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Academic Departments Overview -->
+      <div class="pt-4 border-t border-[var(--border-subtle)]">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-sitemap"></i>
+          <span>Configured Academic Departments</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <% if (typeof departments !== 'undefined' && departments && departments.length > 0) { %>
+            <% departments.forEach(dept => { %>
+              <div class="p-3 rounded-[8px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold text-[var(--text-primary)]"><%= dept.name %></p>
+                  <p class="text-[10px] text-[var(--text-muted)] font-mono">Code: <%= dept.code %></p>
+                </div>
+                <span class="badge badge-accent text-[9px] font-bold"><%= dept.member_count || 0 %> members</span>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <p class="text-xs text-[var(--text-muted)] italic">No departments currently configured.</p>
+          <% } %>
         </div>
       </div>
 

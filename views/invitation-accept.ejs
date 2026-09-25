@@ -4,15 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Accept Invitation — <%= invite.tenant_name %></title>
+  <!-- Anti-Flash Instant Theme Detection -->
+  <script>
+    (function() {
+      try {
+        const theme = localStorage.getItem('campuspulse-theme') || 'system';
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[#F8F9FB] min-h-screen flex items-center justify-center p-4 antialiased text-[#111318]">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col justify-between p-4 py-8 antialiased transition-colors duration-200">
 
-  <div class="w-full max-w-md bg-white border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
+  <div class="max-w-md w-full mx-auto flex items-center justify-between mb-4 fade-slide-up">
+    <span class="text-xs font-bold text-[var(--accent-primary)] font-['Space_Grotesk'] uppercase tracking-wider">CAMPUSPULSE</span>
+    <%- include('partials/theme-toggle') %>
+  </div>
+
+  <div class="w-full max-w-md mx-auto card p-6 sm:p-8">
     <div class="text-center mb-6">
       <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-[#F0EDFD] text-[var(--accent-primary)] text-2xl font-bold mb-3 shadow-xs">
         <i class="fa-solid fa-envelope-open-text"></i>

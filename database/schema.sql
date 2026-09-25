@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS tenants (
   address TEXT,
   status TEXT CHECK(status IN ('active', 'suspended', 'inactive')) DEFAULT 'active',
   academic_year TEXT DEFAULT '2025-2026',
+  owner_user_id INTEGER,
+  institution_type TEXT DEFAULT 'college',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

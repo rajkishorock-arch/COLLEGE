@@ -40,9 +40,135 @@ const tenantService = {
   },
 
   /**
+   * Public Self-Service Institution Registration & Owner Provisioning
+   * Transactional, secure, and derives owner role on server-side
+   */
+  registerInstitution({ fullName, email, password, institutionName, institutionType, institutionCode, shortName, phone, address, defaultDepartment }) {
+    if (!fullName || !fullName.trim()) throw new Error('Full name is required.');
+    if (!email || !email.trim()) throw new Error('Email address is required.');
+    if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
+    if (!institutionName || !institutionName.trim()) throw new Error('Institution name is required.');
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if email already in use globally
+    const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+    if (existingUser) {
+      throw new Error(`An account with email "${cleanEmail}" already exists.`);
+    }
+
+    // Generate or clean institutional code
+    let cleanCode = institutionCode ? institutionCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '') : '';
+    if (!cleanCode) {
+      // Derive 4-8 uppercase characters from institution name
+      const derived = institutionName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
+      cleanCode = derived || 'COLLEGE';
+    }
+
+    // Ensure uniqueness of code and tenant_id
+    let tenantId = `tenant_${cleanCode.toLowerCase()}`;
+    let counter = 1;
+    let existingCode = db.prepare('SELECT id FROM tenants WHERE UPPER(code) = ? OR id = ?').get(cleanCode, tenantId);
+    while (existingCode) {
+      const suffix = Math.floor(100 + Math.random() * 900); // 3 digit random
+      cleanCode = `${cleanCode.slice(0, 5)}${suffix}`;
+      tenantId = `tenant_${cleanCode.toLowerCase()}`;
+      existingCode = db.prepare('SELECT id FROM tenants WHERE UPPER(code) = ? OR id = ?').get(cleanCode, tenantId);
+      counter++;
+      if (counter > 20) throw new Error('Could not allocate unique institution code. Please specify a custom code.');
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passHash = bcrypt.hashSync(password, salt);
+    const ansHash = bcrypt.hashSync('computer science', salt);
+
+    const transaction = db.transaction(() => {
+      // 1. Insert Tenant
+      db.prepare(`
+        INSERT INTO tenants (
+          id, name, short_name, code, subdomain, email, phone, address,
+          primary_color, secondary_color, academic_year, status, institution_type, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))
+      `).run(
+        tenantId,
+        institutionName.trim(),
+        (shortName || cleanCode).trim(),
+        cleanCode,
+        cleanCode.toLowerCase(),
+        cleanEmail,
+        phone ? phone.trim() : null,
+        address ? address.trim() : null,
+        '#6C5CE7',
+        '#111318',
+        '2025-2026',
+        institutionType || 'college'
+      );
+
+      // 2. Insert Owner / Tenant Admin User
+      const userRes = db.prepare(`
+        INSERT INTO users (
+          tenant_id, name, email, password, role, is_active,
+          security_question, security_answer, created_at
+        ) VALUES (?, ?, ?, ?, 'admin', 1, 'What is your favorite subject?', ?, datetime('now'))
+      `).run(
+        tenantId,
+        fullName.trim(),
+        cleanEmail,
+        passHash,
+        ansHash
+      );
+      const adminUserId = userRes.lastInsertRowid;
+
+      // 3. Link owner_user_id to the tenant
+      db.prepare('UPDATE tenants SET owner_user_id = ? WHERE id = ?').run(adminUserId, tenantId);
+
+      // 4. Provision default department
+      const deptName = (defaultDepartment && defaultDepartment.trim()) ? defaultDepartment.trim() : 'Computer Science & Engineering';
+      const deptCode = deptName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase() || 'CSE';
+      db.prepare(`
+        INSERT INTO departments (tenant_id, name, code, created_at)
+        VALUES (?, ?, ?, datetime('now'))
+      `).run(tenantId, deptName, deptCode);
+
+      // 5. Seed initial welcome announcement
+      db.prepare(`
+        INSERT INTO announcements (tenant_id, title, body, posted_by, priority, created_at)
+        VALUES (?, ?, ?, ?, 'urgent', datetime('now'))
+      `).run(
+        tenantId,
+        `Welcome to ${institutionName.trim()}`,
+        `CampusPulse has been initialized for ${institutionName.trim()}. Configure departments, programs, courses, and invite staff to begin.`,
+        adminUserId
+      );
+
+      // 6. Audit Log
+      db.prepare(`
+        INSERT INTO audit_log (tenant_id, admin_id, action, details, created_at)
+        VALUES (?, ?, 'Institution Self-Registered', ?, datetime('now'))
+      `).run(
+        tenantId,
+        adminUserId,
+        `Owner ${fullName.trim()} (${cleanEmail}) registered institution "${institutionName.trim()}" [Code: ${cleanCode}].`
+      );
+
+      const createdTenant = db.prepare('SELECT * FROM tenants WHERE id = ?').get(tenantId);
+      const createdUser = db.prepare('SELECT id, tenant_id, name, email, role, is_active FROM users WHERE id = ?').get(adminUserId);
+
+      return {
+        tenantId,
+        adminUserId,
+        tenant: createdTenant,
+        user: createdUser
+      };
+    });
+
+    return transaction();
+  },
+
+  /**
    * Create a new institution and optionally provision its initial College Administrator atomically
    */
-  createTenant({ name, shortName, code, subdomain, email, phone, address, primaryColor, secondaryColor, academicYear, adminName, adminEmail, adminPassword }) {
+  createTenant({ name, shortName, code, subdomain, email, phone, address, primaryColor, secondaryColor, academicYear, adminName, adminEmail, adminPassword, institutionType }) {
     const cleanCode = code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
     const tenantId = `tenant_${cleanCode.toLowerCase()}`;
 
@@ -55,8 +181,8 @@ const tenantService = {
     const insertTenant = db.prepare(`
       INSERT INTO tenants (
         id, name, short_name, code, subdomain, email, phone, address,
-        primary_color, secondary_color, academic_year, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        primary_color, secondary_color, academic_year, status, institution_type
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
     `);
 
     const insertUser = db.prepare(`
@@ -79,7 +205,8 @@ const tenantService = {
         address ? address.trim() : null,
         primaryColor || '#6C5CE7',
         secondaryColor || '#111318',
-        academicYear || '2025-2026'
+        academicYear || '2025-2026',
+        institutionType || 'college'
       );
 
       let adminUserId = null;
@@ -102,6 +229,9 @@ const tenantService = {
           ansHash
         );
         adminUserId = res.lastInsertRowid;
+
+        // Link owner
+        db.prepare('UPDATE tenants SET owner_user_id = ? WHERE id = ?').run(adminUserId, tenantId);
       }
 
       // Seed initial welcoming announcement for new tenant
@@ -125,6 +255,24 @@ const tenantService = {
     });
 
     return transaction();
+  },
+
+  /**
+   * Get Tenant Owner User
+   */
+  getTenantOwner(tenantId) {
+    const tenant = db.prepare('SELECT owner_user_id FROM tenants WHERE id = ?').get(tenantId);
+    if (!tenant || !tenant.owner_user_id) return null;
+    return db.prepare('SELECT id, name, email, role FROM users WHERE id = ? AND tenant_id = ?').get(tenant.owner_user_id, tenantId);
+  },
+
+  /**
+   * Check if user is the tenant owner
+   */
+  isTenantOwner(tenantId, userId) {
+    if (!tenantId || !userId) return false;
+    const row = db.prepare('SELECT 1 FROM tenants WHERE id = ? AND owner_user_id = ?').get(tenantId, userId);
+    return !!row;
   },
 
   /**

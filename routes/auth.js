@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const tenantService = require('../services/tenantService');
 const { logAudit } = require('../utils/audit');
 
 // Root route: Show landing page to visitors, redirect logged-in users to dashboard
@@ -192,6 +193,11 @@ router.post('/login', (req, res) => {
   }
 });
 
+// GET /register-institution (Direct alias to institution registration)
+router.get('/register-institution', (req, res) => {
+  return res.redirect('/signup?tab=institution');
+});
+
 // GET /signup
 router.get('/signup', (req, res) => {
   if (req.session && req.session.user) {
@@ -205,21 +211,122 @@ router.get('/signup', (req, res) => {
   }
 
   const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();
+  const activeTab = req.query.tab === 'student' ? 'student' : 'institution';
 
   res.render('signup', {
-    title: 'Student Registration - College Management Platform',
+    title: activeTab === 'institution' ? 'Register Institution - CampusPulse' : 'Student Enrollment - CampusPulse',
     error: req.query.error || null,
-    success: null,
+    success: req.query.success || null,
     tenants,
+    activeTab,
     selectedTenantId: req.query.tenant || 'tenant_default',
     formData: {},
     layout: false
   });
 });
 
-// POST /signup
+// POST /register-institution (Dedicated SaaS Endpoint)
+router.post('/register-institution', (req, res) => {
+  const { 
+    full_name, name, email, password, confirm_password, 
+    institution_name, institution_type, institution_code, 
+    short_name, phone, address, default_department 
+  } = req.body;
+
+  const adminName = full_name || name;
+  const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();
+
+  // Basic validation
+  if (!adminName || !email || !password || !institution_name) {
+    return res.render('signup', {
+      title: 'Register Institution - CampusPulse',
+      error: 'Please fill in all required fields (Name, Email, Password, Institution Name).',
+      success: null,
+      tenants,
+      activeTab: 'institution',
+      selectedTenantId: 'tenant_default',
+      formData: req.body,
+      layout: false
+    });
+  }
+
+  if (password.length < 6) {
+    return res.render('signup', {
+      title: 'Register Institution - CampusPulse',
+      error: 'Password must be at least 6 characters long.',
+      success: null,
+      tenants,
+      activeTab: 'institution',
+      selectedTenantId: 'tenant_default',
+      formData: req.body,
+      layout: false
+    });
+  }
+
+  if (confirm_password && password !== confirm_password) {
+    return res.render('signup', {
+      title: 'Register Institution - CampusPulse',
+      error: 'Passwords do not match.',
+      success: null,
+      tenants,
+      activeTab: 'institution',
+      selectedTenantId: 'tenant_default',
+      formData: req.body,
+      layout: false
+    });
+  }
+
+  try {
+    const result = tenantService.registerInstitution({
+      fullName: adminName,
+      email: email,
+      password: password,
+      institutionName: institution_name,
+      institutionType: institution_type || 'college',
+      institutionCode: institution_code || null,
+      shortName: short_name || null,
+      phone: phone || null,
+      address: address || null,
+      defaultDepartment: default_department || 'Computer Science & Engineering'
+    });
+
+    // Automatically authenticate the new institution owner
+    req.session.user = {
+      id: result.adminUserId,
+      tenant_id: result.tenantId,
+      name: result.user.name,
+      email: result.user.email,
+      role: 'admin',
+      is_owner: true
+    };
+    req.session.tenant = result.tenant;
+
+    // Direct to onboarding wizard
+    return res.redirect('/onboarding/wizard?step=1&success=' + encodeURIComponent('Institution created successfully!'));
+  } catch (err) {
+    console.error('Institution registration error:', err);
+    return res.render('signup', {
+      title: 'Register Institution - CampusPulse',
+      error: err.message || 'An error occurred while creating your institution. Please try again.',
+      success: null,
+      tenants,
+      activeTab: 'institution',
+      selectedTenantId: 'tenant_default',
+      formData: req.body,
+      layout: false
+    });
+  }
+});
+
+// POST /signup (Dual-mode handler for Institution Creation or Student Enrollment)
 router.post('/signup', (req, res) => {
-  // Strip any untrusted role input from public form
+  // If signup_type is institution or institution_name is provided, delegate to register-institution
+  if (req.body.signup_type === 'institution' || req.body.institution_name) {
+    req.url = '/register-institution';
+    return router.handle(req, res);
+  }
+
+  // Student Enrollment Flow
   delete req.body.role;
   const { name, email, password, confirm_password, roll_no, course } = req.body;
   const tenantId = req.body.tenant_id || 'tenant_default';
@@ -229,10 +336,11 @@ router.post('/signup', (req, res) => {
   // Validation
   if (!name || !email || !password || !roll_no || !course) {
     return res.render('signup', {
-      title: 'Student Registration - College Management Platform',
-      error: 'All fields are required.',
+      title: 'Student Enrollment - CampusPulse',
+      error: 'All fields are required for student enrollment.',
       success: null,
       tenants,
+      activeTab: 'student',
       selectedTenantId: tenantId,
       formData: req.body,
       layout: false
@@ -241,10 +349,11 @@ router.post('/signup', (req, res) => {
 
   if (password.length < 6) {
     return res.render('signup', {
-      title: 'Student Registration - College Management Platform',
+      title: 'Student Enrollment - CampusPulse',
       error: 'Password must be at least 6 characters long.',
       success: null,
       tenants,
+      activeTab: 'student',
       selectedTenantId: tenantId,
       formData: req.body,
       layout: false
@@ -253,10 +362,11 @@ router.post('/signup', (req, res) => {
 
   if (confirm_password && password !== confirm_password) {
     return res.render('signup', {
-      title: 'Student Registration - College Management Platform',
+      title: 'Student Enrollment - CampusPulse',
       error: 'Passwords do not match.',
       success: null,
       tenants,
+      activeTab: 'student',
       selectedTenantId: tenantId,
       formData: req.body,
       layout: false
@@ -268,10 +378,11 @@ router.post('/signup', (req, res) => {
     const tenant = db.prepare("SELECT id FROM tenants WHERE id = ? AND status = 'active'").get(tenantId);
     if (!tenant) {
       return res.render('signup', {
-        title: 'Student Registration - College Management Platform',
+        title: 'Student Enrollment - CampusPulse',
         error: 'Selected institution is not active or invalid.',
         success: null,
         tenants,
+        activeTab: 'student',
         selectedTenantId: 'tenant_default',
         formData: req.body,
         layout: false
@@ -282,10 +393,11 @@ router.post('/signup', (req, res) => {
     const existingEmail = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim());
     if (existingEmail) {
       return res.render('signup', {
-        title: 'Student Registration - College Management Platform',
+        title: 'Student Enrollment - CampusPulse',
         error: 'An account with this email address already exists.',
         success: null,
         tenants,
+        activeTab: 'student',
         selectedTenantId: tenantId,
         formData: req.body,
         layout: false
@@ -296,10 +408,11 @@ router.post('/signup', (req, res) => {
     const existingRoll = db.prepare('SELECT id FROM users WHERE LOWER(roll_no) = LOWER(?) AND tenant_id = ?').get(roll_no.trim(), tenantId);
     if (existingRoll) {
       return res.render('signup', {
-        title: 'Student Registration - College Management Platform',
+        title: 'Student Enrollment - CampusPulse',
         error: 'A student with this Roll Number is already registered in this institution.',
         success: null,
         tenants,
+        activeTab: 'student',
         selectedTenantId: tenantId,
         formData: req.body,
         layout: false
@@ -333,14 +446,15 @@ router.post('/signup', (req, res) => {
     );
 
     // Redirect to login with success message
-    return res.redirect('/login?success=' + encodeURIComponent('Registration successful! Please sign in with your credentials.'));
+    return res.redirect('/login?success=' + encodeURIComponent('Enrollment successful! Please sign in with your credentials.'));
   } catch (err) {
     console.error('Signup error:', err);
     return res.render('signup', {
-      title: 'Student Registration - College Management Platform',
-      error: 'An error occurred while creating your account. Please try again.',
+      title: 'Student Enrollment - CampusPulse',
+      error: 'An error occurred while creating your student profile. Please try again.',
       success: null,
       tenants,
+      activeTab: 'student',
       selectedTenantId: tenantId,
       formData: req.body,
       layout: false

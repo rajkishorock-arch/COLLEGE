@@ -339,17 +339,32 @@ function runMigrations() {
       address TEXT,
       status TEXT CHECK(status IN ('active', 'suspended', 'inactive')) DEFAULT 'active',
       academic_year TEXT DEFAULT '2025-2026',
+      owner_user_id INTEGER,
+      institution_type TEXT DEFAULT 'college',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
+  // Ensure owner_user_id and institution_type columns exist in tenants
+  try {
+    const tenantCols = db.prepare("PRAGMA table_info(tenants)").all().map(c => c.name);
+    if (!tenantCols.includes('owner_user_id')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN owner_user_id INTEGER;");
+    }
+    if (!tenantCols.includes('institution_type')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN institution_type TEXT DEFAULT 'college';");
+    }
+  } catch (err) {
+    // Non-fatal
+  }
+
   // Ensure default tenant exists
   const defaultTenant = db.prepare("SELECT id FROM tenants WHERE id = 'tenant_default'").get();
   if (!defaultTenant) {
     db.prepare(`
-      INSERT INTO tenants (id, name, short_name, code, subdomain, email, phone, address, status, academic_year, primary_color, secondary_color)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tenants (id, name, short_name, code, subdomain, email, phone, address, status, academic_year, primary_color, secondary_color, institution_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       'tenant_default',
       'CampusPulse Institute of Technology',
@@ -362,8 +377,15 @@ function runMigrations() {
       'active',
       '2025-2026',
       '#6C5CE7',
-      '#111318'
+      '#111318',
+      'technology_institute'
     );
+  }
+
+  // Backfill default tenant owner if empty
+  const defaultAdmin = db.prepare("SELECT id FROM users WHERE tenant_id = 'tenant_default' AND role IN ('admin', 'super_admin') ORDER BY id ASC LIMIT 1").get();
+  if (defaultAdmin) {
+    db.prepare("UPDATE tenants SET owner_user_id = ? WHERE id = 'tenant_default' AND owner_user_id IS NULL").run(defaultAdmin.id);
   }
 
   // Ensure tenant_id exists across all application tables
@@ -416,6 +438,11 @@ function runMigrations() {
         INSERT INTO users (tenant_id, name, email, password, role, is_active, security_question, security_answer)
         VALUES ('tenant_apex', 'Apex College Admin', 'admin@apex.edu', ?, 'admin', 1, 'What is your favorite subject?', ?)
       `).run(apexPassHash, defaultAnswerHash);
+    }
+
+    const apexAdmin = db.prepare("SELECT id FROM users WHERE email = 'admin@apex.edu'").get();
+    if (apexAdmin) {
+      db.prepare("UPDATE tenants SET owner_user_id = ? WHERE id = 'tenant_apex' AND owner_user_id IS NULL").run(apexAdmin.id);
     }
 
     const existingApexStudent = db.prepare("SELECT id FROM users WHERE email = 'student@apex.edu'").get();
