@@ -97,8 +97,8 @@ router.post('/wizard/step1', requireTenantAdmin, (req, res) => {
  * Academic Structure & Departments
  */
 router.post('/wizard/step2', requireTenantAdmin, (req, res) => {
-  const tenantId = req.session.user.tenant_id;
-  const { academic_year, new_department_name, new_department_code } = req.body;
+  const tenantId = req.session.user.tenant_id || req.session.user.tenantId;
+  const { academic_year, new_department_name, new_department_code, selected_departments, action } = req.body;
 
   try {
     if (academic_year && academic_year.trim()) {
@@ -106,6 +106,12 @@ router.post('/wizard/step2', requireTenantAdmin, (req, res) => {
         .run(academic_year.trim(), tenantId);
     }
 
+    // Allow the tenant owner to skip department creation if desired and configure it later
+    if (action === 'skip') {
+      return res.redirect('/onboarding/wizard?step=3');
+    }
+
+    // Handle single typed department
     if (new_department_name && new_department_name.trim()) {
       const code = (new_department_code && new_department_code.trim()) 
         ? new_department_code.trim().toUpperCase() 
@@ -118,6 +124,25 @@ router.post('/wizard/step2', requireTenantAdmin, (req, res) => {
           code: code,
           headOfDepartment: 'Department Chair'
         });
+      }
+    }
+
+    // Handle multiple preset departments
+    if (selected_departments) {
+      const depts = Array.isArray(selected_departments) ? selected_departments : [selected_departments];
+      for (const rawDept of depts) {
+        if (!rawDept || !rawDept.trim()) continue;
+        const [dName, dCode] = rawDept.includes('|') ? rawDept.split('|') : [rawDept, rawDept.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase()];
+        const code = (dCode || 'DEPT').trim().toUpperCase();
+        const name = dName.trim();
+        const existing = db.prepare('SELECT id FROM departments WHERE tenant_id = ? AND (UPPER(code) = ? OR LOWER(name) = LOWER(?))').get(tenantId, code, name);
+        if (!existing) {
+          tenantService.createDepartment(tenantId, {
+            name,
+            code,
+            headOfDepartment: 'Department Chair'
+          });
+        }
       }
     }
 

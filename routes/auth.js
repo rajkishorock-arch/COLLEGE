@@ -161,7 +161,7 @@ router.post('/login', (req, res) => {
     // Login successful: reset failed attempt counters
     db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL, last_failed_at = NULL WHERE id = ?').run(user.id);
 
-    // Save session with tenantId
+    // Save session with tenantId & tenant_id
     req.session.user = {
       id: user.id,
       name: user.name,
@@ -169,7 +169,8 @@ router.post('/login', (req, res) => {
       role: user.role,
       roll_no: user.roll_no,
       course: user.course,
-      tenantId: userTenantId
+      tenantId: userTenantId,
+      tenant_id: userTenantId
     };
 
     req.session.save((saveErr) => {
@@ -287,13 +288,14 @@ router.post('/register-institution', (req, res) => {
       shortName: short_name || null,
       phone: phone || null,
       address: address || null,
-      defaultDepartment: default_department || 'Computer Science & Engineering'
+      defaultDepartment: (default_department && default_department.trim()) ? default_department.trim() : null
     });
 
     // Automatically authenticate the new institution owner
     req.session.user = {
       id: result.adminUserId,
       tenant_id: result.tenantId,
+      tenantId: result.tenantId,
       name: result.user.name,
       email: result.user.email,
       role: 'admin',

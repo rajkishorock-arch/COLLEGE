@@ -8,14 +8,17 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Auto initialize and seed database if necessary
-const seedDatabase = require('./database/seed');
-const runMigrations = require('./database/migrations');
-try {
-  seedDatabase();
-  runMigrations();
-} catch (err) {
-  console.error('[DB:Init] Database initialization warning:', err.message);
+// Auto initialize and seed database if necessary (SQLite mode only)
+const db = require('./config/db');
+if (db.dialect === 'sqlite') {
+  const seedDatabase = require('./database/seed');
+  const runMigrations = require('./database/migrations');
+  try {
+    seedDatabase();
+    runMigrations();
+  } catch (err) {
+    console.error('[DB:Init] Database initialization warning:', err.message);
+  }
 }
 
 // Route handlers & middleware
@@ -34,12 +37,16 @@ const HOST = '0.0.0.0';
 // Security hardening: hide server tech stack
 app.disable('x-powered-by');
 
-// Security headers (clickjacking protection, MIME sniffing prevention, referrer policy)
+// Security headers (clickjacking protection, MIME sniffing prevention, referrer policy, CSP)
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'self';"
+  );
   next();
 });
 
@@ -160,9 +167,10 @@ app.get('/storage/download', (req, res) => {
 
   const fileTenantId = parts[1];
   const user = req.session.user;
+  const userTenant = user.tenantId || user.tenant_id;
 
   // Strict tenant boundary check: super_admin can access all; ordinary users only their own tenant's files
-  if (user.role !== 'super_admin' && user.tenantId !== fileTenantId) {
+  if (user.role !== 'super_admin' && userTenant !== fileTenantId) {
     return res.status(403).render('error', {
       statusCode: 403,
       title: 'Access Denied',
@@ -213,13 +221,14 @@ app.use((req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error(`[Server:Error] [${req.method} ${req.originalUrl}]`, err);
+  const requestId = req.id || req.headers['x-request-id'] || 'req_' + Date.now();
+  console.error(`[Server:Error] [ReqID: ${requestId}] [${req.method} ${req.originalUrl}]`, err);
   const statusCode = err.status || 500;
   res.status(statusCode).render('error', {
     title: `${statusCode} - Server Error`,
     statusCode,
     message: process.env.NODE_ENV === 'production' 
-      ? 'An unexpected error occurred. Please contact the administrator.' 
+      ? `An unexpected server error occurred. Please contact support with Request ID: ${requestId}` 
       : (err.message || 'An unexpected error occurred.'),
     user: req.session ? req.session.user : null
   });
@@ -231,8 +240,10 @@ if (require.main === module) {
     console.log(`====================================================`);
     console.log(`🎓 CampusPulse Platform is running live!`);
     console.log(`🚀 URL: http://${HOST}:${PORT}`);
-    console.log(`🔑 Default Admin: admin@college.edu | admin123`);
-    console.log(`🎓 Demo Student: alex@college.edu   | student123`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🔑 Default Admin: admin@college.edu | admin123`);
+      console.log(`🎓 Demo Student: alex@college.edu   | student123`);
+    }
     console.log(`====================================================`);
   });
 

@@ -11,7 +11,10 @@ let adapter = null;
 if (DIALECT === 'postgres') {
   const { Pool } = require('pg');
 
-  const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/campuspulse';
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('[DatabaseAdapter] DB_DIALECT is set to postgres but DATABASE_URL environment variable is missing.');
+  }
   const poolMin = parseInt(process.env.DB_POOL_MIN, 10) || 2;
   const poolMax = parseInt(process.env.DB_POOL_MAX, 10) || 20;
   const idleTimeoutMillis = parseInt(process.env.DB_IDLE_TIMEOUT, 10) || 30000;
@@ -23,7 +26,7 @@ if (DIALECT === 'postgres') {
     max: poolMax,
     idleTimeoutMillis,
     connectionTimeoutMillis,
-    ssl: process.env.NODE_ENV === 'production' && !process.env.ALLOW_INSECURE_DB ? { rejectUnauthorized: false } : false
+    ssl: (process.env.NODE_ENV === 'production' || connectionString.includes('sslmode=require')) && !process.env.ALLOW_INSECURE_DB ? { rejectUnauthorized: false } : false
   });
 
   pool.on('error', (err) => {

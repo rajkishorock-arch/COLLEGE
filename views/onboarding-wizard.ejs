@@ -227,6 +227,51 @@
 
     <!-- STEP 2: Academic Structure -->
     <% if (step === 2) { %>
+      <% 
+        const instType = (tenant && tenant.institution_type) ? tenant.institution_type.toLowerCase() : 'college';
+        let suggestedDepts = [];
+        let instTypeName = 'College / Higher Education';
+        if (instType === 'engineering') {
+          instTypeName = 'Institute of Technology / Engineering';
+          suggestedDepts = [
+            { name: 'Civil Engineering', code: 'CIVIL' },
+            { name: 'Mechanical Engineering', code: 'MECH' },
+            { name: 'Electrical & Electronics Engineering', code: 'EEE' },
+            { name: 'Computer Science & Engineering', code: 'CSE' }
+          ];
+        } else if (instType === 'medical') {
+          instTypeName = 'Medical / Health Sciences Institute';
+          suggestedDepts = [
+            { name: 'General Medicine', code: 'MED' },
+            { name: 'General Surgery', code: 'SURG' },
+            { name: 'Pediatrics', code: 'PED' },
+            { name: 'Nursing & Allied Health', code: 'NURS' }
+          ];
+        } else if (instType === 'business') {
+          instTypeName = 'Business & Management School';
+          suggestedDepts = [
+            { name: 'Finance & Accounting', code: 'FIN' },
+            { name: 'Marketing Management', code: 'MKT' },
+            { name: 'Operations & Supply Chain', code: 'OPS' },
+            { name: 'Human Resources & Org Behavior', code: 'HR' }
+          ];
+        } else if (instType === 'university') {
+          instTypeName = 'University';
+          suggestedDepts = [
+            { name: 'Faculty of Arts & Humanities', code: 'ARTS' },
+            { name: 'Faculty of Natural Sciences', code: 'SCI' },
+            { name: 'School of Engineering', code: 'ENG' },
+            { name: 'Faculty of Law & Governance', code: 'LAW' }
+          ];
+        } else {
+          suggestedDepts = [
+            { name: 'English Literature', code: 'ENG' },
+            { name: 'History & Political Science', code: 'HIST' },
+            { name: 'Economics', code: 'ECON' },
+            { name: 'Commerce & Accounting', code: 'COMM' }
+          ];
+        }
+      %>
       <div class="card p-6 sm:p-8 fade-slide-up">
         <div class="border-b border-[var(--border-subtle)] pb-4 mb-6 flex items-center justify-between">
           <div>
@@ -234,7 +279,7 @@
               Step 2: Academic Structure & Departments
             </h2>
             <p class="text-xs text-[var(--text-secondary)] mt-0.5">
-              Establish foundational departments and current active academic term
+              Establish foundational departments and active academic term for your <span class="font-semibold text-[var(--accent-primary)]"><%= instTypeName %></span>
             </p>
           </div>
           <span class="status-pill text-xs font-semibold badge-accent">Step 2 of 4</span>
@@ -254,12 +299,13 @@
             />
           </div>
 
+          <!-- Existing Configured Departments -->
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">
               Existing Configured Departments
             </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              <% if (departments && departments.length > 0) { %>
+            <% if (departments && departments.length > 0) { %>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <% departments.forEach(dept => { %>
                   <div class="p-3.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-surface-hover)] flex items-center justify-between">
                     <div>
@@ -269,21 +315,62 @@
                     <span class="badge badge-success text-[10px]">Active</span>
                   </div>
                 <% }); %>
-              <% } %>
+              </div>
+            <% } else { %>
+              <div class="p-4 rounded-[8px] border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface-hover)]/30 text-xs text-[var(--text-muted)] mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-[var(--text-secondary)]"></i>
+                <span>No departments created yet. You can pick recommended departments below, type a custom one, or skip to configure later.</span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Quick Recommendations based on Institution Type -->
+          <div class="p-4 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-surface-hover)]/20">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-2.5 flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Recommended for <%= instTypeName %> (Select Any to Add)</span>
+            </h3>
+            <p class="text-xs text-[var(--text-muted)] mb-3">
+              Click to select standard foundation departments for your institution:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <% suggestedDepts.forEach(s => { 
+                const alreadyExists = departments && departments.some(d => d.code === s.code || d.name.toLowerCase() === s.name.toLowerCase());
+              %>
+                <label class="p-3 rounded-[8px] border <%= alreadyExists ? 'border-emerald-300 bg-emerald-50/20 opacity-60 cursor-not-allowed' : 'border-[var(--border-subtle)] bg-[var(--bg-surface-hover)] hover:border-[var(--accent-primary)] cursor-pointer' %> flex items-center justify-between text-xs transition-colors">
+                  <div class="flex items-center gap-2.5">
+                    <input 
+                      type="checkbox" 
+                      name="selected_departments" 
+                      value="<%= s.name %>|<%= s.code %>"
+                      <%= alreadyExists ? 'checked disabled' : '' %>
+                      class="rounded text-[var(--accent-primary)] focus:ring-0"
+                    />
+                    <div>
+                      <span class="font-bold text-[var(--text-primary)] block"><%= s.name %></span>
+                      <span class="text-[10px] text-[var(--text-muted)] font-mono">Code: <%= s.code %></span>
+                    </div>
+                  </div>
+                  <% if (alreadyExists) { %>
+                    <span class="text-[10px] text-emerald-600 font-semibold">Added</span>
+                  <% } %>
+                </label>
+              <% }); %>
             </div>
           </div>
 
+          <!-- Custom Department -->
           <div class="p-4 rounded-[8px] border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface-hover)]/40">
             <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-3 flex items-center gap-2">
               <i class="fa-solid fa-plus-circle"></i>
-              <span>Add Another Department (Optional)</span>
+              <span>Add Custom Department (Optional)</span>
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <input 
                   type="text" 
                   name="new_department_name" 
-                  placeholder="e.g. Electrical & Electronics Engineering"
+                  placeholder="e.g. Electrical Engineering, Economics, Pediatrics"
                   class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
                 />
               </div>
@@ -291,22 +378,27 @@
                 <input 
                   type="text" 
                   name="new_department_code" 
-                  placeholder="Code (e.g. EEE, MECH, MBA)"
+                  placeholder="Code (e.g. EE, ECON, PED)"
                   class="w-full px-4 py-2.5 rounded-[8px] border text-sm uppercase"
                 />
               </div>
             </div>
           </div>
 
-          <div class="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between">
+          <div class="pt-4 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">
             <a href="/onboarding/wizard?step=1" class="btn-secondary">
               <i class="fa-solid fa-arrow-left text-xs"></i>
               <span>Back</span>
             </a>
-            <button type="submit" class="btn-primary">
-              <span>Next: Team Invitations</span>
-              <i class="fa-solid fa-arrow-right text-xs"></i>
-            </button>
+            <div class="flex items-center gap-2.5">
+              <button type="submit" name="action" value="skip" class="btn-secondary text-xs">
+                <span>Skip Department Setup for Now</span>
+              </button>
+              <button type="submit" class="btn-primary">
+                <span>Next: Team Invitations</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
+            </div>
           </div>
         </form>
       </div>

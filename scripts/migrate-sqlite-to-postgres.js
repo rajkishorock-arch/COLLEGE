@@ -45,7 +45,32 @@ const ORDERED_TABLES = [
   'assignment_submissions',
   'fees',
   'notifications',
-  'audit_log'
+  'audit_log',
+  // Tier-3 Advanced Tables
+  'student_predictions',
+  'academic_interventions',
+  'study_recommendations',
+  'placement_readiness',
+  'course_topics',
+  'faculty_teaching_analytics',
+  'learning_outcomes',
+  'campus_rooms',
+  'room_resources',
+  'online_class_sessions',
+  'digital_learning_materials',
+  'faculty_publications',
+  'consortium_benchmarks',
+  'inter_institutional_transfers',
+  'job_openings',
+  'job_applications',
+  'alumni_network',
+  'parent_profiles',
+  'parent_alerts',
+  'parent_teacher_messages',
+  'competencies',
+  'student_competencies',
+  'learning_pathways',
+  'student_pathway_progress'
 ];
 
 async function migrate() {
@@ -159,9 +184,9 @@ async function migrate() {
       for (const row of rows) {
         const values = columns.map(col => {
           let val = row[col];
-          // Handle boolean conversion if necessary
+          // Handle smallint conversion for is_active and is_read
           if (col === 'is_active' || col === 'is_read') {
-            return Boolean(val);
+            return (val === 1 || val === true || val === '1') ? 1 : 0;
           }
           return val;
         });

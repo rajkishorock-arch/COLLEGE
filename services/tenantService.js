@@ -122,13 +122,22 @@ const tenantService = {
       // 3. Link owner_user_id to the tenant
       db.prepare('UPDATE tenants SET owner_user_id = ? WHERE id = ?').run(adminUserId, tenantId);
 
-      // 4. Provision default department
-      const deptName = (defaultDepartment && defaultDepartment.trim()) ? defaultDepartment.trim() : 'Computer Science & Engineering';
-      const deptCode = deptName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase() || 'CSE';
-      db.prepare(`
-        INSERT INTO departments (tenant_id, name, code, created_at)
-        VALUES (?, ?, ?, datetime('now'))
-      `).run(tenantId, deptName, deptCode);
+      // 4. Provision initial department only if explicitly specified by user
+      let deptName = null;
+      if (defaultDepartment !== undefined && defaultDepartment !== null && defaultDepartment !== false && defaultDepartment !== '') {
+        deptName = defaultDepartment.trim();
+      } else if (defaultDepartment === undefined) {
+        // Fallback for programmatic calls omitting defaultDepartment argument
+        deptName = 'Computer Science & Engineering';
+      }
+
+      if (deptName) {
+        const deptCode = deptName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase() || 'DEPT';
+        db.prepare(`
+          INSERT INTO departments (tenant_id, name, code, created_at)
+          VALUES (?, ?, ?, datetime('now'))
+        `).run(tenantId, deptName, deptCode);
+      }
 
       // 5. Seed initial welcome announcement
       db.prepare(`
@@ -168,7 +177,7 @@ const tenantService = {
   /**
    * Create a new institution and optionally provision its initial College Administrator atomically
    */
-  createTenant({ name, shortName, code, subdomain, email, phone, address, primaryColor, secondaryColor, academicYear, adminName, adminEmail, adminPassword, institutionType }) {
+  createTenant({ name, shortName, code, subdomain, email, phone, address, primaryColor, secondaryColor, academicYear, adminName, adminEmail, adminPassword, institutionType, defaultDepartment }) {
     const cleanCode = code.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
     const tenantId = `tenant_${cleanCode.toLowerCase()}`;
 
@@ -245,11 +254,18 @@ const tenantService = {
         adminUserId || 1
       );
 
-      // Provision initial department foundation
-      db.prepare(`
-        INSERT INTO departments (tenant_id, name, code, created_at)
-        VALUES (?, 'Computer Science & Engineering', 'CSE', datetime('now'))
-      `).run(tenantId);
+      // Provision initial department foundation if requested or provided
+      let deptName = null;
+      if (defaultDepartment !== undefined && defaultDepartment !== null && defaultDepartment !== false && defaultDepartment !== '') {
+        deptName = defaultDepartment.trim();
+      }
+      if (deptName) {
+        const deptCode = deptName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase() || 'DEPT';
+        db.prepare(`
+          INSERT INTO departments (tenant_id, name, code, created_at)
+          VALUES (?, ?, ?, datetime('now'))
+        `).run(tenantId, deptName, deptCode);
+      }
 
       return { tenantId, adminUserId };
     });

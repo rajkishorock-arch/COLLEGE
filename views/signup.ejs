@@ -238,18 +238,18 @@
 
             <div>
               <label for="dept_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                Initial Foundation Department
+                Initial Department <span class="font-normal text-[var(--text-muted)] lowercase">(optional)</span>
               </label>
               <input 
                 type="text" 
                 id="dept_name" 
                 name="default_department" 
-                value="Computer Science & Engineering"
-                placeholder="e.g. Computer Science & Engineering"
+                value="<%= typeof formData !== 'undefined' && formData.default_department ? formData.default_department : '' %>"
+                placeholder="e.g. Civil, Medicine, English, or leave empty"
                 class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
               />
               <p class="text-[11px] text-[var(--text-muted)] mt-1">
-                You can add more departments, faculty, and academic programs anytime in the setup wizard.
+                Optional: You can configure departments tailored to your academic discipline in Step 2 of the setup wizard.
               </p>
             </div>
           </div>
