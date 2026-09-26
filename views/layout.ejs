@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title : 'College Management Platform' %></title>
+  <title><%= typeof title !== 'undefined' ? title : 'CampusPulse - Higher Education Management Platform' %></title>
   
   <!-- Anti-Flash Instant Theme Detection -->
   <script>
@@ -20,70 +20,47 @@
     })();
   </script>
 
-  <!-- Exact Google Fonts Pairing: Space Grotesk + Inter ONLY -->
+  <!-- Google Fonts: Inter + Space Grotesk -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bgPrimary: 'var(--bg-primary)',
-            bgSurface: 'var(--bg-surface)',
-            bgSurfaceHover: 'var(--bg-surface-hover)',
-            borderSubtle: 'var(--border-subtle)',
-            textPrimary: 'var(--text-primary)',
-            textSecondary: 'var(--text-secondary)',
-            textMuted: 'var(--text-muted)',
-            accentPrimary: 'var(--accent-primary)',
-            accentPrimaryHover: 'var(--accent-primary-hover)',
-            success: 'var(--success)',
-            danger: 'var(--danger)',
-            warning: 'var(--warning)',
-          },
-          fontFamily: {
-            heading: ['"Space Grotesk"', 'sans-serif'],
-            body: ['"Inter"', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Tailwind CSS via CSP-allowed Cloudflare CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+
   <!-- Chart.js CDN for results & analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Custom Stylesheets (Exact Design Tokens & Animations) -->
+  <!-- CampusPulse Core Design System -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased selection:bg-[#6C5CE7] selection:text-white transition-colors duration-200">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased transition-colors duration-200">
 
   <% if (typeof user !== 'undefined' && user) { %>
-    <!-- Authenticated Layout with Sidebar -->
-    <%- include('partials/sidebar') %>
+    <!-- Authenticated AppShell (Zero-Overlap Flexbox Architecture) -->
+    <div class="app-layout">
+      <!-- Fixed/Sticky Desktop Sidebar & Mobile Drawer -->
+      <%- include('partials/sidebar') %>
 
-    <div class="md:pl-64 flex flex-col flex-1 min-h-screen">
-      <!-- Top Navigation -->
-      <%- include('partials/topbar') %>
+      <!-- Main Operational Area (Starts strictly AFTER sidebar) -->
+      <div class="app-main-area">
+        <!-- Top Navigation Bar -->
+        <%- include('partials/topbar') %>
 
-      <!-- Main Content Area: Centered 1280px max-width, 24px side padding -->
-      <main class="flex-1 px-6 py-8 max-w-[1280px] w-full mx-auto">
-        <%- include('partials/alerts') %>
-        <%- body %>
-      </main>
+        <!-- Main Content Area: Centered, Non-Overlapping -->
+        <main class="app-content-container">
+          <%- include('partials/alerts') %>
+          <%- body %>
+        </main>
 
-      <!-- Footer -->
-      <footer class="py-5 px-6 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center text-xs text-[var(--text-muted)]">
-        <p>&copy; <%= new Date().getFullYear() %> College Management Platform • Engineered with Node.js, Express & SQLite</p>
-      </footer>
+        <!-- Institutional Footer -->
+        <footer class="py-4 px-6 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center text-xs text-[var(--text-muted)]">
+          <p>&copy; <%= new Date().getFullYear() %> CampusPulse Enterprise • Autonomous Multi-Tenant Higher Education SaaS</p>
+        </footer>
+      </div>
     </div>
 
     <!-- Chatbot widget for students -->
@@ -92,14 +69,14 @@
     <% } %>
 
   <% } else { %>
-    <!-- Unauthenticated Layout (Fallback if layout is used) -->
-    <main class="flex-1 flex flex-col justify-center items-center px-6 py-8 max-w-[1280px] w-full mx-auto">
+    <!-- Fallback Unauthenticated Container -->
+    <main class="flex-1 flex flex-col justify-center items-center px-4 py-8 max-w-[1280px] w-full mx-auto">
       <%- include('partials/alerts') %>
       <%- body %>
     </main>
   <% } %>
 
-  <!-- Application Logic -->
+  <!-- Application Interaction Logic -->
   <script src="/js/main.js"></script>
 </body>
 </html>

@@ -548,20 +548,32 @@ function initMobileDrawer() {
   const closeSidebarBtn = document.getElementById('close-sidebar-btn');
 
   function openSidebar() {
-    if (sidebar) sidebar.classList.remove('-translate-x-full');
+    if (sidebar) {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('sidebar-open');
+    }
     if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden', 'md:overflow-auto');
+    document.body.classList.add('overflow-hidden');
   }
 
   function closeSidebar() {
-    if (sidebar) sidebar.classList.add('-translate-x-full');
+    if (sidebar) {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('sidebar-open');
+    }
     if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
-    document.body.classList.remove('overflow-hidden', 'md:overflow-auto');
+    document.body.classList.remove('overflow-hidden');
   }
 
   if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
   if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
   if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar && sidebar.classList.contains('sidebar-open')) {
+      closeSidebar();
+    }
+  });
 }
 
 /**

@@ -1,32 +1,32 @@
 <!-- Top Navigation Bar -->
-<header class="h-16 bg-[#FFFFFF] border-b border-[#E5E7EB] sticky top-0 z-20 flex items-center justify-between px-6">
+<header class="app-topbar">
   
-  <div class="flex items-center gap-4">
+  <div class="flex items-center gap-3">
     <!-- Mobile Hamburger Toggle -->
-    <button id="mobile-menu-btn" class="md:hidden text-[#5B5F6B] hover:text-[#111318] p-2 rounded-[8px] border border-[#E5E7EB] hover:bg-[#F7F7F9] transition-colors">
-      <i class="fa-solid fa-bars text-lg"></i>
+    <button id="mobile-menu-btn" type="button" aria-label="Toggle Sidebar" class="md:hidden text-secondary hover:text-primary p-2 rounded-lg border border-subtle hover:bg-surface-hover transition-colors" style="background: transparent; cursor: pointer;">
+      <i class="fa-solid fa-bars text-base"></i>
     </button>
 
     <!-- Page Title / Breadcrumb -->
     <div>
-      <div class="text-sm sm:text-base font-bold text-[#111318] leading-tight font-['Space_Grotesk']">
+      <div class="text-sm sm:text-base font-bold text-primary leading-tight">
         <%= typeof title !== 'undefined' ? title.split(' - ')[0] : 'Campus Portal' %>
       </div>
-      <p class="text-xs text-[#8B8F99] hidden sm:block font-medium">
-        College Management System • <%= new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
+      <p class="text-xs text-muted hidden sm:block font-medium">
+        CampusPulse Operating System • <%= new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
       </p>
     </div>
   </div>
 
-  <!-- Right Actions & User Pill -->
-  <div class="flex items-center gap-3">
+  <!-- Right Actions & User Controls -->
+  <div class="flex items-center gap-2 sm:gap-3">
     <!-- Theme Toggle (Light / Dark / System) -->
     <%- include('theme-toggle') %>
 
     <% if (typeof tenant !== 'undefined' && tenant) { %>
-      <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0EEFF] text-[#6C5CE7] border border-[#DDD6FE]">
+      <div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold badge-accent">
         <i class="fa-solid fa-building-columns text-[10px]"></i>
-        <span class="max-w-[160px] truncate"><%= tenant.short_name || tenant.name %></span>
+        <span class="max-w-[140px] truncate"><%= tenant.short_name || tenant.name %></span>
       </div>
     <% } %>
 
@@ -38,11 +38,12 @@
           id="notif-toggle-btn"
           type="button" 
           aria-label="Notifications"
-          class="relative p-2.5 text-[#5B5F6B] hover:text-[#111318] hover:bg-[#F7F7F9] rounded-[8px] border border-transparent hover:border-[#E5E7EB] transition-all flex items-center justify-center"
+          class="relative p-2 text-secondary hover:text-primary hover:bg-surface-hover rounded-lg transition-colors flex items-center justify-center"
+          style="background: transparent; border: none; cursor: pointer;"
         >
           <i class="fa-solid fa-bell text-base"></i>
           <% if (typeof unreadNotifCount !== 'undefined' && unreadNotifCount > 0) { %>
-            <span class="absolute top-1 right-1 w-4 h-4 bg-[var(--danger)] text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+            <span class="absolute top-1 right-1 w-4 h-4 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
               <%= unreadNotifCount > 9 ? '9+' : unreadNotifCount %>
             </span>
           <% } %>
@@ -51,36 +52,38 @@
         <!-- Dropdown Menu -->
         <div 
           id="notif-dropdown" 
-          class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-[12px] bg-[#FFFFFF] border border-[#E5E7EB] shadow-2xl z-50 overflow-hidden fade-slide-up"
+          class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-surface border border-subtle shadow-2xl z-50 overflow-hidden"
+          style="background-color: var(--bg-surface);"
         >
           <!-- Header -->
-          <div class="px-4 py-3 bg-[#F7F7F9] border-b border-[#E5E7EB] flex items-center justify-between">
+          <div class="px-4 py-3 bg-surface-hover border-b border-subtle flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-[#111318]">Notifications</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-primary">Notifications</span>
               <% if (typeof unreadNotifCount !== 'undefined' && unreadNotifCount > 0) { %>
-                <span class="status-pill text-[10px] py-0.5 px-2 font-bold badge-danger">
+                <span class="badge-danger text-[10px] py-0.5 px-2 font-bold">
                   <%= unreadNotifCount %> Unread
                 </span>
               <% } %>
             </div>
             <form action="/<%= user.role === 'student' ? 'student' : 'admin' %>/notifications/read-all" method="POST" class="inline">
-              <button type="submit" class="text-[11px] font-semibold text-[var(--accent-primary)] hover:underline">
+              <button type="submit" class="text-[11px] font-bold text-accent hover:underline" style="background: transparent; border: none; cursor: pointer;">
                 Mark all read
               </button>
             </form>
           </div>
 
           <!-- Notification Items List -->
-          <div class="max-h-80 overflow-y-auto divide-y divide-[#E5E7EB]/60">
+          <div class="max-h-80 overflow-y-auto divide-y divide-subtle">
             <% if (typeof recentNotifications !== 'undefined' && recentNotifications.length > 0) { %>
               <% recentNotifications.forEach(notif => { %>
-                <div class="p-3.5 hover:bg-[#F7F7F9] transition-colors flex items-start gap-3 <%= notif.is_read ? 'opacity-70' : 'bg-[rgba(108,92,231,0.04)]' %>">
-                  <div class="w-8 h-8 rounded-[6px] shrink-0 flex items-center justify-center text-xs mt-0.5
-                    <%= notif.type === 'attendance' ? 'bg-[#F0EDFD] text-[var(--accent-primary)]' : 
-                        notif.type === 'library' ? 'bg-[#FEF6E7] text-[var(--warning)]' : 
-                        notif.type === 'assignment' ? 'bg-[#E8F8EE] text-[var(--success)]' : 
-                        notif.type === 'fee' ? 'bg-[#FEECEE] text-[var(--danger)]' : 
-                        'bg-[#F0EDFD] text-[var(--accent-primary)]' %>"
+                <div class="p-3.5 hover:bg-surface-hover transition-colors flex items-start gap-3 <%= notif.is_read ? 'opacity-70' : '' %>">
+                  <div class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs mt-0.5
+                    <%= notif.type === 'attendance' ? 'badge-accent' : 
+                        notif.type === 'library' ? 'badge-warning' : 
+                        notif.type === 'assignment' ? 'badge-success' : 
+                        notif.type === 'fee' ? 'badge-danger' : 
+                        'badge-accent' %>"
+                    style="width: 32px; height: 32px; border-radius: 8px;"
                   >
                     <i class="fa-solid 
                       <%= notif.type === 'attendance' ? 'fa-clipboard-check' : 
@@ -91,25 +94,25 @@
                     ></i>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-xs text-[#111318] font-medium leading-relaxed break-words">
+                    <p class="text-xs text-primary font-medium leading-relaxed break-words">
                       <%= notif.message %>
                     </p>
                     <div class="flex items-center gap-2 mt-1">
-                      <span class="text-[10px] text-[#8B8F99] font-medium">
+                      <span class="text-[10px] text-muted font-medium">
                         <%= notif.created_at ? new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now' %>
                       </span>
                       <% if (!notif.is_read) { %>
-                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"></span>
+                        <span class="w-1.5 h-1.5 rounded-full" style="background-color: var(--accent-primary);"></span>
                       <% } %>
                     </div>
                   </div>
                 </div>
               <% }); %>
             <% } else { %>
-              <div class="py-8 px-4 text-center text-[#8B8F99]">
-                <i class="fa-regular fa-bell-slash text-2xl mb-2 text-[#8B8F99]"></i>
-                <p class="text-xs font-semibold text-[#5B5F6B]">No recent notifications</p>
-                <p class="text-[11px] text-[#8B8F99] mt-0.5">You're all caught up with campus updates</p>
+              <div class="py-8 px-4 text-center text-muted">
+                <i class="fa-regular fa-bell-slash text-2xl mb-2 text-muted"></i>
+                <p class="text-xs font-semibold text-secondary">No recent notifications</p>
+                <p class="text-[11px] text-muted mt-0.5">You're all caught up with campus updates</p>
               </div>
             <% } %>
           </div>
@@ -117,33 +120,33 @@
       </div>
 
       <!-- Role Badge -->
-      <span class="status-pill text-xs font-semibold <%= user.role === 'super_admin' ? 'bg-[#EDE9FE] text-[#6C5CE7] border border-[#DDD6FE]' : (user.role === 'admin' ? 'badge-warning' : 'badge-accent') %>">
+      <span class="badge text-xs font-semibold <%= user.role === 'super_admin' ? 'badge-accent' : (user.role === 'admin' ? 'badge-warning' : 'badge-accent') %>">
         <i class="fa-solid <%= user.role === 'super_admin' ? 'fa-crown' : (user.role === 'admin' ? 'fa-shield-halved' : 'fa-graduation-cap') %> text-[10px]"></i>
-        <%= user.role === 'super_admin' ? 'Super Admin' : (user.role === 'admin' ? 'Admin Staff' : 'Student') %>
+        <span class="hidden sm:inline"><%= user.role === 'super_admin' ? 'Super Admin' : (user.role === 'admin' ? 'Admin Staff' : 'Student') %></span>
       </span>
 
       <!-- User Profile Link & Avatar -->
-      <a href="<%= user.role === 'student' ? '/student/profile' : '/admin/profile' %>" class="hidden sm:flex items-center gap-2 pl-3 border-l border-[#E5E7EB] group hover:opacity-90 transition-all">
+      <a href="<%= user.role === 'student' ? '/student/profile' : '/admin/profile' %>" class="flex items-center gap-2 pl-2 border-l border-subtle group hover:opacity-90 transition-all text-decoration-none">
         <% if (user.profile_photo) { %>
           <img 
             src="<%= user.profile_photo %>" 
             alt="<%= user.name %>" 
-            class="w-8 h-8 rounded-[8px] object-cover border border-[#E5E7EB] group-hover:border-[var(--accent-primary)] transition-colors shrink-0"
+            style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-subtle); flex-shrink: 0;"
           />
         <% } else { %>
-          <div class="w-8 h-8 rounded-[8px] bg-[#F7F7F9] border border-[#E5E7EB] group-hover:border-[var(--accent-primary)] flex items-center justify-center text-xs font-bold text-[var(--accent-primary)] shrink-0 transition-colors">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background-color: rgba(79, 70, 229, 0.08); border: 1px solid rgba(79, 70, 229, 0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent-primary); flex-shrink: 0;">
             <%= user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
           </div>
         <% } %>
-        <div class="text-left">
-          <p class="text-xs font-bold text-[#111318] leading-none group-hover:text-[var(--accent-primary)] transition-colors"><%= user.name %></p>
-          <p class="text-[11px] text-[#5B5F6B] leading-tight mt-0.5"><%= user.course || user.email %></p>
+        <div class="text-left hidden lg:block">
+          <p class="text-xs font-bold text-primary leading-none"><%= user.name %></p>
+          <p class="text-[10px] text-muted leading-tight mt-0.5"><%= user.course || user.email %></p>
         </div>
       </a>
 
       <!-- Quick Logout Button -->
-      <a href="/logout" title="Sign Out" class="p-2 text-[#5B5F6B] hover:text-[#E5384B] hover:bg-[#F7F7F9] rounded-[8px] transition-all">
-        <i class="fa-solid fa-right-from-bracket text-base"></i>
+      <a href="/logout" title="Sign Out" class="p-2 text-secondary hover:text-red-500 rounded-lg transition-colors">
+        <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
       </a>
     <% } %>
   </div>

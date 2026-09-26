@@ -25,7 +25,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS via CDNJS (allowed by CSP) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -34,44 +35,43 @@
   <!-- =========================================================================
        1. Top Sticky Navigation Bar
        ========================================================================= -->
-  <header class="sticky top-0 z-50 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] transition-all">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+  <header class="sticky top-0 z-50 bg-[var(--bg-surface)]/95 backdrop-blur-md border-b border-[var(--border-subtle)] transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand Logo -->
       <a href="/" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-[10px] bg-[var(--accent-primary)] text-white flex items-center justify-center text-xl shadow-md shadow-[var(--accent-glow)] group-hover:scale-105 transition-transform">
+        <div class="w-9 h-9 rounded-lg bg-[var(--accent-primary)] text-white flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
         <div>
-          <span class="font-bold text-xl tracking-tight text-[var(--text-primary)] block leading-none font-['Space_Grotesk']">
+          <span class="font-bold text-lg tracking-tight text-[var(--text-primary)] block leading-none font-['Space_Grotesk']">
             CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span>
           </span>
           <span class="text-[10px] uppercase tracking-wider text-[var(--text-muted)] font-medium block mt-1">
-            Autonomous SaaS Platform
+            Higher Education SaaS
           </span>
         </div>
       </a>
 
       <!-- Desktop Anchor Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-[var(--text-secondary)]">
-        <a href="#features" class="hover:text-[var(--accent-primary)] transition-colors">Features</a>
-        <a href="#preview" class="hover:text-[var(--accent-primary)] transition-colors">Live Preview</a>
+      <nav class="landing-nav-desktop text-xs font-semibold text-[var(--text-secondary)]">
+        <a href="#modules" class="hover:text-[var(--accent-primary)] transition-colors">Academic Modules</a>
         <a href="#how-it-works" class="hover:text-[var(--accent-primary)] transition-colors">How It Works</a>
-        <a href="#security" class="hover:text-[var(--accent-primary)] transition-colors">Security</a>
+        <a href="#security" class="hover:text-[var(--accent-primary)] transition-colors">Security & Multi-Tenancy</a>
       </nav>
 
       <!-- Action Buttons & Theme Selector -->
-      <div class="hidden sm:flex items-center gap-3">
+      <div class="landing-actions-desktop">
         <%- include('partials/theme-toggle') %>
         <a 
           href="/login" 
-          class="btn-secondary py-2.5 px-4 text-xs font-semibold rounded-[8px]"
+          class="btn-secondary py-2 px-3.5 text-xs font-semibold rounded-lg"
         >
           Sign In
         </a>
         <a 
           href="/signup" 
-          class="btn-primary py-2.5 px-5 text-xs font-semibold rounded-[8px] flex items-center gap-2"
+          class="btn-primary py-2 px-4 text-xs font-semibold rounded-lg flex items-center gap-1.5"
         >
           <span>Create Institution</span>
           <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -79,15 +79,15 @@
       </div>
 
       <!-- Mobile Hamburger Button -->
-      <div class="flex md:hidden items-center gap-2">
+      <div class="landing-mobile-toggle">
         <%- include('partials/theme-toggle') %>
         <button 
           id="landing-mobile-menu-btn" 
           type="button" 
           aria-label="Toggle Navigation Menu"
-          class="p-2 rounded-[8px] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]"
+          class="p-2 rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)]"
         >
-          <i class="fa-solid fa-bars text-lg"></i>
+          <i class="fa-solid fa-bars text-base"></i>
         </button>
       </div>
 
@@ -95,13 +95,12 @@
 
     <!-- Mobile Navigation Dropdown -->
     <div id="landing-mobile-menu" class="hidden md:hidden border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-4 space-y-3">
-      <a href="#features" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Features</a>
-      <a href="#preview" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Live Preview</a>
+      <a href="#modules" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Academic Modules</a>
       <a href="#how-it-works" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">How It Works</a>
       <a href="#security" class="block text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)]">Security</a>
       <div class="pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
-        <a href="/login" class="btn-secondary py-2.5 text-center text-xs font-semibold">Sign In</a>
-        <a href="/signup" class="btn-primary py-2.5 text-center text-xs font-semibold">Create Institution</a>
+        <a href="/login" class="btn-secondary py-2 text-center text-xs font-semibold">Sign In</a>
+        <a href="/signup" class="btn-primary py-2 text-center text-xs font-semibold">Create Institution</a>
       </div>
     </div>
   </header>
@@ -109,38 +108,36 @@
   <!-- =========================================================================
        2. Hero Section
        ========================================================================= -->
-  <section class="relative overflow-hidden hero-glow-backdrop pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-[#E5E7EB]">
+  <section class="relative overflow-hidden pt-12 pb-16 lg:pt-16 lg:pb-24 border-b border-[var(--border-subtle)] bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-primary)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      <div class="landing-hero-grid">
         
         <!-- Left: Hero Headline & CTAs (7 cols) -->
-        <div class="lg:col-span-7 space-y-6 fade-slide-up">
+        <div class="lg:col-span-7 space-y-5">
           
-          <!-- Live Badge -->
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(108,92,231,0.12)] border border-[rgba(108,92,231,0.25)] text-[var(--accent-primary)] text-xs font-semibold tracking-wide">
+          <!-- Identity Badge -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-[var(--accent-primary)] text-xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse"></span>
-            <span>Self-Service Multi-Tenant Higher Education SaaS</span>
+            <span>CampusPulse • Self-Service Multi-Tenant Higher Education SaaS</span>
           </div>
 
           <!-- Main Bold Headline -->
-          <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-bold text-[var(--text-primary)] leading-[1.12] tracking-tight font-['Space_Grotesk']">
-            Autonomous Campus Operations. <br/>
-            <span class="bg-gradient-to-r from-[var(--accent-primary)] via-[#818CF8] to-[#6366F1] bg-clip-text text-transparent">
-              Instant Institutional Cloud.
-            </span>
+          <h1 class="text-3xl sm:text-4xl lg:text-[46px] font-bold text-[var(--text-primary)] leading-[1.18] tracking-tight font-['Space_Grotesk']">
+            Modern Campus Operations,<br/>
+            <span class="text-[var(--accent-primary)]">Simplified.</span>
           </h1>
 
           <!-- Supporting Paragraph -->
-          <p class="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl font-normal">
-            Deploy your college, university, or institute in seconds. An enterprise multi-tenant operating system featuring Row-Level Security, private file storage, PIN-based attendance check-ins, gradebook analytics, and autonomous institutional administration without manual platform bottlenecks.
+          <p class="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-2xl font-normal">
+            Manage academic operations, attendance, results, library, assignments, fees, announcements and institutional workflows from one secure platform.
           </p>
 
           <!-- Dual Call to Action Buttons -->
-          <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+          <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <a 
               href="/signup" 
-              class="btn-primary py-3.5 px-7 text-sm font-bold rounded-[10px] flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--accent-glow)]"
+              class="btn-primary py-3 px-6 text-sm font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm"
             >
               <span>Create Your Institution</span>
               <i class="fa-solid fa-arrow-right text-xs"></i>
@@ -148,7 +145,7 @@
 
             <a 
               href="/signup?tab=student" 
-              class="btn-secondary py-3.5 px-6 text-sm font-semibold rounded-[10px] flex items-center justify-center gap-2"
+              class="btn-secondary py-3 px-6 text-sm font-semibold rounded-lg flex items-center justify-center gap-2"
             >
               <i class="fa-solid fa-user-graduate text-xs text-[var(--accent-primary)]"></i>
               <span>Join as Student</span>
@@ -156,32 +153,32 @@
           </div>
 
           <!-- Trust Indicators -->
-          <div class="pt-6 border-t border-[#E5E7EB] grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs text-[#5B5F6B]">
+          <div class="pt-5 border-t border-[var(--border-subtle)] grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[var(--text-secondary)]">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-[var(--success)] text-sm shrink-0"></i>
-              <span class="font-medium text-[#111318]">Session Code Check-In</span>
+              <i class="fa-solid fa-circle-check text-green-500 text-xs shrink-0"></i>
+              <span class="font-medium text-[var(--text-primary)]">15-Min Session Check-In</span>
             </div>
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-[var(--success)] text-sm shrink-0"></i>
-              <span class="font-medium text-[#111318]">Two-Tier Super Admin</span>
+              <i class="fa-solid fa-circle-check text-green-500 text-xs shrink-0"></i>
+              <span class="font-medium text-[var(--text-primary)]">Two-Tier Governance</span>
             </div>
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-circle-check text-[var(--success)] text-sm shrink-0"></i>
-              <span class="font-medium text-[#111318]">Automated Audit History</span>
+              <i class="fa-solid fa-circle-check text-green-500 text-xs shrink-0"></i>
+              <span class="font-medium text-[var(--text-primary)]">Automated Audit Trail</span>
             </div>
           </div>
 
         </div>
 
         <!-- Right: Interactive Live Platform Preview Panel (5 cols) -->
-        <div class="lg:col-span-5 fade-slide-up stagger-1">
-          <div class="preview-card p-6 sm:p-7 relative overflow-hidden bg-white">
+        <div class="lg:col-span-5">
+          <div class="card p-5 sm:p-6 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-md">
             
             <!-- Preview Banner Header -->
-            <div class="flex items-center justify-between pb-4 mb-5 border-b border-[#E5E7EB]">
+            <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-[var(--border-subtle)]">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#1E9E57]"></span>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-[#111318]">
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-primary)]">
                   Live Platform Preview
                 </span>
               </div>
@@ -191,77 +188,77 @@
             </div>
 
             <!-- Mini Preview Cards Grid -->
-            <div class="space-y-4">
+            <div class="space-y-3">
               
               <!-- 1. Real-Time Attendance Highlight -->
-              <div class="p-4 rounded-[10px] border border-[#E5E7EB] bg-[#FAFAFB] flex items-center justify-between">
+              <div class="p-3.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-[8px] bg-[#E8F8EE] text-[var(--success)] flex items-center justify-center text-base font-bold shrink-0">
+                  <div class="w-9 h-9 rounded-lg bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-bold shrink-0">
                     <i class="fa-solid fa-clipboard-user"></i>
                   </div>
                   <div>
-                    <p class="text-xs font-bold text-[#111318] leading-tight">Lecture Attendance</p>
-                    <p class="text-[11px] text-[#5B5F6B] mt-0.5">Session Code: <span class="font-mono font-bold text-[var(--accent-primary)]">#CS842</span></p>
+                    <p class="text-xs font-bold text-[var(--text-primary)] leading-tight">Lecture Attendance</p>
+                    <p class="text-[11px] text-[var(--text-secondary)] mt-0.5">Session Code: <span class="font-mono font-bold text-[var(--accent-primary)]">#CS842</span></p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <span class="metric-number text-xl font-bold text-[#1E9E57]">87.4%</span>
-                  <span class="block text-[9px] uppercase font-bold text-[#8B8F99]">Verified</span>
+                  <span class="text-lg font-bold text-green-600 dark:text-green-400">87.4%</span>
+                  <span class="block text-[9px] uppercase font-bold text-[var(--text-muted)]">Verified</span>
                 </div>
               </div>
 
               <!-- 2. Academic Performance Metric -->
-              <div class="p-4 rounded-[10px] border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm">
-                <div class="flex items-center justify-between mb-2">
+              <div class="p-3.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-xs">
+                <div class="flex items-center justify-between mb-1.5">
                   <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-[6px] bg-[#EDE9FE] text-[#6C5CE7] flex items-center justify-center text-xs">
+                    <div class="w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs">
                       <i class="fa-solid fa-chart-simple"></i>
                     </div>
-                    <span class="text-xs font-bold text-[#111318]">Academic CGPA & Scores</span>
+                    <span class="text-xs font-bold text-[var(--text-primary)]">Academic CGPA & Scores</span>
                   </div>
                   <span class="status-pill text-[10px] py-0.5 px-2 font-bold badge-success">3.82 CGPA</span>
                 </div>
-                <div class="space-y-1.5 pt-1">
+                <div class="space-y-1 pt-1">
                   <div class="flex items-center justify-between text-[11px]">
-                    <span class="text-[#5B5F6B]">Data Structures (CS-301)</span>
-                    <span class="font-bold text-[#111318]">92 / 100</span>
+                    <span class="text-[var(--text-secondary)]">Data Structures (CS-301)</span>
+                    <span class="font-bold text-[var(--text-primary)]">92 / 100</span>
                   </div>
-                  <div class="w-full bg-[#E5E7EB] h-1.5 rounded-full overflow-hidden">
+                  <div class="w-full bg-[var(--border-subtle)] h-1.5 rounded-full overflow-hidden">
                     <div class="bg-[var(--accent-primary)] h-1.5 rounded-full" style="width: 92%"></div>
                   </div>
                 </div>
               </div>
 
               <!-- 3. Library & Circulation Highlight -->
-              <div class="p-3.5 rounded-[10px] border border-[#E5E7EB] bg-[#FAFAFB] flex items-center justify-between text-xs">
+              <div class="p-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] flex items-center justify-between text-xs">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-[6px] bg-[#FEF6E7] text-[var(--warning)] flex items-center justify-center text-sm">
+                  <div class="w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm">
                     <i class="fa-solid fa-book-bookmark"></i>
                   </div>
                   <div>
-                    <p class="font-bold text-[#111318] text-xs">Algorithms (CLRS)</p>
-                    <p class="text-[10px] text-[#5B5F6B]">Due: In 48 hours</p>
+                    <p class="font-bold text-[var(--text-primary)] text-xs">Algorithms (CLRS)</p>
+                    <p class="text-[10px] text-[var(--text-secondary)]">Due: In 48 hours</p>
                   </div>
                 </div>
                 <span class="status-pill text-[10px] py-0.5 px-2 font-bold badge-warning">Borrowed</span>
               </div>
 
               <!-- 4. Next Assessment Banner -->
-              <div class="p-3 rounded-[8px] bg-[#EDE9FE]/50 border border-[#DDD6FE] flex items-center justify-between text-xs">
+              <div class="p-2.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between text-xs">
                 <div class="flex items-center gap-2">
-                  <i class="fa-solid fa-stopwatch text-[#6C5CE7]"></i>
-                  <span class="text-[#6C5CE7] font-semibold text-[11px]">Next Quiz: Operating Systems</span>
+                  <i class="fa-solid fa-stopwatch text-[var(--accent-primary)]"></i>
+                  <span class="text-[var(--accent-primary)] font-semibold text-[11px]">Next Quiz: Operating Systems</span>
                 </div>
-                <span class="text-[10px] font-bold text-[#6C5CE7]">Tomorrow 10:00 AM</span>
+                <span class="text-[10px] font-bold text-[var(--accent-primary)]">Tomorrow 10:00 AM</span>
               </div>
 
             </div>
 
             <!-- Footer Badge -->
-            <div class="mt-5 pt-4 border-t border-[#E5E7EB] flex items-center justify-between text-[11px] text-[#8B8F99]">
+            <div class="mt-4 pt-3.5 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
               <span class="flex items-center gap-1.5">
-                <i class="fa-solid fa-shield-halved text-[#1E9E57]"></i>
-                <span>Protected with Bcrypt + Salt</span>
+                <i class="fa-solid fa-shield-halved text-green-500"></i>
+                <span>Protected with RLS Isolation</span>
               </span>
               <a href="/login" class="font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1">
                 <span>Try Demo</span>
@@ -278,137 +275,213 @@
   </section>
 
   <!-- =========================================================================
-       3. Features Section (6 Modules in 3x2 Grid)
+       3. Academic Modules Section (10 Modules in Responsive Grid)
        ========================================================================= -->
-  <section id="features" class="py-20 lg:py-28 bg-[#FAFAFB] border-b border-[#E5E7EB]">
+  <section id="modules" class="py-16 lg:py-24 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Section Header -->
-      <div class="text-center max-w-3xl mx-auto mb-16 scroll-reveal">
-        <span class="status-pill text-xs font-semibold badge-accent mb-3 inline-block">
-          Comprehensive Campus Modules
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="status-pill text-xs font-semibold badge-accent mb-2.5 inline-block">
+          Autonomous Higher-Education Modules
         </span>
-        <h2 class="text-3xl sm:text-4xl font-bold text-[#111318] tracking-tight font-['Space_Grotesk'] mt-2">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] tracking-tight font-['Space_Grotesk']">
           Engineered for Every Dimension of Campus Life
         </h2>
-        <p class="body-text text-sm sm:text-base text-[#5B5F6B] mt-3">
-          Each feature is tailored to remove administrative bottlenecks and empower students to stay on top of their academic roadmap.
+        <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-2.5">
+          Ten integrated operational modules built to eliminate paperwork, automate records, and give students, faculty, and administration unified institutional oversight.
         </p>
       </div>
 
-      <!-- Feature Cards Grid (3 Columns) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Feature Cards Grid (10 Modules) -->
+      <div class="landing-modules-grid">
 
-        <!-- Card 1: Self Check-In Attendance -->
-        <div class="card p-7 scroll-reveal delay-100 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 1: Attendance -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#EDE9FE] text-[#6C5CE7] flex items-center justify-center text-xl mb-5">
+            <div class="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 flex items-center justify-center text-lg mb-4">
               <i class="fa-solid fa-qrcode"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
-              Self Check-In Attendance
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Attendance & PIN Check-In
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Professors launch time-limited 15-minute PIN sessions from the podium. Students check in securely with single-attempt verification to eliminate proxy attendance.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Faculty launch time-bounded 15-minute PIN sessions from the lecture podium. Students verify in real time with single-attempt anti-proxy safeguards.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Session Code Based</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Anti-Proxy Verification</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
 
-        <!-- Card 2: Results & CGPA Tracking -->
-        <div class="card p-7 scroll-reveal delay-200 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 2: Academic Results & CGPA -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#E8F8EE] text-[#1E9E57] flex items-center justify-center text-xl mb-5">
+            <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg mb-4">
               <i class="fa-solid fa-chart-column"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
-              Results & Academic CGPA
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Academic Results & CGPA
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Semester-wise examination records, automated percentage calculations, and digital report card generation with printable transcripts for student verification.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Automated SGPA/CGPA grade calculation, semester grade sheets, mark uploads, and instant digital transcript verification across all 8 semesters.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Semester 1-8 Breakdown</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Automated Calculation</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
 
-        <!-- Card 3: Library & Circulation -->
-        <div class="card p-7 scroll-reveal delay-300 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 3: Library Catalog & Circulation -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#FEF6E7] text-[#E08E00] flex items-center justify-center text-xl mb-5">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg mb-4">
               <i class="fa-solid fa-book-open-reader"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
               Library Catalog & Loans
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Complete catalog browsing, real-time availability counters, issue/return logging, and automatic overdue notifications to keep textbooks circulating smoothly.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Complete institutional book repository, live available copy counts, issue/return circulation logs, and automatic return date alerts.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Live Copy Tracking</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Live Inventory Tracking</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
 
-        <!-- Card 4: Quizzes & Digital Assessments -->
-        <div class="card p-7 scroll-reveal delay-100 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 4: Assignments & Submissions -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#F0EDFD] text-[var(--accent-primary)] flex items-center justify-center text-xl mb-5">
-              <i class="fa-solid fa-pen-to-square"></i>
+            <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-file-arrow-up"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
-              Online Quizzes & Assessments
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Coursework & Assignments
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Multiple-choice tests with countdown timers, randomized options, instant evaluation upon submission, and automated entry into student academic scorecards.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Faculty assign coursework with attachment support and deadlines. Students upload solutions securely with automated status and grading notifications.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Instant Auto-Grading</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Digital Submissions</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
 
-        <!-- Card 5: Announcements & Timetable -->
-        <div class="card p-7 scroll-reveal delay-200 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 5: Fee Status & Receipts -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#FEECEE] text-[#E5384B] flex items-center justify-center text-xl mb-5">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Fee Status & Invoices
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Semester tuition schedules, clearance tracking, dues balance breakdown, and downloadable digital fee receipts for students and accounts teams.
+            </p>
+          </div>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Clearance Tracking</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
+          </div>
+        </div>
+
+        <!-- 6: Announcements & Notice Board -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg mb-4">
               <i class="fa-solid fa-bullhorn"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
-              Announcements & Timetable
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Announcements & Notices
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Weekly class schedule by day and hour, hall assignments, and institutional announcements prioritized into normal, important, and urgent campus broadcasts.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Institutional broadcasts categorized by severity (Urgent, Important, General) with department-targeted delivery and banner alerts.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Weekly Schedule View</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Targeted Broadcasts</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
 
-        <!-- Card 6: Role-Based Security & Governance -->
-        <div class="card p-7 scroll-reveal delay-300 flex flex-col justify-between hover:border-[var(--accent-primary)]">
+        <!-- 7: Online Quizzes & Tests -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
           <div>
-            <div class="w-12 h-12 rounded-[10px] bg-[#EDE9FE] text-[#6C5CE7] flex items-center justify-center text-xl mb-5">
-              <i class="fa-solid fa-user-shield"></i>
+            <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-pen-to-square"></i>
             </div>
-            <h3 class="text-lg font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
-              Role-Based Governance
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Quizzes & Timed Tests
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
-              Two-tier admin hierarchy (Super Admin & Staff Admin), brute force lockout after 5 failed attempts, password-confirmed credential editing, and comprehensive audit logs.
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Online multiple choice evaluations with automated countdown timers, randomized answer orders, and instant scoring upon submission.
             </p>
           </div>
-          <div class="pt-5 mt-5 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#8B8F99]">
-            <span class="font-medium text-[#111318]">Audit Trail Logging</span>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Instant Evaluation</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
+          </div>
+        </div>
+
+        <!-- 8: Timetable & Schedule -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Timetable & Lecture Halls
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Day-by-day classroom routing, period schedules, room numbers, and faculty assignments mapped to ensure zero scheduling conflicts.
+            </p>
+          </div>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Weekly Grid Layout</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
+          </div>
+        </div>
+
+        <!-- 9: Multi-Tenant Security & Isolation -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Multi-Tenant Security
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Rigorous tenant separation via institution IDs, bcrypt password encryption, 5-attempt brute-force lockouts, and rolling sessions.
+            </p>
+          </div>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Strict Tenant Isolation</span>
+            <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
+          </div>
+        </div>
+
+        <!-- 10: Institution Administration -->
+        <div class="card p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-all">
+          <div>
+            <div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center text-lg mb-4">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h3 class="text-base font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
+              Institution Administration
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
+              Super Admin and Staff Admin governance, department creation, user roster management, role delegation, and audit logging.
+            </p>
+          </div>
+          <div class="pt-4 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+            <span class="font-medium text-[var(--text-primary)]">Enterprise Governance</span>
             <i class="fa-solid fa-arrow-right text-[10px] text-[var(--accent-primary)]"></i>
           </div>
         </div>
@@ -417,97 +490,96 @@
 
     </div>
   </section>
-
   <!-- =========================================================================
        4. How It Works Section
        ========================================================================= -->
-  <section id="how-it-works" class="py-20 lg:py-28 bg-[#FFFFFF] border-b border-[#E5E7EB]">
+  <section id="how-it-works" class="py-16 lg:py-24 bg-[var(--bg-primary)] border-b border-[var(--border-subtle)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Section Heading -->
-      <div class="text-center max-w-3xl mx-auto mb-16 scroll-reveal">
-        <span class="status-pill text-xs font-semibold badge-accent mb-3 inline-block">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="status-pill text-xs font-semibold badge-accent mb-2.5 inline-block">
           Simple Onboarding
         </span>
-        <h2 class="text-3xl sm:text-4xl font-bold text-[#111318] tracking-tight font-['Space_Grotesk'] mt-2">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] tracking-tight font-['Space_Grotesk']">
           Seamless from Orientation to Graduation
         </h2>
-        <p class="body-text text-sm sm:text-base text-[#5B5F6B] mt-3">
-          Designed with zero friction for new students and complete governance for college administrators.
+        <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-2.5">
+          Designed with zero friction for students, faculty, and college administrators.
         </p>
       </div>
 
       <!-- 4 Step Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="landing-steps-grid">
 
         <!-- Step 1 -->
-        <div class="p-6 rounded-[12px] bg-[#FAFAFB] border border-[#E5E7EB] scroll-reveal delay-100 flex flex-col justify-between">
+        <div class="card p-6 flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-[8px] bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-sm font-['Space_Grotesk'] mb-4 shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-xs font-['Space_Grotesk'] mb-3.5 shadow-sm">
               01
             </div>
-            <h3 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
+            <h3 class="text-sm font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
               Sign Up or Sign In
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
               Register as a student with your verified Roll Number and department, or sign in using your administrative credentials.
             </p>
           </div>
-          <div class="mt-6 pt-4 border-t border-[#E5E7EB] text-[11px] font-semibold text-[var(--accent-primary)]">
+          <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] text-[11px] font-semibold text-[var(--accent-primary)]">
             Instant Enrollment →
           </div>
         </div>
 
         <!-- Step 2 -->
-        <div class="p-6 rounded-[12px] bg-[#FAFAFB] border border-[#E5E7EB] scroll-reveal delay-200 flex flex-col justify-between">
+        <div class="card p-6 flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-[8px] bg-[#111318] text-white flex items-center justify-center font-bold text-sm font-['Space_Grotesk'] mb-4 shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-bold text-xs font-['Space_Grotesk'] mb-3.5 shadow-sm">
               02
             </div>
-            <h3 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
+            <h3 class="text-sm font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
               Access 360° Portal
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
               Explore your live dashboard with today's timetable, current attendance percentages, issued books, and urgent announcements.
             </p>
           </div>
-          <div class="mt-6 pt-4 border-t border-[#E5E7EB] text-[11px] font-semibold text-[#111318]">
+          <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] text-[11px] font-semibold text-[var(--text-primary)]">
             Real-Time Feed →
           </div>
         </div>
 
         <!-- Step 3 -->
-        <div class="p-6 rounded-[12px] bg-[#FAFAFB] border border-[#E5E7EB] scroll-reveal delay-300 flex flex-col justify-between">
+        <div class="card p-6 flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-[8px] bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-sm font-['Space_Grotesk'] mb-4 shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-xs font-['Space_Grotesk'] mb-3.5 shadow-sm">
               03
             </div>
-            <h3 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
+            <h3 class="text-sm font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
               Check In & Excel
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
               Punch lecture attendance codes from your smartphone, complete graded quizzes, submit assignments, and track term fees.
             </p>
           </div>
-          <div class="mt-6 pt-4 border-t border-[#E5E7EB] text-[11px] font-semibold text-[var(--accent-primary)]">
+          <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] text-[11px] font-semibold text-[var(--accent-primary)]">
             Continuous Progress →
           </div>
         </div>
 
         <!-- Step 4 -->
-        <div class="p-6 rounded-[12px] bg-[#FAFAFB] border border-[#E5E7EB] scroll-reveal delay-400 flex flex-col justify-between">
+        <div class="card p-6 flex flex-col justify-between">
           <div>
-            <div class="w-10 h-10 rounded-[8px] bg-[#111318] text-white flex items-center justify-center font-bold text-sm font-['Space_Grotesk'] mb-4 shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 flex items-center justify-center font-bold text-xs font-['Space_Grotesk'] mb-3.5 shadow-sm">
               04
             </div>
-            <h3 class="text-base font-bold text-[#111318] font-['Space_Grotesk'] mb-2">
+            <h3 class="text-sm font-bold text-[var(--text-primary)] font-['Space_Grotesk'] mb-1.5">
               Admin Governance
             </h3>
-            <p class="text-xs text-[#5B5F6B] leading-relaxed">
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
               Administrators maintain complete control — start check-in sessions, manage roster credentials with audit logging, and export reports.
             </p>
           </div>
-          <div class="mt-6 pt-4 border-t border-[#E5E7EB] text-[11px] font-semibold text-[#111318]">
+          <div class="mt-4 pt-3 border-t border-[var(--border-subtle)] text-[11px] font-semibold text-[var(--text-primary)]">
             Audited Oversight →
           </div>
         </div>
@@ -520,60 +592,60 @@
   <!-- =========================================================================
        5. Security & Governance Deep-Dive Section
        ========================================================================= -->
-  <section id="security" class="py-20 lg:py-24 bg-[#FAFAFB] border-b border-[#E5E7EB]">
+  <section id="security" class="py-16 lg:py-24 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="card p-8 sm:p-12 bg-white border border-[#E5E7EB] rounded-[16px] scroll-reveal shadow-sm">
+      <div class="card p-6 sm:p-10 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-xs">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          <div class="lg:col-span-7 space-y-4">
-            <span class="status-pill text-xs font-semibold bg-[#EDE9FE] text-[#6C5CE7] border border-[#DDD6FE]">
+          <div class="lg:col-span-7 space-y-3.5">
+            <span class="status-pill text-xs font-semibold badge-accent">
               <i class="fa-solid fa-shield-halved text-[10px]"></i> Enterprise Architecture
             </span>
-            <h2 class="text-2xl sm:text-3xl font-bold text-[#111318] font-['Space_Grotesk'] leading-tight">
+            <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] font-['Space_Grotesk'] leading-tight">
               Institutional Security Built Into Every Request
             </h2>
-            <p class="text-xs sm:text-sm text-[#5B5F6B] leading-relaxed">
+            <p class="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
               Academic data demands uncompromising privacy. CampusPulse implements strict defense-in-depth principles across authentication, session management, and admin delegation.
             </p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-xs">
-              <div class="p-3.5 rounded-[8px] bg-[#FAFAFB] border border-[#E5E7EB]">
-                <p class="font-bold text-[#111318] flex items-center gap-2">
-                  <i class="fa-solid fa-lock text-[#6C5CE7]"></i>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-xs">
+              <div class="p-3.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)]">
+                <p class="font-bold text-[var(--text-primary)] flex items-center gap-2">
+                  <i class="fa-solid fa-lock text-[var(--accent-primary)]"></i>
                   <span>5-Attempt Lockout</span>
                 </p>
-                <p class="text-[#5B5F6B] mt-1 text-[11px]">
+                <p class="text-[var(--text-secondary)] mt-1 text-[11px]">
                   Brute force attempts automatically trigger a 15-minute freeze on suspicious accounts.
                 </p>
               </div>
 
-              <div class="p-3.5 rounded-[8px] bg-[#FAFAFB] border border-[#E5E7EB]">
-                <p class="font-bold text-[#111318] flex items-center gap-2">
-                  <i class="fa-solid fa-clock text-[#1E9E57]"></i>
+              <div class="p-3.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)]">
+                <p class="font-bold text-[var(--text-primary)] flex items-center gap-2">
+                  <i class="fa-solid fa-clock text-green-500"></i>
                   <span>60-Min Inactivity Timeout</span>
                 </p>
-                <p class="text-[#5B5F6B] mt-1 text-[11px]">
+                <p class="text-[var(--text-secondary)] mt-1 text-[11px]">
                   Configurable rolling sessions ensure unattended terminals auto-expire cleanly.
                 </p>
               </div>
 
-              <div class="p-3.5 rounded-[8px] bg-[#FAFAFB] border border-[#E5E7EB]">
-                <p class="font-bold text-[#111318] flex items-center gap-2">
-                  <i class="fa-solid fa-key text-[#E08E00]"></i>
+              <div class="p-3.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)]">
+                <p class="font-bold text-[var(--text-primary)] flex items-center gap-2">
+                  <i class="fa-solid fa-key text-amber-500"></i>
                   <span>Admin Password Guard</span>
                 </p>
-                <p class="text-[#5B5F6B] mt-1 text-[11px]">
-                  Changing a student's email or resetting a password requires acting-admin password confirmation.
+                <p class="text-[var(--text-secondary)] mt-1 text-[11px]">
+                  Modifying student records or resetting passwords requires acting-admin password verification.
                 </p>
               </div>
 
-              <div class="p-3.5 rounded-[8px] bg-[#FAFAFB] border border-[#E5E7EB]">
-                <p class="font-bold text-[#111318] flex items-center gap-2">
-                  <i class="fa-solid fa-file-shield text-[#E5384B]"></i>
+              <div class="p-3.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)]">
+                <p class="font-bold text-[var(--text-primary)] flex items-center gap-2">
+                  <i class="fa-solid fa-file-shield text-rose-500"></i>
                   <span>Immutable Audit Trail</span>
                 </p>
-                <p class="text-[#5B5F6B] mt-1 text-[11px]">
+                <p class="text-[var(--text-secondary)] mt-1 text-[11px]">
                   Every credential alteration and admin account creation is logged with timestamps.
                 </p>
               </div>
@@ -581,19 +653,19 @@
           </div>
 
           <div class="lg:col-span-5 flex justify-center">
-            <div class="w-full max-w-sm p-6 rounded-[12px] bg-[#FAFAFB] border border-[#E5E7EB] text-center space-y-4">
-              <div class="w-16 h-16 rounded-full bg-[#EDE9FE] text-[#6C5CE7] flex items-center justify-center text-3xl mx-auto shadow-sm">
+            <div class="w-full max-w-sm p-6 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center space-y-3.5">
+              <div class="w-14 h-14 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-[var(--accent-primary)] flex items-center justify-center text-2xl mx-auto shadow-xs">
                 <i class="fa-solid fa-user-lock"></i>
               </div>
-              <h3 class="text-base font-bold text-[#111318] font-['Space_Grotesk']">
-                Two-Tier Hierarchy
+              <h3 class="text-sm font-bold text-[var(--text-primary)] font-['Space_Grotesk']">
+                Two-Tier Governance
               </h3>
-              <p class="text-xs text-[#5B5F6B]">
-                Staff Admins handle academics. Super Admins govern access. Role spoofing on signup is strictly prohibited.
+              <p class="text-xs text-[var(--text-secondary)]">
+                Staff Admins handle academics and rosters. Super Admins govern institutional settings. Role spoofing is strictly blocked.
               </p>
-              <div class="pt-2">
-                <a href="/login" class="btn-primary w-full py-2.5 text-xs font-semibold rounded-[8px] flex items-center justify-center gap-2">
-                  <span>Sign In as Admin Demo</span>
+              <div class="pt-1">
+                <a href="/login" class="btn-primary w-full py-2.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-2">
+                  <span>Sign In as Admin</span>
                   <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
               </div>
@@ -609,26 +681,26 @@
   <!-- =========================================================================
        6. Call to Action Banner
        ========================================================================= -->
-  <section class="py-16 lg:py-20 bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 scroll-reveal">
-      <h2 class="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] font-['Space_Grotesk'] tracking-tight">
+  <section class="py-14 lg:py-18 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)]">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--text-primary)] font-['Space_Grotesk'] tracking-tight">
         Ready to Launch Your Autonomous Campus?
       </h2>
-      <p class="body-text text-sm sm:text-base text-[var(--text-secondary)] max-w-xl mx-auto">
+      <p class="text-xs sm:text-sm text-[var(--text-secondary)] max-w-xl mx-auto leading-relaxed">
         Deploy your institution in 60 seconds with self-service provisioning, isolated multi-tenant data governance, and complete administrative control.
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
         <a 
           href="/signup" 
-          class="btn-primary py-3.5 px-8 text-sm font-bold rounded-[10px] flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent-glow)]"
+          class="btn-primary py-3 px-7 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm"
         >
           <span>Create Your Institution Free</span>
           <i class="fa-solid fa-arrow-right text-xs"></i>
         </a>
         <a 
           href="/signup?tab=student" 
-          class="btn-secondary py-3.5 px-7 text-sm font-semibold rounded-[10px]"
+          class="btn-secondary py-3 px-6 text-xs sm:text-sm font-semibold rounded-lg"
         >
           Join as Student
         </a>
@@ -642,27 +714,27 @@
   <!-- =========================================================================
        7. Footer
        ========================================================================= -->
-  <footer class="bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] py-12 text-xs text-[var(--text-secondary)]">
+  <footer class="bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] py-10 text-xs text-[var(--text-secondary)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-[var(--border-subtle)]">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-[var(--border-subtle)]">
         
         <!-- Logo & Tagline -->
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-[8px] bg-[var(--accent-primary)] text-white flex items-center justify-center text-base font-bold shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white flex items-center justify-center text-sm font-bold shadow-xs">
             <i class="fa-solid fa-graduation-cap"></i>
           </div>
           <div>
-            <span class="font-bold text-base text-[var(--text-primary)] font-['Space_Grotesk'] leading-none">
+            <span class="font-bold text-sm text-[var(--text-primary)] font-['Space_Grotesk'] leading-none">
               CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span>
             </span>
-            <p class="text-[11px] text-[var(--text-muted)] mt-0.5">Autonomous Multi-Tenant Operating Platform</p>
+            <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Autonomous Multi-Tenant Operating Platform</p>
           </div>
         </div>
 
         <!-- Footer Navigation -->
-        <div class="flex flex-wrap items-center justify-center gap-6 font-semibold">
-          <a href="#features" class="hover:text-[var(--accent-primary)] transition-colors">Features</a>
+        <div class="flex flex-wrap items-center justify-center gap-5 text-xs font-semibold">
+          <a href="#modules" class="hover:text-[var(--accent-primary)] transition-colors">Modules</a>
           <a href="#how-it-works" class="hover:text-[var(--accent-primary)] transition-colors">How It Works</a>
           <a href="#security" class="hover:text-[var(--accent-primary)] transition-colors">Security</a>
           <a href="/login" class="hover:text-[var(--accent-primary)] transition-colors">Sign In</a>
@@ -673,7 +745,7 @@
       </div>
 
       <!-- Copyright Notice -->
-      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#8B8F99]">
+      <div class="pt-5 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[11px] text-[var(--text-muted)]">
         <p>© 2026 CampusPulse College Management Platform. All rights reserved.</p>
         <p class="flex items-center gap-1.5 font-medium">
           <i class="fa-solid fa-shield-halved text-[var(--accent-primary)]"></i>
