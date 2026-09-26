@@ -226,22 +226,80 @@ router.get('/signup', (req, res) => {
   });
 });
 
+// API: Send Email Verification OTP
+router.post('/api/auth/send-verification-otp', (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, message: 'A valid email address is required.' });
+  }
+
+  try {
+    const InstitutionVerificationService = require('../services/institutionVerificationService');
+    const result = InstitutionVerificationService.generateEmailOtp(email);
+    return res.json({
+      success: true,
+      message: `Verification code sent to ${email}. Valid for 10 minutes.`,
+      devOtp: result.otpCode, // Displayed in development/testing mode for quick verification
+      expiresInMinutes: 10
+    });
+  } catch (err) {
+    console.error('[Auth:SendOTP] Error:', err);
+    return res.status(500).json({ success: false, message: 'Could not send verification code. Please try again.' });
+  }
+});
+
+// API: Verify Email OTP
+router.post('/api/auth/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ success: false, message: 'Email and verification code are required.' });
+  }
+
+  try {
+    const InstitutionVerificationService = require('../services/institutionVerificationService');
+    const result = InstitutionVerificationService.verifyEmailOtp(email, otp);
+    if (result.success) {
+      return res.json({ success: true, message: result.message });
+    } else {
+      return res.status(400).json({ success: false, message: result.message });
+    }
+  } catch (err) {
+    console.error('[Auth:VerifyOTP] Error:', err);
+    return res.status(500).json({ success: false, message: 'Verification failed. Please try again.' });
+  }
+});
+
+// API: Institution National AICTE/UGC Registry Lookup
+router.get('/api/institutions/lookup', (req, res) => {
+  try {
+    const query = req.query.q || '';
+    const InstitutionVerificationService = require('../services/institutionVerificationService');
+    const results = InstitutionVerificationService.searchRegistry(query);
+    return res.json({ success: true, results });
+  } catch (err) {
+    console.error('[Auth:Lookup] Error:', err);
+    return res.status(500).json({ success: false, results: [] });
+  }
+});
+
 // POST /register-institution (Dedicated SaaS Endpoint)
 router.post('/register-institution', (req, res) => {
   const { 
     full_name, name, email, password, confirm_password, 
     institution_name, institution_type, institution_code, 
-    short_name, phone, address, default_department 
+    data_region, plan_tier, aicte_code,
+    short_name, phone, address, 
+    terms_accepted, auth_confirmed 
   } = req.body;
 
-  const adminName = full_name || name;
+  const adminName = (full_name || name || '').trim();
   const tenants = db.prepare("SELECT id, name, code, short_name FROM tenants WHERE status = 'active' ORDER BY name ASC").all();
 
-  // Basic validation
+  // Basic presence validation
   if (!adminName || !email || !password || !institution_name) {
     return res.render('signup', {
       title: 'Register Institution - CampusPulse',
-      error: 'Please fill in all required fields (Name, Email, Password, Institution Name).',
+      error: 'Please fill in all required fields (Legal Name, Official Email, Master Password, and Institution Name).',
       success: null,
       tenants,
       activeTab: 'institution',
@@ -251,10 +309,11 @@ router.post('/register-institution', (req, res) => {
     });
   }
 
-  if (password.length < 6) {
+  // Legal and compliance checkboxes check
+  if (!terms_accepted) {
     return res.render('signup', {
       title: 'Register Institution - CampusPulse',
-      error: 'Password must be at least 6 characters long.',
+      error: 'You must review and accept the Terms of Service and Privacy Policy to proceed.',
       success: null,
       tenants,
       activeTab: 'institution',
@@ -264,10 +323,27 @@ router.post('/register-institution', (req, res) => {
     });
   }
 
+  // Password Confirmation check
   if (confirm_password && password !== confirm_password) {
     return res.render('signup', {
       title: 'Register Institution - CampusPulse',
-      error: 'Passwords do not match.',
+      error: 'Passwords do not match. Please verify your master password.',
+      success: null,
+      tenants,
+      activeTab: 'institution',
+      selectedTenantId: 'tenant_default',
+      formData: req.body,
+      layout: false
+    });
+  }
+
+  // Enterprise Password Policy Enforcement (Min 12 chars, upper, lower, number, special)
+  const InstitutionVerificationService = require('../services/institutionVerificationService');
+  const pwdEval = InstitutionVerificationService.evaluatePasswordStrength(password);
+  if (!pwdEval.isValid) {
+    return res.render('signup', {
+      title: 'Register Institution - CampusPulse',
+      error: `Password Policy Violation: ${pwdEval.errors.join(' ')}`,
       success: null,
       tenants,
       activeTab: 'institution',
@@ -285,10 +361,12 @@ router.post('/register-institution', (req, res) => {
       institutionName: institution_name,
       institutionType: institution_type || 'college',
       institutionCode: institution_code || null,
+      dataRegion: data_region || 'in-west-mumbai',
+      planTier: plan_tier || 'professional',
+      aicteCode: aicte_code || null,
       shortName: short_name || null,
       phone: phone || null,
-      address: address || null,
-      defaultDepartment: (default_department && default_department.trim()) ? default_department.trim() : null
+      address: address || null
     });
 
     // Automatically authenticate the new institution owner
@@ -304,7 +382,7 @@ router.post('/register-institution', (req, res) => {
     req.session.tenant = result.tenant;
 
     // Direct to onboarding wizard
-    return res.redirect('/onboarding/wizard?step=1&success=' + encodeURIComponent('Institution created successfully!'));
+    return res.redirect('/onboarding/wizard?step=1&success=' + encodeURIComponent('Institution registered successfully! Welcome to CampusPulse.'));
   } catch (err) {
     console.error('Institution registration error:', err);
     return res.render('signup', {

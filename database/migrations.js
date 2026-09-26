@@ -347,6 +347,7 @@ function runMigrations() {
   `);
 
   // Ensure owner_user_id and institution_type columns exist in tenants
+  // Ensure owner_user_id, institution_type, data_region, plan_tier, verification_status, and aicte_code columns exist in tenants
   try {
     const tenantCols = db.prepare("PRAGMA table_info(tenants)").all().map(c => c.name);
     if (!tenantCols.includes('owner_user_id')) {
@@ -355,9 +356,35 @@ function runMigrations() {
     if (!tenantCols.includes('institution_type')) {
       db.exec("ALTER TABLE tenants ADD COLUMN institution_type TEXT DEFAULT 'college';");
     }
+    if (!tenantCols.includes('data_region')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN data_region TEXT DEFAULT 'in-west-mumbai';");
+    }
+    if (!tenantCols.includes('plan_tier')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN plan_tier TEXT DEFAULT 'professional';");
+    }
+    if (!tenantCols.includes('verification_status')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN verification_status TEXT DEFAULT 'verified';");
+    }
+    if (!tenantCols.includes('aicte_code')) {
+      db.exec("ALTER TABLE tenants ADD COLUMN aicte_code TEXT;");
+    }
   } catch (err) {
     // Non-fatal
   }
+
+  // Create email_verifications table for OTP verification
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS email_verifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      otp_code TEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      is_verified INTEGER DEFAULT 0,
+      attempts INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_email_verif_lookup ON email_verifications(email, otp_code);
+  `);
 
   // Ensure default tenant exists
   const defaultTenant = db.prepare("SELECT id FROM tenants WHERE id = 'tenant_default'").get();

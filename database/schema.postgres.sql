@@ -43,8 +43,23 @@ CREATE TABLE IF NOT EXISTS tenants (
   academic_year VARCHAR(32) DEFAULT '2025-2026',
   owner_user_id BIGINT,
   institution_type VARCHAR(64) DEFAULT 'college',
+  data_region VARCHAR(64) DEFAULT 'in-west-mumbai',
+  plan_tier VARCHAR(64) DEFAULT 'professional',
+  verification_status VARCHAR(64) DEFAULT 'verified',
+  aicte_code VARCHAR(64),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3.1B Email Verifications
+CREATE TABLE IF NOT EXISTS email_verifications (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_code VARCHAR(16) NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  is_verified SMALLINT DEFAULT 0,
+  attempts INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3.2 Departments (Tenant Organizational Hierarchy)

@@ -43,11 +43,20 @@ const tenantService = {
    * Public Self-Service Institution Registration & Owner Provisioning
    * Transactional, secure, and derives owner role on server-side
    */
-  registerInstitution({ fullName, email, password, institutionName, institutionType, institutionCode, shortName, phone, address, defaultDepartment }) {
-    if (!fullName || !fullName.trim()) throw new Error('Full name is required.');
-    if (!email || !email.trim()) throw new Error('Email address is required.');
-    if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
-    if (!institutionName || !institutionName.trim()) throw new Error('Institution name is required.');
+  registerInstitution({ 
+    fullName, email, password, institutionName, institutionType, institutionCode, 
+    shortName, phone, address, defaultDepartment, dataRegion, planTier, verificationStatus, aicteCode 
+  }) {
+    if (!fullName || !fullName.trim()) throw new Error('Full legal name is required.');
+    if (!email || !email.trim()) throw new Error('Official email address is required.');
+    if (!institutionName || !institutionName.trim()) throw new Error('Official institution name is required.');
+
+    // Enforce 12-char enterprise password policy
+    const InstitutionVerificationService = require('./institutionVerificationService');
+    const pwdEval = InstitutionVerificationService.evaluatePasswordStrength(password);
+    if (!pwdEval.isValid) {
+      throw new Error(`Password policy violation: ${pwdEval.errors.join(' ')}`);
+    }
 
     const cleanEmail = email.trim().toLowerCase();
 
@@ -57,12 +66,17 @@ const tenantService = {
       throw new Error(`An account with email "${cleanEmail}" already exists.`);
     }
 
+    // National Registry validation / Auto-categorization
+    const verifiedData = InstitutionVerificationService.verifyInstitution(institutionName, institutionCode);
+    const finalAicteCode = aicteCode || verifiedData.aicteCode || null;
+    const finalVerificationStatus = verificationStatus || verifiedData.status || 'verified';
+    const finalDataRegion = dataRegion || 'in-west-mumbai';
+    const finalPlanTier = planTier || 'professional';
+
     // Generate or clean institutional code
     let cleanCode = institutionCode ? institutionCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '') : '';
     if (!cleanCode) {
-      // Derive 4-8 uppercase characters from institution name
-      const derived = institutionName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
-      cleanCode = derived || 'COLLEGE';
+      cleanCode = verifiedData.suggestedCode || institutionName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6) || 'COLLEGE';
     }
 
     // Ensure uniqueness of code and tenant_id
@@ -87,8 +101,10 @@ const tenantService = {
       db.prepare(`
         INSERT INTO tenants (
           id, name, short_name, code, subdomain, email, phone, address,
-          primary_color, secondary_color, academic_year, status, institution_type, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, datetime('now'), datetime('now'))
+          primary_color, secondary_color, academic_year, status, institution_type,
+          data_region, plan_tier, verification_status, aicte_code,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `).run(
         tenantId,
         institutionName.trim(),
@@ -101,7 +117,11 @@ const tenantService = {
         '#6C5CE7',
         '#111318',
         '2025-2026',
-        institutionType || 'college'
+        institutionType || 'college',
+        finalDataRegion,
+        finalPlanTier,
+        finalVerificationStatus,
+        finalAicteCode
       );
 
       // 2. Insert Owner / Tenant Admin User

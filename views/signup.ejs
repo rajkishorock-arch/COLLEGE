@@ -23,7 +23,7 @@
   <!-- Google Fonts Pairing: Space Grotesk + Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -32,14 +32,14 @@
 <body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col justify-between p-4 py-6 sm:py-10 transition-colors duration-200">
 
   <!-- Header with Brand & Theme Toggle -->
-  <div class="max-w-2xl w-full mx-auto flex items-center justify-between mb-6 fade-slide-up">
+  <div class="max-w-3xl w-full mx-auto flex items-center justify-between mb-6 fade-slide-up">
     <a href="/" class="flex items-center gap-2.5 group">
       <div class="w-10 h-10 rounded-[10px] bg-[var(--accent-primary)] text-white flex items-center justify-center text-lg shadow-md shadow-[var(--accent-glow)] group-hover:scale-105 transition-transform">
         <i class="fa-solid fa-graduation-cap"></i>
       </div>
       <div>
         <span class="text-xl font-bold font-['Space_Grotesk'] text-[var(--text-primary)] tracking-tight">CAMPUS<span class="text-[var(--accent-primary)]">PULSE</span></span>
-        <span class="block text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">Autonomous SaaS Platform</span>
+        <span class="block text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">Autonomous Higher Education SaaS</span>
       </div>
     </a>
 
@@ -49,8 +49,8 @@
   </div>
 
   <!-- Form Card Container -->
-  <div class="w-full max-w-2xl mx-auto">
-    <div class="card p-6 sm:p-8 fade-slide-up stagger-1">
+  <div class="w-full max-w-3xl mx-auto">
+    <div class="card p-6 sm:p-9 fade-slide-up stagger-1 shadow-xl border border-[var(--border-subtle)]">
       
       <!-- Tab Switcher (Institution vs Student) -->
       <div class="flex items-center p-1 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] mb-8">
@@ -61,8 +61,8 @@
           class="flex-1 py-2.5 px-3 rounded-[8px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all <%= (!activeTab || activeTab === 'institution') ? 'bg-[var(--bg-surface)] text-[var(--accent-primary)] shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]' %>"
         >
           <i class="fa-solid fa-building-columns"></i>
-          <span>Register New Institution</span>
-          <span class="hidden md:inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[rgba(108,92,231,0.12)] text-[var(--accent-primary)]">SaaS Owner</span>
+          <span>Register Institution</span>
+          <span class="hidden md:inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[rgba(108,92,231,0.12)] text-[var(--accent-primary)]">Multi-Step</span>
         </button>
 
         <button 
@@ -78,38 +78,57 @@
 
       <!-- Error Alert -->
       <% if (typeof error !== 'undefined' && error) { %>
-        <div class="mb-6 p-4 rounded-[8px] bg-[#FEECEE] dark:bg-red-950/40 border border-[var(--danger)] text-[#E5384B] dark:text-red-400 text-xs sm:text-sm font-medium flex items-center gap-3">
-          <i class="fa-solid fa-circle-exclamation text-base shrink-0"></i>
+        <div class="mb-6 p-4 rounded-[10px] bg-[#FEECEE] dark:bg-red-950/40 border border-[var(--danger)] text-[#E5384B] dark:text-red-400 text-xs sm:text-sm font-medium flex items-start gap-3">
+          <i class="fa-solid fa-circle-exclamation text-base shrink-0 mt-0.5"></i>
           <span><%= error %></span>
         </div>
       <% } %>
 
-      <!-- TAB 1: REGISTER INSTITUTION (Self-Service SaaS) -->
+      <!-- TAB 1: REGISTER INSTITUTION (Enterprise 3-Step Guided Flow) -->
       <div id="tab-content-institution" class="<%= (!activeTab || activeTab === 'institution') ? '' : 'hidden' %>">
-        <div class="mb-6">
-          <h2 class="text-2xl font-bold text-[var(--text-primary)] tracking-tight font-['Space_Grotesk']">
-            Create Your Institution
-          </h2>
-          <p class="text-sm text-[var(--text-secondary)] mt-1">
-            Register your college, university, or academy. You will automatically become the institution owner and tenant administrator.
-          </p>
+        
+        <!-- Step Progress Indicator -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-2">
+            <span id="step-indicator-text" class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+              Step 1 of 3: Administrator Identity & Security
+            </span>
+            <span id="step-percent-text" class="text-xs font-semibold text-[var(--text-muted)]">33% Completed</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-[var(--bg-surface-hover)] overflow-hidden">
+            <div id="step-progress-bar" class="h-full bg-[var(--accent-primary)] transition-all duration-300 rounded-full" style="width: 33.33%;"></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 mt-3 text-center text-[11px] font-medium text-[var(--text-secondary)]">
+            <div id="step-label-1" class="font-bold text-[var(--accent-primary)]">1. Admin Identity</div>
+            <div id="step-label-2" class="text-[var(--text-muted)]">2. Institution & Region</div>
+            <div id="step-label-3" class="text-[var(--text-muted)]">3. Plan & Compliance</div>
+          </div>
         </div>
 
-        <form action="/register-institution" method="POST" class="space-y-5">
+        <form id="institution-signup-form" action="/register-institution" method="POST">
           <input type="hidden" name="signup_type" value="institution">
 
-          <!-- Section: Administrator Identity -->
-          <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] flex items-center gap-2">
-              <i class="fa-solid fa-user-shield"></i>
-              <span>1. Institution Owner / Administrator Identity</span>
-            </h3>
+          <!-- ========================================== -->
+          <!-- STEP 1: ADMINISTRATOR IDENTITY & SECURITY  -->
+          <!-- ========================================== -->
+          <div id="step-1-content" class="space-y-5">
+            <div class="border-b border-[var(--border-subtle)] pb-3">
+              <h2 class="text-xl font-bold font-['Space_Grotesk'] text-[var(--text-primary)]">
+                Institution Administrator Identity
+              </h2>
+              <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">
+                Enter your official identity details. You will become the verified tenant owner with full administrative authority.
+              </p>
+            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="admin_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Your Full Legal Name *
-                </label>
+            <!-- Full Legal Name -->
+            <div>
+              <label for="admin_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                Full Legal Name *
+              </label>
+              <div class="relative">
+                <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
                 <input 
                   type="text" 
                   id="admin_name" 
@@ -117,90 +136,267 @@
                   required 
                   placeholder="e.g. Dr. Arthur Pendelton"
                   value="<%= typeof formData !== 'undefined' && (formData.full_name || formData.name) ? (formData.full_name || formData.name) : '' %>"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
-                />
-              </div>
-
-              <div>
-                <label for="admin_email" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Official / Work Email *
-                </label>
-                <input 
-                  type="email" 
-                  id="admin_email" 
-                  name="email" 
-                  required 
-                  placeholder="dean@college.edu"
-                  value="<%= typeof formData !== 'undefined' && formData.email ? formData.email : '' %>"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
+                  class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
                 />
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="admin_password" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Master Password (min 6 chars) *
+            <!-- Official Email & OTP Verification -->
+            <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-3">
+              <div class="flex items-center justify-between">
+                <label for="admin_email" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Official / Institutional Email *
                 </label>
+                <span id="email-verified-badge" class="hidden text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check"></i> Verified
+                </span>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2">
+                <div class="relative flex-1">
+                  <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
+                  <input 
+                    type="email" 
+                    id="admin_email" 
+                    name="email" 
+                    required 
+                    placeholder="dean@college.edu or principal@college.edu.in"
+                    value="<%= typeof formData !== 'undefined' && formData.email ? formData.email : '' %>"
+                    class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  id="btn-send-otp" 
+                  onclick="requestEmailOtp()" 
+                  class="px-4 py-2.5 rounded-[8px] bg-[var(--bg-surface)] hover:bg-[var(--accent-glow)] border border-[var(--border-subtle)] text-xs font-bold text-[var(--accent-primary)] hover:border-[var(--accent-primary)] transition-all shrink-0 flex items-center justify-center gap-1.5"
+                >
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span>Send OTP</span>
+                </button>
+              </div>
+
+              <!-- OTP Verification Inline Container -->
+              <div id="otp-verify-box" class="hidden pt-3 border-t border-[var(--border-subtle)] space-y-2">
+                <div class="flex items-center justify-between text-xs text-[var(--text-secondary)]">
+                  <span>Enter 6-digit code sent to your email:</span>
+                  <span id="otp-timer" class="font-mono text-amber-500 font-semibold">10:00</span>
+                </div>
+
+                <div class="flex gap-2">
+                  <input 
+                    type="text" 
+                    id="otp-input" 
+                    maxlength="6" 
+                    placeholder="123456" 
+                    class="w-36 tracking-widest font-mono text-center px-3 py-2 rounded-[8px] border text-sm uppercase font-bold"
+                  />
+                  <button 
+                    type="button" 
+                    onclick="confirmEmailOtp()" 
+                    class="btn-primary px-4 py-2 text-xs font-bold"
+                  >
+                    Verify Code
+                  </button>
+                </div>
+
+                <!-- Dev Auto-Fill Helper for Quick Demo/Testing -->
+                <div id="dev-otp-pill" class="hidden text-[11px] text-[var(--text-muted)] flex items-center gap-2">
+                  <i class="fa-solid fa-terminal text-[var(--accent-primary)]"></i>
+                  <span>Test OTP generated:</span>
+                  <button 
+                    type="button" 
+                    id="dev-otp-code-btn" 
+                    onclick="fillDevOtp()" 
+                    class="px-2 py-0.5 rounded bg-[rgba(108,92,231,0.15)] text-[var(--accent-primary)] font-mono font-bold hover:underline"
+                  >
+                    123456
+                  </button>
+                </div>
+                <div id="otp-status-msg" class="text-xs font-medium"></div>
+              </div>
+            </div>
+
+            <!-- Master Password with Strict 12-char Policy & Live Strength Meter -->
+            <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-3">
+              <div class="flex items-center justify-between">
+                <label for="admin_password" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Master Admin Password (Min 12 characters) *
+                </label>
+                <button 
+                  type="button" 
+                  onclick="togglePasswordVisibility('admin_password', 'pwd-toggle-icon')" 
+                  class="text-xs text-[var(--accent-primary)] hover:underline flex items-center gap-1 font-semibold"
+                >
+                  <i id="pwd-toggle-icon" class="fa-solid fa-eye text-[11px]"></i>
+                  <span>Show</span>
+                </button>
+              </div>
+
+              <div class="relative">
+                <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
                 <input 
                   type="password" 
                   id="admin_password" 
                   name="password" 
                   required 
-                  minlength="6"
-                  placeholder="••••••••"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
+                  minlength="12"
+                  oninput="updatePasswordStrength()"
+                  placeholder="Create a strong 12+ character master password"
+                  class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
                 />
               </div>
 
-              <div>
+              <!-- Password Strength Bar -->
+              <div class="space-y-1.5 pt-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-[var(--text-muted)] font-medium">Security Strength:</span>
+                  <span id="pwd-strength-label" class="font-bold text-red-500">Very Weak</span>
+                </div>
+                <div class="w-full h-1.5 rounded-full bg-[var(--bg-surface)] overflow-hidden">
+                  <div id="pwd-strength-bar" class="h-full bg-red-500 transition-all duration-300" style="width: 15%;"></div>
+                </div>
+              </div>
+
+              <!-- Live Requirement Checkpoints -->
+              <div class="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
+                <div id="chk-length" class="text-[var(--text-muted)] flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle text-[8px]"></i> At least 12 characters
+                </div>
+                <div id="chk-cases" class="text-[var(--text-muted)] flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle text-[8px]"></i> Upper & lowercase letters
+                </div>
+                <div id="chk-number" class="text-[var(--text-muted)] flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle text-[8px]"></i> At least 1 number (0-9)
+                </div>
+                <div id="chk-special" class="text-[var(--text-muted)] flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle text-[8px]"></i> At least 1 symbol (!@#$%^&*)
+                </div>
+              </div>
+
+              <!-- Confirm Password -->
+              <div class="pt-2">
                 <label for="admin_confirm_password" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Confirm Password *
+                  Confirm Master Password *
                 </label>
+                <div class="relative">
+                  <i class="fa-solid fa-key absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
+                  <input 
+                    type="password" 
+                    id="admin_confirm_password" 
+                    name="confirm_password" 
+                    required 
+                    minlength="12"
+                    oninput="checkPasswordMatch()"
+                    placeholder="Repeat master password"
+                    class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
+                  />
+                </div>
+                <div id="pwd-match-msg" class="text-[11px] font-medium mt-1 text-red-500 hidden">Passwords do not match</div>
+              </div>
+            </div>
+
+            <!-- Contact Phone -->
+            <div>
+              <label for="inst_phone" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                Primary Contact / Mobile Phone *
+              </label>
+              <div class="relative">
+                <i class="fa-solid fa-phone absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
                 <input 
-                  type="password" 
-                  id="admin_confirm_password" 
-                  name="confirm_password" 
-                  required 
-                  minlength="6"
-                  placeholder="••••••••"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
+                  type="text" 
+                  id="inst_phone" 
+                  name="phone" 
+                  required
+                  placeholder="+91 (987) 654-3210 or +1 (555) 234-5678"
+                  value="<%= typeof formData !== 'undefined' && formData.phone ? formData.phone : '' %>"
+                  class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
                 />
               </div>
             </div>
+
+            <!-- Navigation: Step 1 -> 2 -->
+            <button 
+              type="button" 
+              onclick="goToStep(2)" 
+              class="btn-primary w-full py-3.5 text-sm font-bold shadow-lg shadow-[var(--accent-glow)] flex items-center justify-center gap-2"
+            >
+              <span>Continue to Institution Details</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
           </div>
 
-          <!-- Section: Institution Profile -->
-          <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] flex items-center gap-2">
-              <i class="fa-solid fa-school"></i>
-              <span>2. Institutional Credentials & Data Plane</span>
-            </h3>
+          <!-- ========================================== -->
+          <!-- STEP 2: INSTITUTION PROFILE & DATA PLANE   -->
+          <!-- ========================================== -->
+          <div id="step-2-content" class="hidden space-y-5">
+            <div class="border-b border-[var(--border-subtle)] pb-3">
+              <h2 class="text-xl font-bold font-['Space_Grotesk'] text-[var(--text-primary)]">
+                Institution Credentials & Data Residency
+              </h2>
+              <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">
+                Configure your college registry details and select your dedicated regional data plane.
+              </p>
+            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="inst_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+            <!-- Institution Name with Live AICTE Registry Auto-Search -->
+            <div class="relative">
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="inst_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
                   Official Institution / College Name *
                 </label>
+                <span id="aicte-badge" class="hidden text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <i class="fa-solid fa-award"></i> AICTE / UGC Recognized
+                </span>
+              </div>
+
+              <div class="relative">
+                <i class="fa-solid fa-building-columns absolute left-3.5 top-3.5 text-xs text-[var(--text-muted)]"></i>
                 <input 
                   type="text" 
                   id="inst_name" 
                   name="institution_name" 
                   required 
-                  placeholder="e.g. Stanford Polytechnic Institute"
+                  oninput="handleInstitutionInput(this.value)"
+                  placeholder="e.g. Indian Institute of Technology Bombay or Stanford University"
                   value="<%= typeof formData !== 'undefined' && formData.institution_name ? formData.institution_name : '' %>"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
+                  class="w-full pl-9 pr-4 py-2.5 rounded-[8px] border text-sm"
+                  autocomplete="off"
                 />
+              </div>
+
+              <!-- Live Autocomplete Dropdown -->
+              <div id="inst-lookup-dropdown" class="hidden absolute z-30 left-0 right-0 mt-1 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[8px] shadow-xl overflow-hidden divide-y divide-[var(--border-subtle)]">
+                <!-- Injected via JavaScript -->
+              </div>
+              <input type="hidden" id="aicte_code" name="aicte_code" value="">
+            </div>
+
+            <!-- Institution Code & Type -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="inst_code" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                  Institution Code *
+                </label>
+                <input 
+                  type="text" 
+                  id="inst_code" 
+                  name="institution_code" 
+                  required
+                  placeholder="e.g. IITB, BITS, STANFORD"
+                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm uppercase font-mono font-bold"
+                />
+                <p class="text-[11px] text-[var(--text-muted)] mt-1">Unique tenant identifier used for student logins.</p>
               </div>
 
               <div>
                 <label for="inst_type" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Institution Type
+                  Institution Type *
                 </label>
                 <select id="inst_type" name="institution_type" class="w-full px-4 py-2.5 rounded-[8px] border text-sm">
+                  <option value="engineering" selected>Institute of Technology / Engineering</option>
                   <option value="university">University</option>
-                  <option value="college" selected>College of Higher Education</option>
-                  <option value="engineering">Institute of Technology / Engineering</option>
+                  <option value="college">College of Higher Education</option>
                   <option value="medical">Medical & Health Sciences Institute</option>
                   <option value="business">Business & Management School</option>
                   <option value="academy">Polytechnic / Academy</option>
@@ -208,66 +404,210 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Data Plane / Region Selector (Critique Item 2A) -->
+            <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-3">
               <div>
-                <label for="inst_code" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Institution Code <span class="text-[var(--text-muted)] font-normal">(Optional)</span>
+                <label class="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Data Plane & Residency Region *
                 </label>
-                <input 
-                  type="text" 
-                  id="inst_code" 
-                  name="institution_code" 
-                  placeholder="e.g. SPI, MIT, OXFORD"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm uppercase"
-                />
+                <p class="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  Select where your student records, grades, and audit trail are physically stored and processed.
+                </p>
               </div>
 
-              <div>
-                <label for="inst_phone" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                  Contact Phone <span class="text-[var(--text-muted)] font-normal">(Optional)</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Region 1: India -->
+                <label class="relative flex flex-col p-3 rounded-[8px] border-2 border-[var(--accent-primary)] bg-[var(--bg-surface)] cursor-pointer hover:border-[var(--accent-primary)] transition-all">
+                  <input type="radio" name="data_region" value="in-west-mumbai" checked class="sr-only">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-base">🇮🇳</span>
+                    <span class="text-xs font-bold text-[var(--text-primary)]">India (Mumbai)</span>
+                  </div>
+                  <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mb-1">DPDP Act Compliant</span>
+                  <span class="text-[10px] text-[var(--text-muted)]">Ultra-low latency (<20ms). Complete national data localization.</span>
                 </label>
-                <input 
-                  type="text" 
-                  id="inst_phone" 
-                  name="phone" 
-                  placeholder="+1 (555) 234-5678"
-                  class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
-                />
+
+                <!-- Region 2: Europe -->
+                <label class="relative flex flex-col p-3 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer hover:border-[var(--accent-primary)] transition-all">
+                  <input type="radio" name="data_region" value="eu-central-frankfurt" class="sr-only">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-base">🇪🇺</span>
+                    <span class="text-xs font-bold text-[var(--text-primary)]">Europe (Frankfurt)</span>
+                  </div>
+                  <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold mb-1">GDPR Certified</span>
+                  <span class="text-[10px] text-[var(--text-muted)]">Strict European sovereignty & encryption standards.</span>
+                </label>
+
+                <!-- Region 3: US -->
+                <label class="relative flex flex-col p-3 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer hover:border-[var(--accent-primary)] transition-all">
+                  <input type="radio" name="data_region" value="us-east-virginia" class="sr-only">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-base">🇺🇸</span>
+                    <span class="text-xs font-bold text-[var(--text-primary)]">US (N. Virginia)</span>
+                  </div>
+                  <span class="text-[10px] text-sky-600 dark:text-sky-400 font-semibold mb-1">SOC 2 / FERPA</span>
+                  <span class="text-[10px] text-[var(--text-muted)]">Global high-availability for international programs.</span>
+                </label>
               </div>
             </div>
 
+            <!-- Campus Address -->
             <div>
-              <label for="dept_name" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
-                Initial Department <span class="font-normal text-[var(--text-muted)] lowercase">(optional)</span>
+              <label for="inst_address" class="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                Campus Physical Address <span class="font-normal text-[var(--text-muted)] lowercase">(optional)</span>
               </label>
               <input 
                 type="text" 
-                id="dept_name" 
-                name="default_department" 
-                value="<%= typeof formData !== 'undefined' && formData.default_department ? formData.default_department : '' %>"
-                placeholder="e.g. Civil, Medicine, English, or leave empty"
+                id="inst_address" 
+                name="address" 
+                placeholder="e.g. 100 University Boulevard, Tech Campus, Mumbai"
                 class="w-full px-4 py-2.5 rounded-[8px] border text-sm"
               />
-              <p class="text-[11px] text-[var(--text-muted)] mt-1">
-                Optional: You can configure departments tailored to your academic discipline in Step 2 of the setup wizard.
-              </p>
+            </div>
+
+            <!-- Navigation: Step 2 Buttons -->
+            <div class="flex items-center gap-3">
+              <button 
+                type="button" 
+                onclick="goToStep(1)" 
+                class="px-5 py-3 rounded-[8px] border border-[var(--border-subtle)] text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] transition-all"
+              >
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Back
+              </button>
+
+              <button 
+                type="button" 
+                onclick="goToStep(3)" 
+                class="btn-primary flex-1 py-3.5 text-sm font-bold shadow-lg shadow-[var(--accent-glow)] flex items-center justify-center gap-2"
+              >
+                <span>Continue to Plan & Compliance</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+              </button>
             </div>
           </div>
 
-          <div class="p-3.5 rounded-[8px] bg-[rgba(108,92,231,0.06)] border border-[rgba(108,92,231,0.2)] text-xs text-[var(--text-secondary)] flex items-start gap-2.5">
-            <i class="fa-solid fa-lock text-[var(--accent-primary)] mt-0.5"></i>
-            <span>
-              By creating an institution, you will be automatically provisioned as its verified <strong>Tenant Administrator & Owner</strong> with autonomous management authority.
-            </span>
-          </div>
+          <!-- ========================================== -->
+          <!-- STEP 3: SUBSCRIPTION PLAN & COMPLIANCE     -->
+          <!-- ========================================== -->
+          <div id="step-3-content" class="hidden space-y-5">
+            <div class="border-b border-[var(--border-subtle)] pb-3">
+              <h2 class="text-xl font-bold font-['Space_Grotesk'] text-[var(--text-primary)]">
+                Subscription Plan & Compliance Consent
+              </h2>
+              <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">
+                Select your institution's subscription tier. All plans include a 30-day risk-free guarantee.
+              </p>
+            </div>
 
-          <button 
-            type="submit" 
-            class="btn-primary w-full py-3.5 text-base font-bold shadow-lg shadow-[var(--accent-glow)]"
-          >
-            <span>Create Institution & Start Setup</span>
-            <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
-          </button>
+            <!-- Pricing Tiers (Critique Item 2B) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <!-- Tier 1: Starter -->
+              <label class="plan-card relative flex flex-col p-4 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer hover:border-[var(--accent-primary)] transition-all">
+                <input type="radio" name="plan_tier" value="starter" class="sr-only">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-[var(--text-primary)]">Starter Tier</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[var(--text-muted)] font-semibold">1,000 Students</span>
+                </div>
+                <div class="text-lg font-bold text-[var(--text-primary)] mb-2">₹5 Lakhs<span class="text-[10px] font-normal text-[var(--text-muted)]">/yr</span></div>
+                <ul class="text-[11px] text-[var(--text-secondary)] space-y-1 mb-2 flex-1">
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Core Attendance & Timetable</li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Library Catalog & Loans</li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Standard Email Support</li>
+                </ul>
+              </label>
+
+              <!-- Tier 2: Professional (Recommended) -->
+              <label class="plan-card relative flex flex-col p-4 rounded-[10px] border-2 border-[var(--accent-primary)] bg-[rgba(108,92,231,0.04)] cursor-pointer transition-all">
+                <input type="radio" name="plan_tier" value="professional" checked class="sr-only">
+                <div class="absolute -top-2.5 right-3 bg-[var(--accent-primary)] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
+                  Recommended
+                </div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-[var(--accent-primary)]">Professional</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[rgba(108,92,231,0.12)] text-[var(--accent-primary)] font-semibold">5,000 Students</span>
+                </div>
+                <div class="text-lg font-bold text-[var(--text-primary)] mb-2">₹15 Lakhs<span class="text-[10px] font-normal text-[var(--text-muted)]">/yr</span></div>
+                <ul class="text-[11px] text-[var(--text-secondary)] space-y-1 mb-2 flex-1">
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> <strong>All Core Modules</strong></li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> <strong>Predictive Academic AI</strong></li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> <strong>Course Analytics & Heatmaps</strong></li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Priority 24/7 SLA Support</li>
+                </ul>
+              </label>
+
+              <!-- Tier 3: Enterprise -->
+              <label class="plan-card relative flex flex-col p-4 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer hover:border-[var(--accent-primary)] transition-all">
+                <input type="radio" name="plan_tier" value="enterprise" class="sr-only">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-[var(--text-primary)]">Enterprise</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold">Unlimited</span>
+                </div>
+                <div class="text-lg font-bold text-[var(--text-primary)] mb-2">₹30+ Lakhs<span class="text-[10px] font-normal text-[var(--text-muted)]">/yr</span></div>
+                <ul class="text-[11px] text-[var(--text-secondary)] space-y-1 mb-2 flex-1">
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Multi-Campus Federation</li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Custom SIS Integrations</li>
+                  <li><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Dedicated Account Manager</li>
+                </ul>
+              </label>
+            </div>
+
+            <!-- Guarantee Callout -->
+            <div class="p-3 rounded-[8px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5">
+              <i class="fa-solid fa-shield-check text-base text-emerald-600 shrink-0"></i>
+              <span><strong>30-Day Money-Back Guarantee:</strong> Evaluate CampusPulse risk-free. Complete data export available at any time.</span>
+            </div>
+
+            <!-- Legal & Compliance Checkboxes (Critique Item 3) -->
+            <div class="p-4 rounded-[10px] bg-[var(--bg-surface-hover)] border border-[var(--border-subtle)] space-y-3">
+              <div class="flex items-start gap-2.5">
+                <input 
+                  type="checkbox" 
+                  id="terms_accepted" 
+                  name="terms_accepted" 
+                  required 
+                  class="mt-1 w-4 h-4 rounded text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                />
+                <label for="terms_accepted" class="text-xs text-[var(--text-secondary)]">
+                  I accept the 
+                  <a href="#terms-modal" onclick="openModal('terms')" class="text-[var(--accent-primary)] font-bold hover:underline">Terms of Service</a>, 
+                  <a href="#privacy-modal" onclick="openModal('privacy')" class="text-[var(--accent-primary)] font-bold hover:underline">Privacy Policy</a>, and 
+                  <a href="#dpa-modal" onclick="openModal('dpa')" class="text-[var(--accent-primary)] font-bold hover:underline">Data Processing Agreement (DPA)</a>.
+                </label>
+              </div>
+
+              <div class="flex items-start gap-2.5">
+                <input 
+                  type="checkbox" 
+                  id="auth_confirmed" 
+                  name="auth_confirmed" 
+                  required 
+                  class="mt-1 w-4 h-4 rounded text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                />
+                <label for="auth_confirmed" class="text-xs text-[var(--text-secondary)]">
+                  I confirm that I am an authorized administrative officer of this educational institution and acknowledge responsibility for institutional student data governance under national privacy laws.
+                </label>
+              </div>
+            </div>
+
+            <!-- Final Submission Buttons -->
+            <div class="flex items-center gap-3">
+              <button 
+                type="button" 
+                onclick="goToStep(2)" 
+                class="px-5 py-3 rounded-[8px] border border-[var(--border-subtle)] text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-hover)] transition-all"
+              >
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Back
+              </button>
+
+              <button 
+                type="submit" 
+                class="btn-primary flex-1 py-3.5 text-base font-bold shadow-lg shadow-[var(--accent-glow)] flex items-center justify-center gap-2"
+              >
+                <i class="fa-solid fa-rocket text-sm"></i>
+                <span>Register Institution & Start Onboarding</span>
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 
@@ -346,7 +686,7 @@
                 name="roll_no" 
                 required 
                 placeholder="CS-2026-089"
-                class="w-full px-4 py-2.5 rounded-[8px] border text-sm uppercase"
+                class="w-full px-4 py-2.5 rounded-[8px] border text-sm uppercase font-mono font-bold"
               />
             </div>
           </div>
@@ -399,17 +739,17 @@
 
           <button 
             type="submit" 
-            class="btn-primary w-full py-3 text-sm font-semibold"
+            class="btn-primary w-full py-3.5 text-sm font-bold shadow-md shadow-[var(--accent-glow)] flex items-center justify-center gap-2"
           >
             <span>Complete Student Enrollment</span>
-            <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
           </button>
         </form>
       </div>
 
       <!-- Redirect to Sign In -->
       <div class="mt-8 pt-6 border-t border-[var(--border-subtle)] text-center text-xs text-[var(--text-secondary)]">
-        Already have an account? 
+        Already have an institutional account? 
         <a href="/login" class="font-bold text-[var(--accent-primary)] hover:underline ml-1">
           Sign In to Portal
         </a>
@@ -419,12 +759,32 @@
   </div>
 
   <!-- Bottom Brand Footer -->
-  <footer class="text-center text-xs text-[var(--text-muted)] mt-8">
+  <footer class="text-center text-xs text-[var(--text-muted)] mt-8 space-y-1">
     <p>&copy; <%= new Date().getFullYear() %> CampusPulse Enterprise • Autonomous Multi-Tenant Architecture</p>
+    <p class="text-[11px] text-[var(--text-muted)]">Bank-Grade 256-bit Encryption • DPDP Act & GDPR Ready • AICTE Registry Connected</p>
   </footer>
+
+  <!-- Modal for Legal Terms -->
+  <div id="legal-modal" class="fixed inset-0 z-50 bg-black/60 hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+        <h3 id="modal-title" class="text-base font-bold text-[var(--text-primary)]">Policy Details</h3>
+        <button type="button" onclick="closeModal()" class="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="modal-body" class="text-xs text-[var(--text-secondary)] max-h-72 overflow-y-auto space-y-2 leading-relaxed">
+        <!-- Content injected via JavaScript -->
+      </div>
+      <div class="text-right pt-2 border-t border-[var(--border-subtle)]">
+        <button type="button" onclick="closeModal()" class="btn-primary px-4 py-2 text-xs font-bold">I Understand</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/js/main.js"></script>
   <script>
+    // Tab Switcher
     function switchTab(tab) {
       const instBtn = document.getElementById('tab-btn-institution');
       const studBtn = document.getElementById('tab-btn-student');
@@ -442,6 +802,365 @@
         studContent.classList.remove('hidden');
         instContent.classList.add('hidden');
       }
+    }
+
+    // Multi-Step Form Logic
+    let currentStep = 1;
+    function goToStep(step) {
+      // Validate Step 1 before proceeding
+      if (step === 2 && currentStep === 1) {
+        const name = document.getElementById('admin_name').value.trim();
+        const email = document.getElementById('admin_email').value.trim();
+        const pwd = document.getElementById('admin_password').value;
+        const confirmPwd = document.getElementById('admin_confirm_password').value;
+        const phone = document.getElementById('inst_phone').value.trim();
+
+        if (!name || !email || !pwd || !phone) {
+          alert('Please fill in all required fields on Step 1 (Name, Email, Password, Phone).');
+          return;
+        }
+
+        if (pwd.length < 12) {
+          alert('Master Password must be at least 12 characters long according to institutional security policy.');
+          return;
+        }
+
+        if (pwd !== confirmPwd) {
+          alert('Passwords do not match. Please re-enter your password.');
+          return;
+        }
+      }
+
+      // Validate Step 2 before proceeding
+      if (step === 3 && currentStep === 2) {
+        const instName = document.getElementById('inst_name').value.trim();
+        const instCode = document.getElementById('inst_code').value.trim();
+        if (!instName || !instCode) {
+          alert('Please provide your official Institution Name and Institution Code.');
+          return;
+        }
+      }
+
+      currentStep = step;
+
+      // Update step visibility
+      document.getElementById('step-1-content').classList.toggle('hidden', step !== 1);
+      document.getElementById('step-2-content').classList.toggle('hidden', step !== 2);
+      document.getElementById('step-3-content').classList.toggle('hidden', step !== 3);
+
+      // Update progress bar
+      const bar = document.getElementById('step-progress-bar');
+      const text = document.getElementById('step-indicator-text');
+      const pct = document.getElementById('step-percent-text');
+
+      if (step === 1) {
+        bar.style.width = '33.33%';
+        text.innerText = 'Step 1 of 3: Administrator Identity & Security';
+        pct.innerText = '33% Completed';
+        document.getElementById('step-label-1').className = 'font-bold text-[var(--accent-primary)]';
+        document.getElementById('step-label-2').className = 'text-[var(--text-muted)]';
+        document.getElementById('step-label-3').className = 'text-[var(--text-muted)]';
+      } else if (step === 2) {
+        bar.style.width = '66.66%';
+        text.innerText = 'Step 2 of 3: Institution Credentials & Data Region';
+        pct.innerText = '66% Completed';
+        document.getElementById('step-label-1').className = 'text-emerald-500 font-semibold';
+        document.getElementById('step-label-2').className = 'font-bold text-[var(--accent-primary)]';
+        document.getElementById('step-label-3').className = 'text-[var(--text-muted)]';
+      } else if (step === 3) {
+        bar.style.width = '100%';
+        text.innerText = 'Step 3 of 3: Subscription Plan & Compliance';
+        pct.innerText = '100% Ready';
+        document.getElementById('step-label-1').className = 'text-emerald-500 font-semibold';
+        document.getElementById('step-label-2').className = 'text-emerald-500 font-semibold';
+        document.getElementById('step-label-3').className = 'font-bold text-[var(--accent-primary)]';
+      }
+
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    // Password Visibility Toggle
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash text-[11px]';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye text-[11px]';
+      }
+    }
+
+    // Password Strength Meter
+    function updatePasswordStrength() {
+      const pwd = document.getElementById('admin_password').value;
+      const bar = document.getElementById('pwd-strength-bar');
+      const label = document.getElementById('pwd-strength-label');
+
+      const chkLen = pwd.length >= 12;
+      const chkUpper = /[A-Z]/.test(pwd);
+      const chkLower = /[a-z]/.test(pwd);
+      const chkNum = /[0-9]/.test(pwd);
+      const chkSpec = /[^A-Za-z0-9]/.test(pwd);
+
+      updateCheckPill('chk-length', chkLen);
+      updateCheckPill('chk-cases', chkUpper && chkLower);
+      updateCheckPill('chk-number', chkNum);
+      updateCheckPill('chk-special', chkSpec);
+
+      let score = 0;
+      if (chkLen) score += 35;
+      if (chkUpper && chkLower) score += 25;
+      if (chkNum) score += 20;
+      if (chkSpec) score += 20;
+
+      bar.style.width = Math.max(10, score) + '%';
+      if (score >= 90) {
+        bar.className = 'h-full bg-emerald-500 transition-all duration-300';
+        label.className = 'font-bold text-emerald-500';
+        label.innerText = 'Very Strong';
+      } else if (score >= 65) {
+        bar.className = 'h-full bg-amber-500 transition-all duration-300';
+        label.className = 'font-bold text-amber-500';
+        label.innerText = 'Medium';
+      } else {
+        bar.className = 'h-full bg-red-500 transition-all duration-300';
+        label.className = 'font-bold text-red-500';
+        label.innerText = 'Weak (Needs 12+ chars & symbols)';
+      }
+
+      checkPasswordMatch();
+    }
+
+    function updateCheckPill(id, passed) {
+      const el = document.getElementById(id);
+      if (passed) {
+        el.className = 'text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5';
+        el.querySelector('i').className = 'fa-solid fa-check text-[10px]';
+      } else {
+        el.className = 'text-[var(--text-muted)] flex items-center gap-1.5';
+        el.querySelector('i').className = 'fa-solid fa-circle text-[8px]';
+      }
+    }
+
+    function checkPasswordMatch() {
+      const p1 = document.getElementById('admin_password').value;
+      const p2 = document.getElementById('admin_confirm_password').value;
+      const msg = document.getElementById('pwd-match-msg');
+      if (p2.length > 0 && p1 !== p2) {
+        msg.classList.remove('hidden');
+      } else {
+        msg.classList.add('hidden');
+      }
+    }
+
+    // Email OTP Verification
+    let generatedDevOtp = '';
+    async function requestEmailOtp() {
+      const email = document.getElementById('admin_email').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid official email address first.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-send-otp');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        const res = await fetch('/api/auth/send-verification-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('otp-verify-box').classList.remove('hidden');
+          const msg = document.getElementById('otp-status-msg');
+          msg.className = 'text-xs font-medium text-emerald-600 dark:text-emerald-400';
+          msg.innerText = data.message;
+
+          // Dev helper pill
+          if (data.devOtp) {
+            generatedDevOtp = data.devOtp;
+            document.getElementById('dev-otp-pill').classList.remove('hidden');
+            document.getElementById('dev-otp-code-btn').innerText = data.devOtp;
+          }
+
+          startOtpTimer(600);
+        } else {
+          alert(data.message || 'Could not send verification OTP.');
+        }
+      } catch (err) {
+        alert('Network error sending verification code.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Resend OTP';
+      }
+    }
+
+    function fillDevOtp() {
+      if (generatedDevOtp) {
+        document.getElementById('otp-input').value = generatedDevOtp;
+        confirmEmailOtp();
+      }
+    }
+
+    async function confirmEmailOtp() {
+      const email = document.getElementById('admin_email').value.trim();
+      const otp = document.getElementById('otp-input').value.trim();
+      if (!otp) return;
+
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+        const data = await res.json();
+        const msg = document.getElementById('otp-status-msg');
+
+        if (data.success) {
+          msg.className = 'text-xs font-bold text-emerald-600 dark:text-emerald-400';
+          msg.innerText = '✓ ' + data.message;
+          document.getElementById('email-verified-badge').classList.remove('hidden');
+          document.getElementById('btn-send-otp').classList.add('hidden');
+        } else {
+          msg.className = 'text-xs font-semibold text-red-500';
+          msg.innerText = '✗ ' + data.message;
+        }
+      } catch (e) {
+        alert('Verification request failed.');
+      }
+    }
+
+    let timerInterval = null;
+    function startOtpTimer(seconds) {
+      if (timerInterval) clearInterval(timerInterval);
+      const timerEl = document.getElementById('otp-timer');
+      let remaining = seconds;
+
+      timerInterval = setInterval(() => {
+        remaining--;
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        timerEl.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          timerEl.innerText = 'Expired';
+        }
+      }, 1000);
+    }
+
+    // AICTE / UGC National Institution Lookup
+    let lookupDebounce = null;
+    function handleInstitutionInput(val) {
+      clearTimeout(lookupDebounce);
+      const dropdown = document.getElementById('inst-lookup-dropdown');
+
+      if (!val || val.trim().length < 2) {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      lookupDebounce = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/institutions/lookup?q=' + encodeURIComponent(val));
+          const data = await res.json();
+
+          if (data.success && data.results && data.results.length > 0) {
+            dropdown.innerHTML = data.results.map(inst => `
+              <div 
+                onclick="selectInstitution('${inst.name.replace(/'/g, "\\'")}', '${inst.code}', '${inst.aicteCode}', '${inst.type}')" 
+                class="p-3 hover:bg-[var(--bg-surface-hover)] cursor-pointer transition-colors"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-[var(--text-primary)]">${inst.name}</span>
+                  <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
+                    ${inst.aicteCode}
+                  </span>
+                </div>
+                <div class="text-[11px] text-[var(--text-muted)] mt-0.5 flex items-center gap-2">
+                  <span>${inst.category}</span> • <span>${inst.state}</span>
+                </div>
+              </div>
+            `).join('');
+            dropdown.classList.remove('hidden');
+          } else {
+            dropdown.classList.add('hidden');
+          }
+        } catch (e) {
+          dropdown.classList.add('hidden');
+        }
+      }, 250);
+    }
+
+    function selectInstitution(name, code, aicteCode, type) {
+      document.getElementById('inst_name').value = name;
+      document.getElementById('inst_code').value = code;
+      document.getElementById('aicte_code').value = aicteCode;
+      document.getElementById('inst_type').value = type || 'engineering';
+      document.getElementById('inst-lookup-dropdown').classList.add('hidden');
+      document.getElementById('aicte-badge').classList.remove('hidden');
+    }
+
+    // Close autocomplete on click outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('inst-lookup-dropdown');
+      if (!dropdown.contains(e.target) && e.target.id !== 'inst_name') {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Plan Card Selection Styling
+    document.querySelectorAll('.plan-card input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.querySelectorAll('.plan-card').forEach(c => {
+          c.classList.remove('border-2', 'border-[var(--accent-primary)]', 'bg-[rgba(108,92,231,0.04)]');
+          c.classList.add('border', 'border-[var(--border-subtle)]', 'bg-[var(--bg-surface)]');
+        });
+        const card = radio.closest('.plan-card');
+        card.classList.remove('border', 'border-[var(--border-subtle)]');
+        card.classList.add('border-2', 'border-[var(--accent-primary)]', 'bg-[rgba(108,92,231,0.04)]');
+      });
+    });
+
+    // Legal Policy Modals
+    function openModal(type) {
+      const modal = document.getElementById('legal-modal');
+      const title = document.getElementById('modal-title');
+      const body = document.getElementById('modal-body');
+
+      if (type === 'terms') {
+        title.innerText = 'CampusPulse SaaS Terms of Service';
+        body.innerHTML = `
+          <p><strong>1. Institutional License:</strong> CampusPulse grants your higher education institution a non-exclusive license to administer academic data, student records, and institutional attendance operations.</p>
+          <p><strong>2. Autonomous Tenant Isolation:</strong> Every institution is provisioned with cryptographically separated database rows adhering to PostgreSQL Row-Level Security (RLS) standards.</p>
+          <p><strong>3. Uptime & SLA Guarantee:</strong> 99.95% production uptime commitment with automated daily cryptographic backups and failover.</p>
+        `;
+      } else if (type === 'privacy') {
+        title.innerText = 'CampusPulse Privacy Policy (DPDP & GDPR Compliant)';
+        body.innerHTML = `
+          <p><strong>1. Data Sovereignty:</strong> Student records and sensitive institutional PII are localized within your chosen geographic data plane (India, Europe, or US).</p>
+          <p><strong>2. Encryption:</strong> AES-256 at rest and TLS 1.3 in transit.</p>
+          <p><strong>3. Zero Third-Party Monetization:</strong> CampusPulse never sells, analyzes, or shares student or faculty personal data with advertisers.</p>
+        `;
+      } else {
+        title.innerText = 'Data Processing Agreement (DPA)';
+        body.innerHTML = `
+          <p><strong>1. Educational Role:</strong> The institution acts as the Data Controller; CampusPulse acts as the Data Processor.</p>
+          <p><strong>2. Right to Erasure & Portability:</strong> Complete JSON/SQL/CSV export of institutional rosters and logs available on demand.</p>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('legal-modal').classList.add('hidden');
     }
   </script>
 </body>

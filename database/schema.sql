@@ -17,8 +17,22 @@ CREATE TABLE IF NOT EXISTS tenants (
   academic_year TEXT DEFAULT '2025-2026',
   owner_user_id INTEGER,
   institution_type TEXT DEFAULT 'college',
+  data_region TEXT DEFAULT 'in-west-mumbai',
+  plan_tier TEXT DEFAULT 'professional',
+  verification_status TEXT DEFAULT 'verified',
+  aicte_code TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS email_verifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  otp_code TEXT NOT NULL,
+  expires_at DATETIME NOT NULL,
+  is_verified INTEGER DEFAULT 0,
+  attempts INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS users (
