@@ -4,23 +4,23 @@
   <!-- ========================================================================= -->
   <!-- 1. WELCOME BANNER & ACADEMIC STATUS                                       -->
   <!-- ========================================================================= -->
-  <div class="card card-static p-6 sm:p-7 relative overflow-hidden bg-surface border border-subtle">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+  <div class="card card-static p-4 sm:p-5 relative overflow-hidden bg-surface border border-subtle">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
       <div>
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full badge-accent text-xs font-semibold tracking-wide mb-3">
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full badge-accent text-xs font-semibold tracking-wide mb-1.5">
           <span class="w-2 h-2 rounded-full" style="background-color: var(--success);"></span>
           <span>Active Academic Term 2026</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-primary tracking-tight leading-snug">
           Welcome back, <%= user.name %>! 👋
         </h1>
-        <p class="text-secondary text-sm mt-1.5 font-normal leading-relaxed">
+        <p class="text-secondary text-xs sm:text-sm mt-1 font-normal leading-relaxed">
           Roll Number: <span class="font-bold text-primary"><%= user.roll_no %></span> • Program: <span class="font-bold text-primary"><%= user.course %></span>
         </p>
       </div>
 
       <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+      <div class="flex items-center gap-2 shrink-0 flex-wrap">
         <a href="/student/checkin" class="btn-primary !min-h-[42px] px-4 text-xs font-bold shadow-sm">
           <i class="fa-solid fa-qrcode text-xs"></i>
           <span>Self Check-In</span>
