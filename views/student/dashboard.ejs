@@ -1,26 +1,26 @@
 <!-- Student Dashboard — Enterprise Higher Education SaaS -->
-<div class="space-y-6">
+<div class="space-y-8">
 
   <!-- ========================================================================= -->
   <!-- 1. WELCOME BANNER & ACADEMIC STATUS                                       -->
   <!-- ========================================================================= -->
-  <div class="card card-static p-4 sm:p-5 relative overflow-hidden bg-surface border border-subtle">
+  <div class="card card-static p-6 sm:p-7 relative overflow-hidden bg-surface border border-subtle">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
       <div>
-        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full badge-accent text-xs font-semibold tracking-wide mb-1.5">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full badge-accent text-xs font-semibold tracking-wide mb-2">
           <span class="w-2 h-2 rounded-full" style="background-color: var(--success);"></span>
           <span>Active Academic Term 2026</span>
         </div>
         <h1 class="text-xl sm:text-2xl font-extrabold text-primary tracking-tight leading-snug">
           Welcome back, <%= user.name %>! 👋
         </h1>
-        <p class="text-secondary text-xs sm:text-sm mt-1 font-normal leading-relaxed">
+        <p class="text-secondary text-xs sm:text-sm mt-1.5 font-normal leading-relaxed">
           Roll Number: <span class="font-bold text-primary"><%= user.roll_no %></span> • Program: <span class="font-bold text-primary"><%= user.course %></span>
         </p>
       </div>
 
       <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-2 shrink-0 flex-wrap">
+      <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
         <a href="/student/checkin" class="btn-primary !min-h-[42px] px-4 text-xs font-bold shadow-sm">
           <i class="fa-solid fa-qrcode text-xs"></i>
           <span>Self Check-In</span>
@@ -343,7 +343,7 @@
         <% if (issuedBooks && issuedBooks.length > 0) { %>
           <div class="space-y-2.5">
             <% issuedBooks.forEach(b => { %>
-              <div class="p-3 rounded-xl border border-subtle bg-surface flex items-center justify-between text-xs">
+              <div class="p-3.5 rounded-xl border border-subtle bg-surface flex items-center justify-between text-xs hover:border-strong transition-colors">
                 <div>
                   <p class="font-bold text-primary text-xs truncate max-w-[180px]"><%= b.title %></p>
                   <p class="text-[10px] text-muted mt-0.5">Due: <%= b.due_date %></p>
@@ -364,25 +364,25 @@
       </div>
 
       <!-- Quick Academic Links -->
-      <div class="card card-static p-5 space-y-3">
+      <div class="card card-static p-5 sm:p-6 space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider text-muted">Direct Shortcuts</h3>
-        <div class="space-y-1.5 text-xs">
-          <a href="/student/timetable" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-hover transition-colors font-medium text-secondary hover:text-primary">
-            <span class="flex items-center gap-2">
+        <div class="space-y-2 text-xs">
+          <a href="/student/timetable" class="flex items-center justify-between p-3 rounded-xl border border-subtle bg-surface hover:bg-surface-hover transition-all font-medium text-secondary hover:text-primary">
+            <span class="flex items-center gap-2.5">
               <i class="fa-solid fa-calendar-days text-xs text-accent"></i>
               <span>Weekly Class Timetable</span>
             </span>
             <i class="fa-solid fa-chevron-right text-[10px] text-muted"></i>
           </a>
-          <a href="/student/assignments" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-hover transition-colors font-medium text-secondary hover:text-primary">
-            <span class="flex items-center gap-2">
+          <a href="/student/assignments" class="flex items-center justify-between p-3 rounded-xl border border-subtle bg-surface hover:bg-surface-hover transition-all font-medium text-secondary hover:text-primary">
+            <span class="flex items-center gap-2.5">
               <i class="fa-solid fa-file-arrow-up text-xs text-accent"></i>
               <span>Assignments & Submissions</span>
             </span>
             <i class="fa-solid fa-chevron-right text-[10px] text-muted"></i>
           </a>
-          <a href="/student/fees" class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-hover transition-colors font-medium text-secondary hover:text-primary">
-            <span class="flex items-center gap-2">
+          <a href="/student/fees" class="flex items-center justify-between p-3 rounded-xl border border-subtle bg-surface hover:bg-surface-hover transition-all font-medium text-secondary hover:text-primary">
+            <span class="flex items-center gap-2.5">
               <i class="fa-solid fa-receipt text-xs text-accent"></i>
               <span>Tuition Fee Receipts</span>
             </span>

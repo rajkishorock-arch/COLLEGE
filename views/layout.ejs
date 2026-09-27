@@ -37,7 +37,7 @@
   <!-- CampusPulse Core Design System -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased transition-colors duration-200">
+<body class="bg-canvas bg-[var(--bg-primary)] text-primary text-[var(--text-primary)] min-h-screen flex flex-col antialiased transition-colors duration-200">
 
   <% if (typeof user !== 'undefined' && user) { %>
     <!-- Authenticated AppShell (Zero-Overlap Flexbox Architecture) -->
@@ -57,7 +57,7 @@
         </main>
 
         <!-- Institutional Footer -->
-        <footer class="py-4 px-6 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center text-xs text-[var(--text-muted)]">
+        <footer class="py-4 px-6 border-t border-subtle border-[var(--border-subtle)] bg-surface bg-[var(--bg-surface)] text-center text-xs text-muted text-[var(--text-muted)]">
           <p>&copy; <%= new Date().getFullYear() %> CampusPulse Enterprise • Autonomous Multi-Tenant Higher Education SaaS</p>
         </footer>
       </div>

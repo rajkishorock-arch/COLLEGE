@@ -1,18 +1,18 @@
 <!-- Admin Dashboard Overview -->
-<div class="space-y-6">
+<div class="space-y-8">
 
   <!-- Welcome Admin Banner -->
-  <div class="card p-6 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded-xl shadow-xs">
+  <div class="card card-static p-6 sm:p-7 border border-subtle bg-surface shadow-sm">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-200 dark:border-amber-800 mb-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge-warning text-xs font-semibold mb-2">
           <i class="fa-solid fa-shield-halved text-[10px]"></i>
           <span>Administrator Control Center</span>
         </div>
-        <h1 class="text-xl sm:text-2xl font-bold text-[var(--text-primary)] font-['Space_Grotesk'] tracking-tight">
+        <h1 class="text-xl sm:text-2xl font-bold text-primary font-['Space_Grotesk'] tracking-tight">
           Campus Operations Overview
         </h1>
-        <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-xl font-normal leading-relaxed">
+        <p class="text-xs sm:text-sm text-secondary mt-1.5 max-w-xl font-normal leading-relaxed">
           Real-time institutional metrics on student enrollment, academic attendance rates, library circulation, and testing performance.
         </p>
       </div>
@@ -31,7 +31,7 @@
   </div>
 
   <!-- Bento Grid Summary Cards (Responsive 4-stat layout) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="stat-grid-4">
     
     <!-- 1. Total Students -->
     <div class="card p-5 flex flex-col justify-between border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded-xl">
@@ -156,7 +156,7 @@
   </div>
 
   <!-- Lower Tables Grid (Recently Registered Students & Active Circulation) -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-7">
     
     <!-- Recently Registered Students -->
     <div class="card p-5 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded-xl">
