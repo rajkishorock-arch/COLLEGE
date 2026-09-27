@@ -6,6 +6,7 @@ const { requireAdmin, requireSuperAdmin } = require('../middleware/auth');
 const { logAudit } = require('../utils/audit');
 const { createNotification, broadcastToStudents } = require('../utils/notify');
 const { avatarUpload } = require('../utils/upload');
+const tenantService = require('../services/tenantService');
 
 // Apply admin authorization to all routes in this file
 router.use(requireAdmin);
@@ -583,6 +584,7 @@ router.post('/attendance/end-session/:id', (req, res) => {
 
 // GET /admin/results
 router.get('/results', (req, res) => {
+  const tenantId = req.tenantId || (req.session.user && req.session.user.tenantId) || 'tenant_default';
   const filterStudent = req.query.student_id ? parseInt(req.query.student_id, 10) : null;
   const filterSubject = req.query.subject || '';
 
@@ -590,9 +592,9 @@ router.get('/results', (req, res) => {
     SELECT r.*, u.name AS student_name, u.roll_no, u.course
     FROM results r
     JOIN users u ON r.student_id = u.id
-    WHERE 1=1
+    WHERE r.tenant_id = ?
   `;
-  const params = [];
+  const params = [tenantId];
 
   if (filterStudent) {
     query += ` AND r.student_id = ?`;
@@ -1029,6 +1031,7 @@ router.post('/quiz/delete/:id', (req, res) => {
  * ==========================================
  */
 router.get('/audit-log', (req, res) => {
+  const tenantId = req.tenantId || (req.session.user && req.session.user.tenantId) || 'tenant_default';
   const filterAction = req.query.action || '';
   const filterAdmin = req.query.admin_id ? parseInt(req.query.admin_id, 10) : null;
   const search = req.query.search ? req.query.search.trim() : '';
@@ -1037,9 +1040,9 @@ router.get('/audit-log', (req, res) => {
     SELECT a.*, u.name AS admin_name, u.email AS admin_email
     FROM audit_log a
     JOIN users u ON a.admin_id = u.id
-    WHERE 1=1
+    WHERE a.tenant_id = ?
   `;
-  const params = [];
+  const params = [tenantId];
 
   if (filterAction) {
     query += ` AND a.action = ?`;
@@ -1368,6 +1371,7 @@ router.post('/assignments/delete/:id', (req, res) => {
  * ==========================================
  */
 router.get('/fees', (req, res) => {
+  const tenantId = req.tenantId || (req.session.user && req.session.user.tenantId) || 'tenant_default';
   const filterStatus = req.query.status || '';
   const filterTerm = req.query.term || '';
 
@@ -1375,9 +1379,9 @@ router.get('/fees', (req, res) => {
     SELECT f.*, u.name AS student_name, u.roll_no, u.course
     FROM fees f
     JOIN users u ON f.student_id = u.id
-    WHERE 1=1
+    WHERE f.tenant_id = ?
   `;
-  const params = [];
+  const params = [tenantId];
 
   if (filterStatus) {
     query += ` AND f.status = ?`;

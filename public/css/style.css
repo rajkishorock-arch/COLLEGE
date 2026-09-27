@@ -1580,6 +1580,30 @@ html.dark .sidebar-link.active {
   box-shadow: inset 3px 0 0 var(--accent-neon), 0 0 16px rgba(99, 102, 241, 0.22);
 }
 
+/* Sidebar Footer - Always visually anchored, never cut off */
+.sidebar-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-tenant-badge {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-surface-hover);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.sidebar-user-block {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Mobile Sidebar Behavior (< 1024px) */
 @media (max-width: 1023px) {
   .app-sidebar,
@@ -1600,6 +1624,20 @@ html.dark .sidebar-link.active {
   .app-sidebar.sidebar-open,
   aside#app-sidebar.sidebar-open {
     transform: translateX(0) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-sidebar,
+  aside#app-sidebar {
+    width: 260px !important;
+    height: 100vh !important;
+    position: sticky !important;
+    top: 0 !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 }
 
@@ -1771,14 +1809,28 @@ html.dark .sidebar-link.active {
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  transition: transform 200ms var(--ease-snappy), box-shadow 200ms var(--ease-snappy), border-color 200ms ease;
+  position: relative;
 }
 
-.card:not(.card-static):hover,
-.card-interactive:hover {
-  transform: translateY(-2px);
+.card:not(.card-no-hover):hover,
+.card-interactive:hover,
+.stat-card-clean:hover {
+  transform: translateY(-2.5px);
   border-color: var(--neon-border-hover);
   box-shadow: var(--neon-card-shadow);
+}
+
+.card:hover .stat-icon {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px var(--accent-neon-glow);
+}
+
+html.dark .card:not(.card-no-hover):hover,
+html.dark .card-interactive:hover,
+html.dark .stat-card-clean:hover {
+  border-color: var(--accent-neon);
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.35), 0 8px 30px -4px rgba(99, 102, 241, 0.3);
 }
 
 /* Priority Card Subtle Neon Ambient Border (Section 9) */
