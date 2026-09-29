@@ -56,7 +56,8 @@ router.post('/login', (req, res) => {
   }
 
   try {
-    const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email.trim());
+    const identifier = (email || '').trim();
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(roll_no) = LOWER(?)').get(identifier, identifier);
 
     if (!user) {
       return res.render('login', {
@@ -227,7 +228,7 @@ router.get('/signup', (req, res) => {
 });
 
 // API: Send Email Verification OTP
-router.post('/api/auth/send-verification-otp', (req, res) => {
+router.post('/api/auth/send-verification-otp', async (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) {
     return res.status(400).json({ success: false, message: 'A valid email address is required.' });
@@ -235,11 +236,20 @@ router.post('/api/auth/send-verification-otp', (req, res) => {
 
   try {
     const InstitutionVerificationService = require('../services/institutionVerificationService');
+    const emailService = require('../services/emailService');
     const result = InstitutionVerificationService.generateEmailOtp(email);
+
+    // Asynchronously dispatch real email to user's inbox
+    emailService.sendOtpEmail(email, result.otpCode).catch(err => {
+      console.error('[Auth:EmailDispatch] Non-blocking dispatch warning:', err.message);
+    });
+
+    const isDev = (process.env.NODE_ENV !== 'production' || process.env.SHOW_DEMO_CREDENTIALS === 'true');
+
     return res.json({
       success: true,
-      message: `Verification code sent to ${email}. Valid for 10 minutes.`,
-      devOtp: result.otpCode, // Displayed in development/testing mode for quick verification
+      message: `Verification code successfully dispatched to ${email}. Valid for 10 minutes.`,
+      ...(isDev ? { devOtp: result.otpCode } : {}),
       expiresInMinutes: 10
     });
   } catch (err) {

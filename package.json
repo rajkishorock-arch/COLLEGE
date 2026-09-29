@@ -30,6 +30,7 @@
     "express-ejs-layouts": "^2.5.1",
     "express-session": "^1.18.1",
     "multer": "^2.4.0",
+    "nodemailer": "^10.0.12",
     "pg": "^8.23.0"
   }
 }

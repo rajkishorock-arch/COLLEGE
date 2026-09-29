@@ -85,6 +85,21 @@ router.get('/dashboard', (req, res) => {
     isOverdue: item.due_date < todayStr
   }));
 
+  // 7. AI Predictive Academic Risk Assessment (Tier-3 ML Engine)
+  let atRiskStudents = [];
+  try {
+    const PredictiveAcademicService = require('../services/predictiveAcademicService');
+    const allStudents = db.prepare("SELECT id FROM users WHERE role = 'student' AND tenant_id = ?").all(tenantId);
+    allStudents.forEach(s => {
+      try {
+        PredictiveAcademicService.predictStudentPerformance(s.id, tenantId);
+      } catch (e) {}
+    });
+    atRiskStudents = PredictiveAcademicService.getAtRiskStudents(tenantId) || [];
+  } catch (err) {
+    console.warn('[Admin:PredictiveRisk] Warning:', err.message);
+  }
+
   res.render('admin/dashboard', {
     title: 'Admin Dashboard - College Portal',
     pageName: 'dashboard',
@@ -94,10 +109,12 @@ router.get('/dashboard', (req, res) => {
       totalTitles: bookStats.totalTitles,
       booksIssued: issuedStats.totalIssued || 0,
       overdueCount: issuedStats.overdueCount || 0,
-      averageAttendance
+      averageAttendance,
+      atRiskCount: atRiskStudents.length
     },
     recentStudents,
-    recentIssuedBooks
+    recentIssuedBooks,
+    atRiskStudents
   });
 });
 

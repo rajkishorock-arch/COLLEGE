@@ -448,15 +448,29 @@ function initChatbot() {
     });
   }
 
-  function handleUserMessage(text) {
+  async function handleUserMessage(text) {
     appendMessage(text, 'user');
     const typingId = showTypingIndicator();
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/student/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+
       removeTypingIndicator(typingId);
-      const botResponse = matchFaqRule(text);
-      appendMessage(botResponse, 'bot');
-    }, 350);
+
+      if (res.ok) {
+        const data = await res.json();
+        appendMessage(data.reply || matchFaqRule(text), 'bot');
+      } else {
+        appendMessage(matchFaqRule(text), 'bot');
+      }
+    } catch (e) {
+      removeTypingIndicator(typingId);
+      appendMessage(matchFaqRule(text), 'bot');
+    }
   }
 
   function appendMessage(text, sender) {

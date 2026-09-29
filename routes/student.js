@@ -493,65 +493,28 @@ router.post('/quiz/:id/submit', (req, res) => {
 });
 
 /**
- * API: Rule-based FAQ Chatbot
+ * API: Real-Time Academic Assistant Chatbot (Live Data & Gemini AI)
  */
-router.post('/api/chatbot', (req, res) => {
-  const userMessage = (req.body.message || '').trim().toLowerCase();
+router.post('/api/chatbot', async (req, res) => {
+  const userMessage = (req.body.message || '').trim();
+  const studentId = req.session.user.id;
+  const tenantId = req.tenantId || 'tenant_default';
 
-  const faqs = [
-    {
-      keywords: ['attendance', 'present', 'absent', 'percentage', '75', 'shortage'],
-      response: 'You can monitor your subject-wise and overall attendance under "My Attendance" (/student/attendance). Per academic policy, a minimum of 75% attendance is required to be eligible for final examinations.'
-    },
-    {
-      keywords: ['result', 'marks', 'grade', 'score', 'exam', 'gpa', 'cgpa', 'midterm', 'final'],
-      response: 'Your marks, grades, and interactive performance charts are available in "My Results" (/student/results). You can view scores for mid-terms, final exams, and quizzes.'
-    },
-    {
-      keywords: ['library', 'book', 'issue', 'borrow', 'return', 'due date', 'overdue', 'fine'],
-      response: 'You can explore available books and track currently borrowed titles under "Library" (/student/library). Books can be issued by the librarian and must be returned before the due date to avoid overdue flags.'
-    },
-    {
-      keywords: ['quiz', 'test', 'mcq', 'examination', 'attempt'],
-      response: 'Visit the "Quiz" section (/student/quiz) to take online self-assessment quizzes. Quizzes are automatically graded instantly upon submission, and your score history is preserved.'
-    },
-    {
-      keywords: ['contact admin', 'admin office', 'contact', 'helpdesk', 'office hours', 'support', 'help'],
-      response: 'The College Administrative Office is open Monday to Friday, 9:00 AM - 4:30 PM. You can visit Room 102, Academic Block, or reach out via email.'
-    },
-    {
-      keywords: ['admin email', 'email', 'mail', 'write to admin'],
-      response: 'You can email the college administration directly at: admin@college.edu. Please mention your full name and Roll Number in the email subject line.'
-    },
-    {
-      keywords: ['course', 'syllabus', 'subjects', 'department'],
-      response: 'Your enrolled course is displayed in your profile header. For detailed syllabus guidelines, please consult your department faculty or the college library repository.'
-    },
-    {
-      keywords: ['hi', 'hello', 'hey', 'greetings'],
-      response: 'Hello! I am your College Assistant bot. You can ask me about attendance criteria, viewing exam results, library books, taking quizzes, or contacting the admin.'
-    }
-  ];
-
-  // Match keyword in user message
-  let matchedFaq = null;
-  for (const faq of faqs) {
-    const hasMatch = faq.keywords.some(kw => userMessage.includes(kw));
-    if (hasMatch) {
-      matchedFaq = faq.response;
-      break;
-    }
+  if (!userMessage) {
+    return res.status(400).json({ success: false, reply: 'Please ask a question.' });
   }
 
-  if (matchedFaq) {
-    return res.json({ reply: matchedFaq, success: true });
+  try {
+    const chatbotService = require('../services/chatbotService');
+    const reply = await chatbotService.processQuery(userMessage, studentId, tenantId);
+    return res.json({ success: true, reply });
+  } catch (err) {
+    console.error('[Student:ChatbotAPI] Error:', err.message);
+    return res.json({
+      success: false,
+      reply: "I'm having a brief issue querying your live records. Please try asking again in a moment."
+    });
   }
-
-  // Friendly fallback response
-  return res.json({
-    reply: "I couldn't quite find an answer for that. You can ask me: 'How to check attendance?', 'How to see results?', 'How to issue library books?', 'How to take a quiz?', or 'What is the admin email?'",
-    success: false
-  });
 });
 
 // GET /student/checkin - Student live self check-in page
@@ -803,30 +766,27 @@ router.get('/fees', (req, res) => {
   });
 });
 
-router.post('/fees/pay/:id', (req, res) => {
+router.post('/fees/pay/:id', async (req, res) => {
   const feeId = parseInt(req.params.id, 10);
   const studentId = req.session.user.id;
   const tenantId = req.tenantId || 'tenant_default';
+  const paymentMethod = req.body.payment_method || 'UPI / Instant Bank Transfer';
 
   try {
-    const fee = db.prepare("SELECT * FROM fees WHERE id = ? AND student_id = ? AND tenant_id = ?").get(feeId, studentId, tenantId);
-    if (!fee) {
-      return res.redirect('/student/fees?error=' + encodeURIComponent('Fee invoice not found.'));
-    }
+    const paymentService = require('../services/paymentService');
+    const result = await paymentService.processPayment(feeId, studentId, tenantId, {
+      paymentMethod,
+      razorpay_payment_id: req.body.razorpay_payment_id,
+      razorpay_order_id: req.body.razorpay_order_id,
+      razorpay_signature: req.body.razorpay_signature
+    });
 
-    // Simulate instant payment success
-    db.prepare(`
-      UPDATE fees
-      SET amount_paid = amount_due, status = 'Paid', paid_at = datetime('now')
-      WHERE id = ? AND tenant_id = ?
-    `).run(feeId, tenantId);
+    createNotification(studentId, `✅ Payment Verified: Paid ₹${result.amount} for ${result.term} (TXN: ${result.transactionId}). Official receipt recorded.`, 'fee');
 
-    createNotification(studentId, `✅ Demo Transaction Approved: Paid ₹${fee.amount_due} for ${fee.term}. Payment recorded.`, 'fee');
-
-    res.redirect('/student/fees?success=' + encodeURIComponent(`Demo transaction of ₹${fee.amount_due.toLocaleString('en-IN')} approved! Payment recorded for ${fee.term}.`));
+    res.redirect('/student/fees?success=' + encodeURIComponent(`Payment of ₹${result.amount.toLocaleString('en-IN')} verified successfully! Reference ID: ${result.transactionId}. An official electronic receipt has been recorded and dispatched to your registered email.`));
   } catch (err) {
-    console.error('Pay fee error:', err);
-    res.redirect('/student/fees?error=' + encodeURIComponent('Transaction simulation failed.'));
+    console.error('[Student:PayFee] Error:', err.message);
+    res.redirect('/student/fees?error=' + encodeURIComponent(err.message || 'Payment processing failed.'));
   }
 });
 

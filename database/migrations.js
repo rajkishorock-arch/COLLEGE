@@ -93,9 +93,22 @@ function runMigrations() {
       due_date TEXT,
       status TEXT DEFAULT 'Pending',
       paid_at DATETIME,
+      transaction_id TEXT,
+      payment_method TEXT,
       FOREIGN KEY (student_id) REFERENCES users(id)
     );
   `);
+
+  try {
+    const feeColumns = db.prepare("PRAGMA table_info(fees)").all();
+    const colNames = feeColumns.map(c => c.name);
+    if (!colNames.includes('transaction_id')) {
+      db.exec("ALTER TABLE fees ADD COLUMN transaction_id TEXT;");
+    }
+    if (!colNames.includes('payment_method')) {
+      db.exec("ALTER TABLE fees ADD COLUMN payment_method TEXT;");
+    }
+  } catch (err) {}
 
   // 7. Table: notifications
   db.exec(`
