@@ -20,16 +20,26 @@
     })();
   </script>
 
-  <!-- Google Fonts Pairing: Space Grotesk + Inter -->
+  <!-- Google Fonts: Google Sans Flex + Google Sans Code + Google Symbols + Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@8..144,-10..0,25..150,400..700,0..100&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,400..700;1,400..700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Symbols:opsz,wght,FILL,GRAD,ROND@20..48,100..700,0..1,-50..200,0..100&display=block">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased transition-colors duration-200">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased transition-colors duration-200 relative overflow-x-hidden">
+
+  <!-- Ambient Antigravity Aurora Mesh & Glowing Blur Orbs -->
+  <div class="agy-ambient-canvas" aria-hidden="true">
+    <div class="agy-orb agy-orb-1"></div>
+    <div class="agy-orb agy-orb-2"></div>
+    <div class="agy-orb agy-orb-3"></div>
+  </div>
 
   <!-- Top Navigation Header -->
   <header class="h-16 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] px-6 flex items-center justify-between sticky top-0 z-30">

@@ -1,50 +1,54 @@
 /* ==========================================================================
-   CampusPulse - EXACT Design System Spec (Clean Fully White / Light Theme)
-   Fonts: Space Grotesk (Headings/Stats) + Inter (Body/UI)
-   Theme: Pure White / Light SaaS Theme
+   CampusPulse - Antigravity Edition Design System Spec
+   Inspiration: Google Antigravity (https://antigravity.google/)
+   Fonts: Google Sans Flex (Headings & UI) + Google Sans Code (Data & Badges)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@8..144,-10..0,25..150,400..700,0..100&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,400..700;1,400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Symbols:opsz,wght,FILL,GRAD,ROND@20..48,100..700,0..1,-50..200,0..100&display=block');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* --- 1. Clean Light Color Tokens & Subtle Neon Variables --- */
+/* --- 1. Antigravity Light & Dark Color Tokens --- */
 :root {
-  /* Surfaces & Typography — Clean High-Contrast Separation */
-  --bg-primary: #F1F5F9;         /* crisp cool-slate page canvas (Linear/TailwindUI style) */
-  --bg-surface: #FFFFFF;         /* card surface — pure elevated white */
-  --bg-surface-hover: #F8FAFC;   /* subtle hover surface */
+  /* Surfaces & Typography — Google Antigravity Clean Aesthetics */
+  --bg-primary: #F8F9FA;         /* Google clean off-white / light slate canvas */
+  --bg-surface: #FFFFFF;         /* elevated pure white card */
+  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --bg-surface-hover: #F1F3F5;   /* subtle hover surface */
   --bg-sidebar: #FFFFFF;         /* sidebar surface */
-  --bg-topbar: rgba(255, 255, 255, 0.94);
-  --border-subtle: #E2E8F0;      /* clean light gray border */
-  --border-strong: #CBD5E1;
-  --text-primary: #0F172A;       /* near-black slate text for maximum readability */
-  --text-secondary: #475569;     /* muted slate secondary text */
-  --text-muted: #94A3B8;
+  --bg-topbar: rgba(255, 255, 255, 0.88);
+  --border-subtle: rgba(0, 0, 0, 0.08);   /* clean crisp light border */
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --text-primary: #1F2328;       /* deep readable charcoal */
+  --text-secondary: #57606A;     /* muted secondary */
+  --text-muted: #8C95A0;
 
-  /* Primary Neon Accent: Electric Indigo / Violet */
-  --accent-primary: #4F46E5;       /* Indigo-600 */
-  --accent-primary-hover: #4338CA; /* Indigo-700 */
-  --accent-neon: #6366F1;         /* Electric Indigo */
-  --accent-neon-glow: rgba(99, 102, 241, 0.22);
-  --accent-neon-subtle: rgba(99, 102, 241, 0.08);
+  /* Antigravity Primary Accent: Google Electric Blue & Violet */
+  --accent-primary: #1A73E8;       /* Google Blue */
+  --accent-primary-hover: #1557B0;
+  --accent-neon: #4F46E5;         /* Electric Indigo */
+  --accent-neon-glow: rgba(26, 115, 232, 0.22);
+  --accent-neon-subtle: rgba(26, 115, 232, 0.08);
 
-  /* Secondary Accent: Cyan / Blue */
-  --accent-cyan: #06B6D4;
-  --accent-cyan-glow: rgba(6, 182, 212, 0.18);
+  /* Secondary Accent: Cyan / Sky */
+  --accent-cyan: #0284C7;
+  --accent-cyan-glow: rgba(2, 132, 199, 0.18);
 
   /* Semantic Status Colors */
-  --success: #10B981;
-  --success-glow: rgba(16, 185, 129, 0.18);
-  --danger: #EF4444;
-  --danger-glow: rgba(239, 68, 68, 0.18);
-  --warning: #F59E0B;
-  --warning-glow: rgba(245, 158, 11, 0.18);
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.18);
+  --danger: #DC2626;
+  --danger-glow: rgba(220, 38, 38, 0.18);
+  --warning: #D97706;
+  --warning-glow: rgba(217, 119, 6, 0.18);
 
-  /* Restrained Neon Shadows */
-  --neon-border-hover: rgba(99, 102, 241, 0.48);
-  --neon-card-shadow: 0 0 0 1px rgba(99, 102, 241, 0.22), 0 12px 28px -6px rgba(99, 102, 241, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
-  --neon-btn-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35), 0 4px 16px rgba(99, 102, 241, 0.25);
+  /* Antigravity Luminous Shadows & Glows */
+  --neon-border-hover: rgba(26, 115, 232, 0.45);
+  --neon-card-shadow: 0 0 0 1px rgba(26, 115, 232, 0.18), 0 16px 36px -8px rgba(26, 115, 232, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --neon-btn-shadow: 0 0 0 1px rgba(26, 115, 232, 0.35), 0 4px 20px rgba(26, 115, 232, 0.28);
 
-  /* Documented Z-Index Hierarchy (Section 23) */
+  /* Documented Z-Index Hierarchy */
   --z-base: 0;
   --z-card: 1;
   --z-sticky-header: 20;
@@ -55,33 +59,36 @@
   --z-modal: 70;
   --z-toast: 80;
 
-  /* Font Families */
-  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Antigravity Font Families */
+  --font-heading: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-code: 'Google Sans Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Standard Snappy Easing */
+  /* Antigravity Physics-based Spring Easing */
   --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-agy: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* --- Dark Mode Color Tokens & Elevated Contrast Variables --- */
+/* --- Antigravity Dark Mode Color Tokens & Ambient Nebula Glows --- */
 html.dark {
-  --bg-primary: #080D1A;         /* deep rich obsidian canvas */
-  --bg-surface: #111827;         /* elevated dark card surface */
-  --bg-surface-hover: #1E293B;   /* surface on hover */
-  --bg-sidebar: #0C1222;         /* dark sidebar surface */
-  --bg-topbar: rgba(12, 18, 34, 0.94);
-  --border-subtle: #1E293D;      /* dark subtle border */
-  --border-strong: #334155;      /* noticeable dark border */
+  --bg-primary: #090C15;         /* Google Antigravity deep interstellar canvas */
+  --bg-surface: #111625;         /* elevated luminous dark surface */
+  --bg-surface-glass: rgba(17, 22, 37, 0.82);
+  --bg-surface-hover: #1A2135;   /* hover surface */
+  --bg-sidebar: #0C101C;         /* dark sidebar surface */
+  --bg-topbar: rgba(12, 16, 28, 0.88);
+  --border-subtle: rgba(255, 255, 255, 0.08);  /* crisp dark border */
+  --border-strong: rgba(255, 255, 255, 0.16);
   --text-primary: #F8FAFC;       /* bright crisp text */
   --text-secondary: #94A3B8;     /* readable muted text */
   --text-muted: #64748B;
 
-  --accent-primary: #6366F1;     /* electric indigo */
-  --accent-primary-hover: #818CF8;
+  --accent-primary: #388BFD;     /* Google Antigravity luminous blue */
+  --accent-primary-hover: #58A6FF;
   --accent-neon: #818CF8;
-  --accent-neon-glow: rgba(129, 140, 248, 0.28);
-  --accent-neon-subtle: rgba(99, 102, 241, 0.15);
+  --accent-neon-glow: rgba(56, 139, 253, 0.32);
+  --accent-neon-subtle: rgba(56, 139, 253, 0.14);
 
   --accent-cyan: #38BDF8;
   --accent-cyan-glow: rgba(56, 189, 248, 0.25);
@@ -93,9 +100,9 @@ html.dark {
   --warning: #FBBF24;
   --warning-glow: rgba(251, 191, 36, 0.25);
 
-  --neon-border-hover: rgba(129, 140, 248, 0.55);
-  --neon-card-shadow: 0 0 0 1px rgba(129, 140, 248, 0.35), 0 12px 36px -4px rgba(99, 102, 241, 0.32);
-  --neon-btn-shadow: 0 0 0 1px rgba(129, 140, 248, 0.45), 0 4px 20px rgba(99, 102, 241, 0.4);
+  --neon-border-hover: rgba(56, 139, 253, 0.55);
+  --neon-card-shadow: 0 0 0 1px rgba(56, 139, 253, 0.35), 0 16px 40px -6px rgba(56, 139, 253, 0.28);
+  --neon-btn-shadow: 0 0 0 1px rgba(56, 139, 253, 0.45), 0 4px 24px rgba(56, 139, 253, 0.38);
 }
 
 /* Base Body Styles */
@@ -2253,5 +2260,318 @@ html.dark .stat-card-clean:hover {
   }
   .hero-ambient-glow {
     display: none !important;
+  }
+}
+
+/* ==========================================================================
+   GOOGLE ANTIGRAVITY ANIMATION & CLEAN LAYOUT ENGINE
+   Inspiration: https://antigravity.google/
+   Smooth spring curves, floating mesh glows, crisp pill badges, fluid cards
+   ========================================================================== */
+
+/* 1. Ambient Background Canvas & Floating Orbs */
+.agy-ambient-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+  opacity: 0.65;
+  transition: opacity 0.5s ease;
+}
+
+html.dark .agy-ambient-canvas {
+  opacity: 0.85;
+}
+
+.agy-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.agy-orb-1 {
+  width: 480px;
+  height: 480px;
+  top: -120px;
+  right: -80px;
+  background: radial-gradient(circle, rgba(66, 133, 244, 0.28) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 70%);
+  animation: agyOrbRotate 22s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.agy-orb-2 {
+  width: 540px;
+  height: 540px;
+  bottom: -160px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.24) 0%, rgba(56, 189, 248, 0.16) 50%, transparent 70%);
+  animation: agyMeshFloat 26s ease-in-out infinite alternate;
+}
+
+.agy-orb-3 {
+  width: 380px;
+  height: 380px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.12) 0%, rgba(244, 63, 94, 0.10) 50%, transparent 75%);
+  animation: agyPulseGlow 14s ease-in-out infinite;
+}
+
+/* 2. Google Antigravity Keyframes */
+@keyframes agyOrbRotate {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(40px, -30px) rotate(120deg) scale(1.08); }
+  66% { transform: translate(-30px, 40px) rotate(240deg) scale(0.95); }
+  100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+}
+
+@keyframes agyMeshFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -45px) scale(1.12); }
+  100% { transform: translate(-40px, 30px) scale(0.92); }
+}
+
+@keyframes agyPulseGlow {
+  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.65; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+@keyframes agyFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes agyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes agyShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 3. Antigravity Staggered Reveal Utility */
+.agy-reveal {
+  animation: agyFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.agy-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.agy-stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.agy-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.agy-stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.agy-stagger > *:nth-child(5) { animation-delay: 0.20s; }
+.agy-stagger > *:nth-child(6) { animation-delay: 0.24s; }
+
+/* 4. Glassmorphic Elevated Cards */
+.agy-glass-card {
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px var(--border-subtle);
+  transition: transform 0.28s var(--ease-agy), box-shadow 0.28s var(--ease-agy), border-color 0.28s ease;
+}
+
+html.dark .agy-glass-card {
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-subtle);
+}
+
+.agy-glass-card:hover {
+  border-color: var(--neon-border-hover);
+  box-shadow: var(--neon-card-shadow);
+}
+
+/* 5. Antigravity Pill Badges & Buttons */
+.agy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(26, 115, 232, 0.08);
+  color: var(--accent-primary);
+  border: 1px solid rgba(26, 115, 232, 0.22);
+  transition: all 0.22s var(--ease-agy);
+}
+
+html.dark .agy-pill {
+  background: rgba(56, 139, 253, 0.14);
+  border-color: rgba(56, 139, 253, 0.32);
+}
+
+.agy-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--accent-neon-glow);
+}
+
+/* 6. Clean Google Button Styles */
+.btn-agy-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-neon) 100%);
+  color: #FFFFFF !important;
+  font-family: var(--font-heading);
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 14px var(--accent-neon-glow);
+  cursor: pointer;
+  transition: all 0.24s var(--ease-agy);
+  text-decoration: none !important;
+}
+
+.btn-agy-primary:hover {
+  transform: translateY(-1.5px) scale(1.012);
+  box-shadow: 0 8px 24px var(--accent-neon-glow), 0 0 0 2px var(--accent-primary);
+}
+
+.btn-agy-primary:active {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+.btn-agy-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  transition: all 0.22s var(--ease-agy);
+  text-decoration: none !important;
+}
+
+.btn-agy-secondary:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary) !important;
+  transform: translateY(-1px);
+}
+
+.btn-agy-secondary:active {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+/* 7. Modern Floating Input Container */
+.agy-input-group {
+  position: relative;
+  transition: all 0.2s var(--ease-agy);
+}
+
+.agy-input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.24s var(--ease-agy);
+}
+
+.agy-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-neon-glow);
+  background: var(--bg-surface);
+}
+
+.agy-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 15px;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.agy-input-group:focus-within .agy-input-icon {
+  color: var(--accent-primary);
+}
+
+/* 8. Demo Credentials Quick-Pick Pills */
+.demo-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: all 0.22s var(--ease-agy);
+  text-align: left;
+}
+
+.demo-pill:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.demo-pill:active {
+  transform: scale(0.98);
+}
+
+.demo-pill.flash-filled {
+  animation: demoFlash 0.6s ease;
+}
+
+@keyframes demoFlash {
+  0% { background: var(--accent-neon-glow); border-color: var(--accent-primary); }
+  100% { background: var(--bg-surface); border-color: var(--border-subtle); }
+}
+
+/* 9. Ultra Responsive Screen Rules */
+@media (max-width: 640px) {
+  .agy-glass-card {
+    border-radius: 16px;
+    padding: 1.25rem !important;
+  }
+  
+  .app-main-area {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .app-content-container {
+    padding: 1rem !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .app-content-container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }

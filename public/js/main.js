@@ -92,6 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 11. Landing Page Scroll Reveal Animations
   initScrollReveal();
+
+  // 12. Google Antigravity Card Spotlight Glow & Magnetic Physics
+  initCardSpotlight();
 });
 
 /**
@@ -597,3 +600,40 @@ function initScrollReveal() {
 
   revealElements.forEach(el => observer.observe(el));
 }
+
+/**
+ * 12. Google Antigravity Card Spotlight Effect
+ * Dynamically tracks cursor to cast a subtle, luminous glow along card borders
+ */
+function initCardSpotlight() {
+  const cards = document.querySelectorAll('.card, .agy-glass-card, .agy-interactive-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+}
+
+// Global Password Visibility Toggle
+window.togglePasswordVisibility = function(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) {
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
+  } else {
+    input.type = 'password';
+    if (icon) {
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
+  }
+};

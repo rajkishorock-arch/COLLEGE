@@ -20,17 +20,27 @@
     })();
   </script>
 
-  <!-- Google Fonts: Space Grotesk (Headings/Stats) + Inter (Body/UI) -->
+  <!-- Google Fonts: Google Sans Flex + Google Sans Code + Google Symbols + Inter (Same as antigravity.google) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,ROND@8..144,-10..0,25..150,400..700,0..100&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,400..700;1,400..700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Symbols:opsz,wght,FILL,GRAD,ROND@20..48,100..700,0..1,-50..200,0..100&display=block">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS via CDNJS (allowed by CSP) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased selection:bg-[var(--accent-primary)] selection:text-white transition-colors duration-200">
+<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased selection:bg-[var(--accent-primary)] selection:text-white transition-colors duration-200 relative overflow-x-hidden">
+
+  <!-- Ambient Antigravity Aurora Mesh & Glowing Blur Orbs -->
+  <div class="agy-ambient-canvas" aria-hidden="true">
+    <div class="agy-orb agy-orb-1"></div>
+    <div class="agy-orb agy-orb-2"></div>
+    <div class="agy-orb agy-orb-3"></div>
+  </div>
 
   <!-- =========================================================================
        1. Top Sticky Navigation Bar
